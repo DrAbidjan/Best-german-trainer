@@ -1,1 +1,1 @@
-# B2-german-verb-trainee
+# Best-german-trainer
