@@ -1,7 +1,7 @@
 /* Verbtrainer service worker: caches the app so it works offline.
    If you ever change a file of the app, bump the version number below.
    Only files of this website are cached. Calls to the account server are never cached. */
-const CACHE = 'verbtrainer-v9';
+const CACHE = 'verbtrainer-v10';
 const ASSETS = [
   './', './index.html', './config.js', './manifest.json',
   './impressum.html', './datenschutz.html', './terms.html',
