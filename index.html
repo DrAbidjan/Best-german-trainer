@@ -297,6 +297,38 @@ details.all[open] summary::after{content:"Hide"}
 #nav .pill{padding:4px 14px}
 
 .entry .en,.mlist .en,.word.en,.flash .en-line,.opt span,.gex small,.vtable .en,.wcard .small,.tr,.summary li .en{unicode-bidi:plaintext;text-align:start}
+
+/* ---------- exam ---------- */
+.btn.small{min-height:44px;width:auto;padding:0 18px;font-size:15px}
+.extest{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);margin-top:10px}
+.extext{white-space:pre-wrap;line-height:1.5;font-size:16.5px;margin-top:10px;padding:12px 14px;background:var(--bg);border-radius:12px;unicode-bidi:plaintext;text-align:start}
+.exq{margin-top:16px}
+.exopts{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.exo{padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);font-size:16px;line-height:1.35}
+.exo[aria-pressed=true]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.exo.good{border-color:var(--good);background:var(--good-bg);color:var(--good)}
+.exo.bad{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+.exaudio{display:flex;gap:10px;margin-top:12px}
+.exaudio .btn{gap:6px}
+.extarea{width:100%;margin-top:12px;padding:14px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:17px;line-height:1.45;resize:vertical}
+.extrans{margin-top:12px}
+.extrans summary{cursor:pointer;font-weight:600}
+.exbig{display:flex;align-items:baseline;gap:12px;margin:6px 0 10px}
+.exbig b{font-family:var(--serif);font-size:46px;line-height:1}
+.exbar{position:relative;flex:1;height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.exbar.big{height:14px;margin-bottom:10px}
+.exbar i{display:block;height:100%;border-radius:99px;background:var(--ink)}
+.exbar i.ok{background:var(--good)}
+.exbar i.low{background:var(--bad)}
+.exbar u{position:absolute;top:0;bottom:0;left:60%;width:2px;background:var(--bg);opacity:.9}
+.exrow{display:flex;align-items:center;gap:10px;margin-top:10px}
+.exrow>span{width:112px;flex:none;font-weight:600}
+.exrow>b{width:44px;text-align:right}
+.exlist li{margin-top:6px}
+.exlist li.ok{color:var(--good)}
+.exlist li.bad{color:var(--bad)}
+.exres.passed{border-color:var(--good)}
+.exres.failed{border-color:var(--bad)}
 </style>
 </head>
 <body>
@@ -492,6 +524,7 @@ details.all[open] summary::after{content:"Hide"}
       practise:'<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>',
       verbs:'<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>',
       progress:'<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+      exam:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9z"/><path d="m9 14 2 2 4-4"/>',
       speaker:'<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/>',
       close:'<path d="M18 6 6 18M6 6l12 12"/>',
       mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/>',
@@ -554,7 +587,7 @@ details.all[open] summary::after{content:"Hide"}
     return {
       stats: { correct:0, wrong:0, score:0, streak:0, bestStreak:0, dayStreak:0, lastDay:'', sessions:0 },
       verbs: {}, scope:'all', englishFirst:false, hideInstall:false,
-      speak:{ tries:0, good:0 }, speakTarget:'word', savedAt:0, owner:'', pics:{}, gram:{}, track:'allg', fsp:{}, lang:'en', ui:'en'
+      speak:{ tries:0, good:0 }, speakTarget:'word', savedAt:0, owner:'', pics:{}, gram:{}, track:'allg', fsp:{}, exam:{}, lang:'en', ui:'en'
     };
   }
   function num(x) { return (typeof x === 'number' && isFinite(x) && x >= 0 && x < 1e9) ? Math.floor(x) : 0; }
@@ -581,7 +614,11 @@ details.all[open] summary::after{content:"Hide"}
       var x = p.fsp[id];
       if (/^[a-z0-9-]{1,40}$/.test(id) && typeof x === 'number' && x >= 0 && x <= 100) d.fsp[id] = Math.floor(x);
     });
-    if (p.track === 'zm' || p.track === 'med') d.track = p.track;
+    if (p.exam && typeof p.exam === 'object') Object.keys(p.exam).slice(0, 80).forEach(function (id) {
+      var x = p.exam[id];
+      if (/^[ab]2[hlsp]\d{1,2}$/.test(id) && x && typeof x === 'object') d.exam[id] = { l:Math.min(100, num(x.l)), b:Math.min(100, num(x.b)), n:Math.min(999, num(x.n)) };
+    });
+    if (p.track === 'zm' || p.track === 'med' || p.track === 'exam') d.track = p.track;
     if (typeof p.lang === 'string' && LANGS.some(function (l) { return l[0] === p.lang; })) d.lang = p.lang;
     if (typeof p.ui === 'string' && LANGS.some(function (l) { return l[0] === p.ui; })) d.ui = p.ui;
     if (validScope(p.scope)) d.scope = p.scope;
@@ -1165,6 +1202,7 @@ details.all[open] summary::after{content:"Hide"}
     });
     Object.keys(other.gram).forEach(function (id) { if (!(id in out.gram) || other.gram[id] > out.gram[id]) out.gram[id] = other.gram[id]; });
     Object.keys(other.fsp).forEach(function (id) { if (!(id in out.fsp) || other.fsp[id] > out.fsp[id]) out.fsp[id] = other.fsp[id]; });
+    Object.keys(other.exam).forEach(function (id) { var o = other.exam[id], x = out.exam[id]; if (!x || o.b > x.b) out.exam[id] = o; });
     if (other.speak.tries > out.speak.tries) out.speak = other.speak;
     return out;
   }
@@ -1884,7 +1922,7 @@ details.all[open] summary::after{content:"Hide"}
   /* =====================================================
      EXAM PREPARATION (Fachsprachprüfung)
      ===================================================== */
-  var TRACKS = [['allg', 'General German'], ['zm', 'Zahnmedizin FSP'], ['med', 'Medizin FSP']];
+  var TRACKS = [['allg', 'General German'], ['zm', 'Zahnmedizin FSP'], ['med', 'Medizin FSP'], ['exam', 'Exam']];
   function trackBar() {
     return '<div class="chips trackbar" role="group" aria-label="Choose your course">' + TRACKS.map(function (t) {
       return '<button data-act="xtrack" data-v="' + t[0] + '" aria-pressed="' + (state.track === t[0] ? 'true' : 'false') + '">' + t[1] + '</button>';
@@ -2262,13 +2300,465 @@ details.all[open] summary::after{content:"Hide"}
     return h;
   }
 
+  var EXAM = {
+A2:{
+hoeren:[
+{id:'a2h1',title:'Hören · Modelltest 1',parts:[
+{t:'Teil 1 · Nachricht',inst:'You hear a phone message. You hear it twice. Choose the right answer.',plays:2,lines:[['N','Guten Tag, hier ist die Praxis Dr. Weber. Ihr Termin am Dienstag muss leider ausfallen. Wir haben Ihnen einen neuen Termin gegeben: Donnerstag, um halb zehn. Bitte bringen Sie Ihre Versichertenkarte mit. Wenn der Termin nicht passt, rufen Sie uns bitte bis morgen an. Die Nummer ist null vier null, fünf fünf fünf, drei zwei eins.']],qs:[
+['Warum ruft die Praxis an?',['Der Termin am Dienstag fällt aus.','Der Patient hat etwas vergessen.','Die Praxis ist im Urlaub.'],0],
+['Wann ist der neue Termin?',['Dienstag um halb zehn','Donnerstag um halb zehn','Donnerstag um zehn'],1],
+['Was soll der Patient mitbringen?',['Röntgenbilder','die Versichertenkarte','ein Rezept'],1]]},
+{t:'Teil 2 · Gespräch',inst:'You hear a conversation. You hear it twice. Choose the right answer.',plays:2,lines:[['F','Hast du am Samstag schon etwas vor?'],['M','Nein, noch nicht. Warum?'],['F','Ich möchte ins Schwimmbad gehen. Kommst du mit?'],['M','Gern, aber ich muss am Vormittag arbeiten. Ab zwei Uhr habe ich Zeit.'],['F','Das passt gut. Dann treffen wir uns um drei Uhr vor dem Eingang.'],['M','Soll ich etwas zu essen mitbringen?'],['F','Nicht nötig. Im Schwimmbad gibt es ein Café. Aber vergiss dein Handtuch nicht!']],qs:[
+['Was möchte die Frau am Samstag machen?',['ins Kino gehen','schwimmen gehen','wandern gehen'],1],
+['Warum kann der Mann nicht früher kommen?',['Er muss arbeiten.','Er ist krank.','Er besucht seine Eltern.'],0],
+['Wo treffen sie sich?',['im Café','vor dem Eingang','an der Bushaltestelle'],1]]},
+{t:'Teil 3 · Durchsage',inst:'You hear an announcement at the station. You hear it twice.',plays:2,lines:[['N','Achtung, eine Durchsage für die Reisenden nach München. Der ICE fünf neun drei hat etwa zwanzig Minuten Verspätung. Er fährt nicht von Gleis sieben, sondern von Gleis zwölf ab. Der Zug hält auch in Augsburg. Wir bitten um Entschuldigung.']],qs:[
+['Wie viel Verspätung hat der Zug?',['zwölf Minuten','zwanzig Minuten','sieben Minuten'],1],
+['Von welchem Gleis fährt der Zug ab?',['Gleis 7','Gleis 12','Gleis 20'],1],
+['Wo hält der Zug außerdem?',['in Augsburg','in Nürnberg','in Stuttgart'],0]]}]},
+{id:'a2h2',title:'Hören · Modelltest 2',parts:[
+{t:'Teil 1 · Nachricht',inst:'You hear a message on your phone. You hear it twice.',plays:2,lines:[['N','Hallo Tom, hier ist Lisa. Ich rufe wegen der Besprechung morgen an. Sie beginnt nicht um neun, sondern erst um elf Uhr, weil der Chef im Stau steht. Der Raum ist auch anders: Wir treffen uns im Raum zwei null vier, nicht im Konferenzraum. Bring bitte den Bericht mit. Danke, bis morgen!']],qs:[
+['Wann beginnt die Besprechung?',['um neun Uhr','um zehn Uhr','um elf Uhr'],2],
+['Warum beginnt sie später?',['Der Chef kommt später.','Lisa ist krank.','Der Raum ist besetzt.'],0],
+['Wo ist die Besprechung?',['im Raum 204','im Konferenzraum','im Büro von Lisa'],0]]},
+{t:'Teil 2 · Gespräch im Geschäft',inst:'You hear a conversation in a shop. You hear it twice.',plays:2,lines:[['F','Guten Tag, kann ich Ihnen helfen?'],['M','Ja, ich suche eine Jacke für den Winter.'],['F','Welche Größe haben Sie?'],['M','Größe zweiundfünfzig, glaube ich.'],['F','Diese hier ist gerade im Angebot. Sie kostet neunundachtzig Euro statt hundertzwanzig Euro.'],['M','Die gefällt mir. Gibt es sie auch in Blau?'],['F','Leider nur in Schwarz und Grün.'],['M','Dann nehme ich die schwarze. Kann ich mit Karte bezahlen?'],['F','Ja, natürlich. Die Kasse ist dort hinten.']],qs:[
+['Was sucht der Kunde?',['eine Jacke','eine Hose','Schuhe'],0],
+['Wie viel kostet die Jacke jetzt?',['120 Euro','89 Euro','52 Euro'],1],
+['Welche Farbe kauft er?',['Blau','Grün','Schwarz'],2]]},
+{t:'Teil 3 · Wetterbericht',inst:'You hear the weather forecast on the radio. You hear it twice.',plays:2,lines:[['N','Und jetzt das Wetter für morgen. Im Norden regnet es am Vormittag, am Nachmittag wird es trocken. Im Süden scheint die Sonne bei bis zu vierundzwanzig Grad. Am Wochenende wird es kühler, und es gibt Wind. Am Sonntag sind nur noch fünfzehn Grad möglich.']],qs:[
+['Wie ist das Wetter morgen im Süden?',['regnerisch','sonnig','windig'],1],
+['Wann wird es im Norden trocken?',['am Vormittag','am Nachmittag','am Abend'],1],
+['Wie warm wird es am Sonntag?',['24 Grad','15 Grad','10 Grad'],1]]}]}
+],
+lesen:[
+{id:'a2l1',title:'Lesen · Modelltest 1',parts:[
+{t:'Teil 1 · E-Mail',inst:'Read the e-mail and choose the right answer.',text:'Betreff: Einladung zur Party\n\nLiebe Anna,\n\nich werde am 15. Juni 30 Jahre alt und möchte mit dir und ein paar Freunden feiern. Die Party beginnt um 18 Uhr bei mir zu Hause, Lindenstraße 12. Ich koche Pasta und mache Salat. Wenn du möchtest, kannst du einen Nachtisch mitbringen. Leider habe ich nur wenige Parkplätze, deshalb fahr bitte mit der U-Bahn (Linie U3, Haltestelle Lindenplatz). Bitte sag mir bis Freitag, ob du kommst.\n\nViele Grüße\nMia',qs:[
+['Warum schreibt Mia?',['Sie lädt zu ihrem Geburtstag ein.','Sie sucht eine Wohnung.','Sie sagt einen Termin ab.'],0],
+['Was kann Anna mitbringen?',['Getränke','einen Nachtisch','Pasta'],1],
+['Wie soll Anna zur Party kommen?',['mit dem Auto','zu Fuß','mit der U-Bahn'],2]]},
+{t:'Teil 2 · Anzeigen',inst:'Which advertisement fits? Choose A, B or C.',text:'A  Deutsch-Abendkurs\nMontag und Mittwoch, 18–20 Uhr. Für Anfänger bis B1. 120 € pro Monat.\n\nB  Fitnessstudio „Aktiv“\nProbetraining kostenlos! Montag bis Samstag 7–22 Uhr. Kurse: Yoga, Zumba, Rückenfit. Studenten zahlen nur 19 € im Monat.\n\nC  Kochkurs für Kinder\nSamstag, 10–12 Uhr. Wir backen Pizza und Kuchen. Für Kinder von 8 bis 12 Jahren. 15 € inklusive Zutaten.',qs:[
+['Tim ist Student. Er möchte regelmäßig Sport machen und hat wenig Geld.',['Anzeige A','Anzeige B','Anzeige C'],1],
+['Frau Demirs Sohn ist zehn. Er soll am Wochenende etwas Kreatives machen.',['Anzeige A','Anzeige B','Anzeige C'],2],
+['Herr Lopez arbeitet tagsüber. Er möchte abends Deutsch lernen.',['Anzeige A','Anzeige B','Anzeige C'],0]]},
+{t:'Teil 3 · Hausordnung',inst:'Read the text. Are the statements right (richtig) or wrong (falsch)?',text:'Hausordnung – Gartenstraße 8\n\n1. Ruhezeiten: Mittags von 13 bis 15 Uhr und abends ab 22 Uhr bitte leise sein.\n2. Der Müll muss getrennt werden: Papier (blau), Plastik (gelb), Restmüll (schwarz).\n3. Fahrräder bitte im Keller abstellen, nicht im Treppenhaus.\n4. Die Waschmaschinen im Keller dürfen Montag bis Samstag von 8 bis 20 Uhr benutzt werden. Sonntags ist die Benutzung nicht erlaubt.\n5. Bei Problemen wenden Sie sich bitte an den Hausmeister, Herrn Schulz.',qs:[
+['Mittags muss man von 13 bis 15 Uhr leise sein.',['richtig','falsch'],0],
+['Fahrräder dürfen im Treppenhaus stehen.',['richtig','falsch'],1],
+['Sonntags darf man die Waschmaschinen benutzen.',['richtig','falsch'],1],
+['Plastikmüll kommt in die gelbe Tonne.',['richtig','falsch'],0]]}]},
+{id:'a2l2',title:'Lesen · Modelltest 2',parts:[
+{t:'Teil 1 · Brief an die Nachbarin',inst:'Read the note and choose the right answer.',text:'Liebe Frau Hoffmann,\n\nwir fahren nächste Woche für zehn Tage in den Urlaub und kommen am 28. August zurück. Könnten Sie in dieser Zeit unsere Blumen gießen? Das wäre wirklich sehr nett. Den Schlüssel gebe ich Ihnen am Samstag. Außerdem bitten wir Sie, die Post aus dem Briefkasten zu nehmen. Als Dankeschön bringen wir Ihnen etwas aus Italien mit!\n\nHerzliche Grüße\nFamilie Berger',qs:[
+['Was möchte Familie Berger von Frau Hoffmann?',['Sie soll die Blumen gießen.','Sie soll auf den Hund aufpassen.','Sie soll das Auto waschen.'],0],
+['Wann kommt die Familie zurück?',['am 18. August','am 28. August','am 10. August'],1],
+['Was bringt die Familie mit?',['Blumen','ein Geschenk aus Italien','eine Zeitung'],1]]},
+{t:'Teil 2 · Wohnungsanzeigen',inst:'Which advertisement fits? Choose A, B or C.',text:'A  2-Zimmer-Wohnung, 55 m², mit Balkon, zentral gelegen. 650 € warm. Frei ab 1. Mai. Keine Haustiere.\n\nB  WG-Zimmer, 16 m², in netter Studenten-WG. 320 € inklusive Nebenkosten. Haustiere erlaubt. Ab sofort frei.\n\nC  Haus mit Garten, 4 Zimmer, ruhige Lage am Stadtrand. 1.100 € Miete. Garage vorhanden.',qs:[
+['Eine Studentin mit Katze sucht ein günstiges Zimmer.',['Anzeige A','Anzeige B','Anzeige C'],1],
+['Eine Familie mit zwei Kindern und Auto sucht ein Zuhause mit Platz zum Spielen draußen.',['Anzeige A','Anzeige B','Anzeige C'],2],
+['Ein Ehepaar ohne Kinder möchte zentral wohnen und einen Balkon haben.',['Anzeige A','Anzeige B','Anzeige C'],0]]},
+{t:'Teil 3 · Bibliothek',inst:'Read the text. Right (richtig) or wrong (falsch)?',text:'Stadtbibliothek – Informationen\n\nDie Bibliothek ist von Dienstag bis Freitag von 10 bis 19 Uhr geöffnet, samstags von 10 bis 14 Uhr. Montag und Sonntag bleibt sie geschlossen. Bücher kann man vier Wochen ausleihen. Wer ein Buch länger behalten möchte, kann es einmal verlängern – online oder an der Information. Für Kinder unter 14 Jahren ist der Ausweis kostenlos. Erwachsene zahlen 12 € im Jahr. Im Lesesaal darf man nicht telefonieren oder essen.',qs:[
+['Die Bibliothek ist montags geöffnet.',['richtig','falsch'],1],
+['Man darf ein Buch vier Wochen behalten.',['richtig','falsch'],0],
+['Kinder unter 14 Jahren bezahlen keinen Ausweis.',['richtig','falsch'],0],
+['Im Lesesaal darf man telefonieren.',['richtig','falsch'],1]]}]}
+],
+schreiben:[
+{id:'a2s1',title:'Schreiben · Teil 1: SMS',task:'Sie sind krank und können morgen nicht zum Deutschkurs kommen. Schreiben Sie eine SMS an Ihre Lehrerin.\n• Warum schreiben Sie?\n• Wann kommen Sie wieder?\n• Was soll die Lehrerin für Sie tun?',min:20,max:50,greet:'(liebe|hallo|guten)',close:'(gr[üu][sß]|gruss|danke|tsch[üu]s|lg)',conn:1,pts:[['Grund: Sie sind krank','krank|grippe|fieber|erk[äa]ltung|nicht gut|schmerzen'],['Wann Sie wieder kommen','wieder|n[äa]chste|[üu]bermorgen|mittwoch|donnerstag|freitag|montag|n[äa]chsten|bald'],['Bitte an die Lehrerin','bitte|k[öo]nnen sie|k[öo]nnten sie|hausaufgaben|material|schicken|mailen|kopie']],model:'Liebe Frau Müller,\nich bin leider krank und kann morgen nicht zum Kurs kommen. Ich habe Fieber. Ich komme am Mittwoch wieder. Können Sie mir bitte die Hausaufgaben schicken?\nViele Grüße\nAli'},
+{id:'a2s2',title:'Schreiben · Teil 2: E-Mail an einen Freund',task:'Ihr Freund Paul hat Sie zu seiner Geburtstagsfeier eingeladen. Sie können nicht kommen. Schreiben Sie ihm eine E-Mail (circa 30–40 Wörter).\n• Bedanken Sie sich für die Einladung.\n• Erklären Sie, warum Sie nicht kommen können.\n• Machen Sie einen anderen Vorschlag für ein Treffen.',min:30,max:70,greet:'(lieber|hallo|hi)',close:'(gr[üu][sß]|gruss|tsch[üu]s|lg|bis bald)',conn:1,pts:[['Danke für die Einladung','danke|dank|einladung|freue mich'],['Grund für die Absage','leider|nicht kommen|kann nicht|muss|arbeiten|krank|besuch|reise|termin'],['Neuer Vorschlag','vorschlag|treffen|wollen wir|sollen wir|n[äa]chste|am wochenende|zusammen|kino|essen|kaffee']],model:'Lieber Paul,\nvielen Dank für die Einladung zu deiner Feier. Leider kann ich nicht kommen, weil ich am Samstag arbeiten muss. Das tut mir sehr leid! Sollen wir uns nächste Woche treffen und zusammen essen gehen? Ich lade dich ein.\nViele Grüße\nDein Samir'},
+{id:'a2s3',title:'Schreiben · Teil 2: Zimmer suchen',task:'Sie suchen ein Zimmer in einer Wohnung. Schreiben Sie eine E-Mail an den Vermieter (circa 30–40 Wörter).\n• Stellen Sie sich kurz vor.\n• Fragen Sie nach der Miete.\n• Fragen Sie nach einem Termin zur Besichtigung.',min:30,max:70,greet:'(sehr geehrte|liebe|guten tag|hallo)',close:'(gr[üu][sß]|gruss)',conn:1,pts:[['Sich vorstellen','ich bin|ich hei[sß]e|mein name|ich komme|ich arbeite|ich studiere|ich suche'],['Frage nach der Miete','miete|preis|kostet|euro|nebenkosten|wie viel'],['Frage nach Besichtigung','besichtig|termin|ansehen|anschauen|sehen|vorbeikommen']],model:'Sehr geehrter Herr Braun,\nich heiße Maria Lopez und bin Zahnärztin. Ich suche ein Zimmer in Köln. Wie hoch ist die Miete? Und kann ich das Zimmer am Samstag besichtigen? Ich freue mich auf Ihre Antwort.\nMit freundlichen Grüßen\nMaria Lopez'}
+],
+sprechen:[
+{id:'a2p1',title:'Sprechen · Modelltest 1',steps:[
+{t:'Teil 1 · Sich vorstellen',p:'Stellen Sie sich vor: Name, Alter, Land, Wohnort, Sprachen, Beruf, Hobby.',min:30,pts:[['Name','hei[sß]e|name'],['Herkunft','komme aus|aus '],['Wohnort','wohne|lebe'],['Beruf','beruf|arbeite|zahn|arzt|student|studiere'],['Hobby','hobby|gern|freizeit|spiele|lese']],model:'Ich heiße Ali Hassan, ich bin 28 Jahre alt und komme aus Syrien. Jetzt wohne ich in Dortmund. Ich spreche Arabisch, Englisch und ein bisschen Deutsch. Ich bin Zahnarzt von Beruf. In meiner Freizeit spiele ich gern Fußball.'},
+{t:'Teil 2 · Frage zum Thema Essen',p:'Was essen Sie gern zum Frühstück? Wo kaufen Sie normalerweise ein?',min:20,pts:[['Frühstück','frühst[üu]ck|brot|br[öo]tchen|m[üu]sli|kaffee|tee|marmelade'],['Einkaufsort','supermarkt|markt|laden|b[äa]cker|kaufe|einkaufen|discounter']],model:'Zum Frühstück esse ich gern Brot mit Käse und trinke Kaffee. Ich kaufe meistens im Supermarkt ein, weil dort alles billig ist. Am Samstag gehe ich manchmal auf den Markt.'},
+{t:'Teil 3 · Eine Bitte formulieren',p:'Sie ziehen am Samstag um. Bitten Sie Ihren Freund um Hilfe. Fragen Sie auch, ob er ein Auto hat.',min:20,pts:[['Höfliche Bitte','k[öo]nn|bitte|w[üu]rde|h[äa]ttest|hilfe|helfen'],['Umzug / Samstag','umzug|umziehen|samstag|wohnung'],['Frage nach Auto','auto|wagen|transporter|fahren']],model:'Hallo Jan, ich ziehe am Samstag um. Könntest du mir bitte helfen? Hast du vielleicht ein Auto? Dann können wir die Kisten und Möbel schneller transportieren. Das wäre sehr nett. Danke!'}]},
+{id:'a2p2',title:'Sprechen · Modelltest 2',steps:[
+{t:'Teil 1 · Sich vorstellen',p:'Erzählen Sie über sich und Ihre Familie: Wer gehört zu Ihrer Familie? Wo wohnen Sie? Was machen Sie beruflich?',min:30,pts:[['Familie','familie|mutter|vater|bruder|schwester|frau|mann|kinder|eltern|verheiratet|ledig'],['Wohnen','wohne|wohnung|haus|zimmer|stadt'],['Beruf','beruf|arbeite|zahn|arzt|student|studiere|praxis']],model:'Meine Familie ist nicht groß. Ich habe zwei Brüder und eine Schwester. Meine Eltern leben in Kairo. Ich wohne allein in einer kleinen Wohnung in Hamburg. Ich arbeite in einer Zahnarztpraxis.'},
+{t:'Teil 2 · Frage zum Thema Freizeit',p:'Was machen Sie am Wochenende? Treiben Sie Sport?',min:20,pts:[['Wochenende','wochenende|samstag|sonntag'],['Aktivität','sport|fu[sß]ball|schwimm|laufen|joggen|kino|freunde|lese|spazier|koche|schlafe']],model:'Am Wochenende treffe ich oft meine Freunde. Am Samstag spiele ich Fußball, und am Sonntag schlafe ich lange, weil ich die ganze Woche viel arbeite.'},
+{t:'Teil 3 · Etwas planen',p:'Sie möchten mit einem Freund am Wochenende ins Kino gehen. Machen Sie einen Vorschlag: Wann? Welcher Film? Wo treffen Sie sich?',min:20,pts:[['Vorschlag','sollen wir|wollen wir|ich schlage|vorschlag|wie w[äa]re|hast du lust|lust'],['Zeit','samstag|sonntag|uhr|abend|nachmittag|wochenende'],['Treffpunkt','treffen|vor dem|am kino|bahnhof|eingang|abholen']],model:'Hast du am Samstag Zeit? Wollen wir ins Kino gehen? Es gibt einen neuen Film, eine Komödie. Wir können uns um sieben Uhr vor dem Kino treffen. Passt dir das?'}]}
+]
+},
+B2:{
+hoeren:[
+{id:'b2h1',title:'Hören · Modelltest 1',parts:[
+{t:'Teil 1 · Radiobeitrag',inst:'You hear a radio report. You hear it once or twice (as in the real exam, Teil 1 is played twice).',plays:2,lines:[['N','Seit der Pandemie arbeiten viele Menschen in Deutschland zumindest teilweise von zu Hause. Eine aktuelle Studie zeigt: Fast jeder Dritte nutzt inzwischen regelmäßig das Homeoffice. Die Beschäftigten schätzen vor allem, dass sie sich den Arbeitstag flexibler einteilen können und keinen langen Arbeitsweg haben. Allerdings berichten viele auch, dass die Grenze zwischen Arbeit und Freizeit verschwimmt. Wer ständig erreichbar ist, kann abends schlechter abschalten. Auch der Kontakt zu den Kollegen leidet. Deshalb setzen immer mehr Firmen auf ein gemischtes Modell: zwei bis drei Tage im Büro, die übrigen Tage zu Hause. Experten halten diese Lösung für den besten Kompromiss.']],qs:[
+['Was zeigt die Studie?',['Fast jeder Dritte arbeitet regelmäßig im Homeoffice.','Die meisten Beschäftigten wollen zurück ins Büro.','Nur Führungskräfte arbeiten zu Hause.'],0],
+['Was schätzen die Beschäftigten besonders?',['ein höheres Gehalt','die flexible Einteilung des Tages und den fehlenden Arbeitsweg','mehr Kontakt zu den Kollegen'],1],
+['Welches Problem wird genannt?',['Die Technik funktioniert oft nicht.','Arbeit und Freizeit lassen sich schlechter trennen.','Die Firmen zahlen weniger Gehalt.'],1],
+['Was empfehlen Experten?',['ausschließlich Homeoffice','nur Büroarbeit','ein gemischtes Modell'],2]]},
+{t:'Teil 2 · Vortrag',inst:'You hear a lecture. In the real exam Teil 2 is played once. Here you may play it twice.',plays:2,lines:[['N','Guten Abend, meine Damen und Herren. Heute möchte ich über ein Thema sprechen, das uns alle betrifft: den Schlaf. Erwachsene brauchen im Durchschnitt sieben bis acht Stunden Schlaf pro Nacht. Doch jeder Vierte schläft deutlich weniger. Die Folgen sind nicht zu unterschätzen: Konzentrationsprobleme, ein schwächeres Immunsystem und langfristig sogar ein erhöhtes Risiko für Herzerkrankungen. Was können Sie tun? Erstens: Gehen Sie möglichst jeden Tag zur selben Zeit ins Bett. Zweitens: Verzichten Sie am Abend auf Kaffee und auf das Handy, denn das blaue Licht des Bildschirms hält das Gehirn wach. Und drittens: Sorgen Sie für ein kühles, dunkles Schlafzimmer.']],qs:[
+['Wie viel Schlaf brauchen Erwachsene durchschnittlich?',['fünf bis sechs Stunden','sieben bis acht Stunden','neun bis zehn Stunden'],1],
+['Welche Folge von Schlafmangel wird genannt?',['ein schwächeres Immunsystem','bessere Konzentration','ein niedrigerer Blutdruck'],0],
+['Warum soll man abends das Handy meiden?',['Es ist zu teuer.','Das Licht hält das Gehirn wach.','Es macht zu viel Lärm.'],1],
+['Wie sollte das Schlafzimmer sein?',['warm und hell','kühl und dunkel','laut und hell'],1]]},
+{t:'Teil 3 · Diskussion',inst:'You hear a radio discussion between a presenter and a guest.',plays:2,lines:[['M','Frau Keller, Sie fordern, dass die Innenstadt autofrei wird. Warum?'],['F','Weil der Verkehr unsere Lebensqualität stark einschränkt. Die Luft ist schlecht, es ist laut, und Kinder können kaum noch sicher auf der Straße spielen. In anderen Städten hat man damit gute Erfahrungen gemacht.'],['M','Aber die Geschäfte fürchten, dass die Kunden wegbleiben.'],['F','Diese Sorge ist verständlich, aber die Zahlen zeigen das Gegenteil. In Fußgängerzonen kaufen die Leute oft mehr ein, weil sie länger bleiben. Wichtig ist natürlich, dass Busse und Bahnen häufiger fahren und günstiger werden.'],['M','Und was ist mit älteren Menschen, die nicht mehr gut laufen können?'],['F','Für sie brauchen wir Ausnahmen und Haltestellen direkt im Zentrum. Niemand soll ausgeschlossen werden.']],qs:[
+['Warum fordert Frau Keller eine autofreie Innenstadt?',['Parkplätze sind zu teuer.','Der Verkehr beeinträchtigt die Lebensqualität.','Es gibt zu wenige Autos.'],1],
+['Wie reagiert sie auf die Sorge der Geschäfte?',['Sie stimmt völlig zu.','Sie sagt, die Zahlen zeigten das Gegenteil.','Sie ignoriert die Sorge.'],1],
+['Was ist laut Frau Keller für den Erfolg wichtig?',['mehr Parkplätze','häufigere und günstigere Busse und Bahnen','höhere Steuern'],1],
+['Wie will sie ältere Menschen berücksichtigen?',['mit Ausnahmen und Haltestellen im Zentrum','gar nicht','mit Taxis nur nachts'],0]]}]},
+{id:'b2h2',title:'Hören · Modelltest 2',parts:[
+{t:'Teil 1 · Nachrichten',inst:'You hear a news report.',plays:2,lines:[['N','In vielen deutschen Städten nehmen die Unfälle mit E-Scootern zu. Nach Angaben der Polizei hat sich ihre Zahl im vergangenen Jahr fast verdoppelt. Besonders häufig sind junge Fahrer betroffen, die oft zu zweit auf einem Roller fahren oder Alkohol getrunken haben. Mehrere Städte überlegen daher, die Leihroller nachts zu sperren und feste Abstellplätze einzurichten. Die Verleihfirmen kritisieren das. Sie meinen, Verbote würden das Problem nicht lösen; besser seien Aufklärung und Kontrollen.']],qs:[
+['Was ist passiert?',['Die Zahl der Unfälle hat sich fast verdoppelt.','Die Roller wurden verboten.','Die Zahl der Roller hat sich halbiert.'],0],
+['Wer ist besonders betroffen?',['Senioren','junge Fahrer','Radfahrer allgemein'],1],
+['Was planen manche Städte?',['Leihroller nachts sperren und Abstellplätze einrichten','Roller komplett verbieten','die Preise senken'],0],
+['Was meinen die Verleihfirmen?',['Verbote reichen aus.','Aufklärung und Kontrollen wären besser.','Die Polizei soll nichts tun.'],1]]},
+{t:'Teil 2 · Vortrag',inst:'You hear a talk about volunteering.',plays:2,lines:[['N','Viele Menschen engagieren sich in ihrer Freizeit ehrenamtlich, zum Beispiel im Sportverein, bei der Feuerwehr oder in der Flüchtlingshilfe. In Deutschland sind das etwa neunundzwanzig Millionen Menschen, also fast vierzig Prozent der Bevölkerung. Interessant ist, dass sich gerade Jugendliche und Menschen über fünfundsechzig überdurchschnittlich oft engagieren. Als Motive nennen die meisten, dass sie anderen helfen und gemeinsam etwas bewegen wollen. Doch es gibt auch Probleme: Viele Vereine finden keine Nachfolger für Vorstandsposten, weil die Verantwortung als zu groß empfunden wird. Deshalb fordern Fachleute, Ehrenämter flexibler zu gestalten, zum Beispiel durch zeitlich begrenzte Projekte.']],qs:[
+['Wie viel Prozent der Bevölkerung engagieren sich ehrenamtlich?',['etwa 10 Prozent','fast 40 Prozent','über 70 Prozent'],1],
+['Welche Gruppen engagieren sich überdurchschnittlich oft?',['Jugendliche und Menschen über 65','Berufstätige zwischen 30 und 50','Studierende'],0],
+['Welches Problem haben viele Vereine?',['zu wenig Geld','keine Nachfolger für Vorstandsposten','zu viele Mitglieder'],1],
+['Was fordern die Fachleute?',['flexiblere Ehrenämter, zum Beispiel zeitlich begrenzte Projekte','eine höhere Bezahlung','weniger Vereine'],0]]},
+{t:'Teil 3 · Interview',inst:'You hear an interview with a dentist.',plays:2,lines:[['M','Frau Dr. Braun, wie oft sollte man zur Kontrolle zum Zahnarzt gehen?'],['F','Mindestens einmal im Jahr, besser zweimal. Viele Probleme wie Karies oder Zahnfleischentzündungen merkt man anfangs nicht, weil sie keine Schmerzen verursachen.'],['M','Was können Patienten selbst für gesunde Zähne tun?'],['F','Das Wichtigste ist die tägliche Pflege. Zweimal täglich zwei Minuten Zähneputzen reicht aber nicht aus, wenn man die Zahnzwischenräume vergisst. Dort entstehen die meisten Probleme. Zahnseide oder Interdentalbürsten sind deshalb unverzichtbar.'],['M','Und die Ernährung?'],['F','Nicht nur die Menge an Zucker zählt, sondern auch, wie oft man ihn isst. Wer ständig kleine Süßigkeiten nascht, gibt den Bakterien dauernd Nahrung. Besser sind feste Mahlzeiten ohne Snacks zwischendurch.']],qs:[
+['Wie oft sollte man zur Kontrolle gehen?',['alle fünf Jahre','mindestens einmal im Jahr','nur bei Schmerzen'],1],
+['Warum merkt man Probleme anfangs oft nicht?',['Sie verursachen am Anfang keine Schmerzen.','Die Kontrolle ist zu teuer.','Der Zahnarzt sagt nichts.'],0],
+['Was reicht allein nicht aus?',['Zähneputzen ohne Reinigung der Zahnzwischenräume','Zahnseide benutzen','zur Kontrolle gehen'],0],
+['Was ist beim Zucker laut Frau Dr. Braun wichtig?',['nur die Menge','auch die Häufigkeit','nur die Sorte'],1]]}]}
+],
+lesen:[
+{id:'b2l1',title:'Lesen · Modelltest 1',parts:[
+{t:'Teil 1 · Zeitungsartikel',inst:'Read the article and choose the right answer.',text:'Einkaufen per Klick\n\nImmer mehr Deutsche bestellen ihre Lebensmittel online. Was vor wenigen Jahren noch als Luxus galt, ist für viele Familien inzwischen Alltag geworden: Der Einkauf wird bis an die Haustür geliefert, oft innerhalb weniger Stunden. Die Anbieter werben mit Zeitersparnis und Bequemlichkeit. Kritiker dagegen weisen darauf hin, dass der Lieferverkehr die Innenstädte zusätzlich belastet und kleine Läden um ihre Existenz fürchten müssen. Verbraucherschützer bemängeln außerdem, dass Kunden häufig nicht wissen, woher die Produkte stammen und wie lange sie gelagert wurden.\n\nEin Teil des Handels reagiert inzwischen: Einige Supermärkte bieten sowohl Lieferung als auch Abholung im Laden an, andere setzen auf regionale Produkte und persönliche Beratung, um sich von den großen Anbietern abzuheben. Ob sich der Trend langfristig durchsetzt, hängt nach Meinung von Experten vor allem davon ab, ob es gelingt, Lieferungen umweltfreundlicher zu organisieren.',qs:[
+['Worum geht es in dem Artikel?',['um die Chancen und Kritik beim Online-Einkauf von Lebensmitteln','um steigende Lebensmittelpreise','um neue Supermärkte in Innenstädten'],0],
+['Was kritisieren die Kritiker?',['Der Lieferverkehr belastet die Städte, kleine Läden sind gefährdet.','Die Lieferung dauert zu lange.','Die Verpackung ist schlecht.'],0],
+['Was bemängeln die Verbraucherschützer?',['Herkunft und Lagerdauer der Produkte sind oft unklar.','Die Preise sind zu hoch.','Es gibt zu wenige Bezahlmöglichkeiten.'],0],
+['Wovon hängt der langfristige Erfolg laut Experten ab?',['von hohen Rabatten','von umweltfreundlicheren Lieferungen','von mehr Werbung'],1]]},
+{t:'Teil 2 · Bericht (Ja / Nein / steht nicht im Text)',inst:'Read the text. Does it say this? Ja = yes, Nein = no (the text says something different), Steht nicht im Text.',text:'Eine Woche ohne Hausaufgaben\n\nMehrere Schulen testen derzeit eine Woche ohne Hausaufgaben. Die Lehrerin Anja Fuchs berichtet: „Anfangs waren manche Eltern skeptisch. Inzwischen sehen sie, dass ihre Kinder nachmittags mehr Zeit für Sport, Musik oder Freunde haben und ausgeruhter in den Unterricht kommen.“ Allerdings räumt sie ein, dass schwächere Schüler Übungen brauchen, die sie selbstständig wiederholen können. Deshalb gibt es jetzt in der Schule eine betreute Lernzeit, in der Fragen sofort geklärt werden.\n\nDer Elternvertreter Jan Köhler bleibt dennoch kritisch: Er befürchtet, dass Kinder aus Familien, die zu Hause nicht helfen können, trotzdem benachteiligt werden. Ob die Leistungen insgesamt besser werden, kann noch nicht gesagt werden, weil der Versuch erst seit drei Monaten läuft.',qs:[
+['Alle Eltern waren von Anfang an dafür.',['Ja','Nein','Steht nicht im Text'],1],
+['Die Kinder haben jetzt mehr Freizeit am Nachmittag.',['Ja','Nein','Steht nicht im Text'],0],
+['Für schwächere Schüler gibt es in der Schule eine betreute Lernzeit.',['Ja','Nein','Steht nicht im Text'],0],
+['Die Noten haben sich eindeutig verbessert.',['Ja','Nein','Steht nicht im Text'],1],
+['Der Versuch wird auch an Gymnasien in Bayern durchgeführt.',['Ja','Nein','Steht nicht im Text'],2]]},
+{t:'Teil 3 · Formeller Brief',inst:'Read the letter and choose the right answer.',text:'Sehr geehrte Damen und Herren,\n\nam 3. März habe ich bei Ihnen einen Laptop bestellt, der laut Website innerhalb von fünf Werktagen geliefert werden sollte. Bis heute, den 22. März, habe ich weder das Gerät noch eine Information über den Stand der Lieferung erhalten. Auf meine beiden Anfragen per E-Mail habe ich keine Antwort bekommen. Da ich den Laptop dringend für mein Studium benötige, setze ich Ihnen eine letzte Frist bis zum 29. März. Sollte die Lieferung bis dahin nicht erfolgen, werde ich vom Vertrag zurücktreten und verlange die Erstattung des Kaufpreises.\n\nMit freundlichen Grüßen\nLena Marx',qs:[
+['Was ist das Problem?',['Das Gerät ist defekt.','Die Lieferung ist nicht angekommen und niemand informiert sie.','Der Preis war höher als angegeben.'],1],
+['Was hat Frau Marx bisher getan?',['Sie hat zwei E-Mails geschrieben.','Sie hat angerufen.','Sie war im Laden.'],0],
+['Was will sie, wenn bis zum 29. März nichts geliefert wird?',['einen Rabatt','vom Vertrag zurücktreten und ihr Geld zurückbekommen','einen anderen Laptop bestellen'],1],
+['Wozu braucht sie den Laptop?',['für den Beruf','für das Studium','für die Freizeit'],1]]}]},
+{id:'b2l2',title:'Lesen · Modelltest 2',parts:[
+{t:'Teil 1 · Magazinartikel',inst:'Read the article and choose the right answer.',text:'Wenn der Zahnarztbesuch Angst macht\n\nEtwa jeder zehnte Deutsche meidet den Zahnarztbesuch aus Angst. Die Ursachen sind vielfältig: Oft liegt eine schmerzhafte Erfahrung in der Kindheit zurück, manchmal ist es das Gefühl, der Behandlung hilflos ausgeliefert zu sein. Die Folgen sind erheblich, denn wer Kontrolltermine auslässt, riskiert, dass aus kleinen Schäden große Probleme werden, die dann aufwendig und teuer behandelt werden müssen.\n\nViele Praxen bieten inzwischen spezielle Angebote für Angstpatienten an: längere Termine, ausführliche Gespräche vor der Behandlung, entspannende Musik oder, wenn nötig, eine Behandlung unter Sedierung. Psychologen empfehlen zusätzlich, der Angst nicht auszuweichen, sondern sich in kleinen Schritten an die Situation zu gewöhnen – zum Beispiel zunächst nur zum Kennenlernen in die Praxis zu gehen. Wer dem Behandlungsteam vertraut, so die Erfahrung, braucht oft weniger Betäubung und empfindet weniger Schmerzen.',qs:[
+['Wie viele Deutsche meiden den Zahnarzt aus Angst?',['etwa jeder Zehnte','etwa jeder Zweite','etwa jeder Hundertste'],0],
+['Was kann eine Ursache der Angst sein?',['eine schmerzhafte Erfahrung in der Kindheit','zu hohe Kosten','lange Wartezeiten'],0],
+['Was ist die Folge, wenn man Kontrolltermine auslässt?',['Kleine Schäden können zu großen Problemen werden.','Die Behandlung wird billiger.','Es gibt keine Folgen.'],0],
+['Was empfehlen Psychologen?',['Man soll die Angst vermeiden.','Man soll sich in kleinen Schritten daran gewöhnen.','Man soll nur noch unter Narkose behandelt werden.'],1]]},
+{t:'Teil 2 · Bericht (Ja / Nein / steht nicht im Text)',inst:'Read the text. Does it say this? Ja, Nein or Steht nicht im Text.',text:'Mehr Platz für Radfahrer\n\nDie Stadt Karlsruhe hat im vergangenen Jahr zwölf Kilometer neue Radwege gebaut. Seitdem ist die Zahl der Radfahrer auf den Hauptstraßen um 15 Prozent gestiegen. Radfahrverbände begrüßen den Ausbau, kritisieren aber, dass viele Wege noch unterbrochen sind und Radfahrer an Kreuzungen gefährdet werden. Die Stadtverwaltung kündigt an, bis 2030 ein zusammenhängendes Netz zu schaffen. Dafür sind jährlich zwei Millionen Euro vorgesehen. Autofahrerverbände sehen die Entwicklung kritisch, weil Parkplätze wegfallen. Einen Kompromiss gibt es bisher nicht.',qs:[
+['Im vergangenen Jahr wurden zwölf Kilometer Radweg gebaut.',['Ja','Nein','Steht nicht im Text'],0],
+['Die Zahl der Radfahrer ist um 50 Prozent gestiegen.',['Ja','Nein','Steht nicht im Text'],1],
+['Die Radfahrverbände sind mit dem Ausbau völlig zufrieden.',['Ja','Nein','Steht nicht im Text'],1],
+['Die Stadt plant, jährlich zwei Millionen Euro auszugeben.',['Ja','Nein','Steht nicht im Text'],0],
+['Auch die Stadt Heidelberg plant ein neues Radwegenetz.',['Ja','Nein','Steht nicht im Text'],2]]},
+{t:'Teil 3 · Stellenanzeige',inst:'Read the job advertisement and choose the right answer.',text:'Zahnmedizinische Fachangestellte (m/w/d) gesucht\n\nFür unsere Zahnarztpraxis in Hamburg suchen wir zum 1. Januar eine/n zahnmedizinische/n Fachangestellte/n in Teilzeit (25 Stunden pro Woche).\n\nIhre Aufgaben: Assistenz bei Behandlungen, Terminplanung, Abrechnung, Hygienemanagement.\nWir erwarten: abgeschlossene Ausbildung, gute Deutschkenntnisse (mindestens B2), Teamfähigkeit und Freundlichkeit im Umgang mit Patienten.\nWir bieten: ein freundliches Team, flexible Arbeitszeiten, Fortbildungen auf Kosten der Praxis und ein Gehalt nach Tarif.\n\nBewerbungen bitte nur per E-Mail bis zum 30. November.',qs:[
+['Welche Stelle wird angeboten?',['Zahnarzt in Vollzeit','Fachangestellte/r in Teilzeit','Reinigungskraft'],1],
+['Was wird von den Bewerbern erwartet?',['eine abgeschlossene Ausbildung und Deutsch auf B2-Niveau','ein Studium','ein eigenes Auto'],0],
+['Was bietet die Praxis?',['Fortbildungen auf Kosten der Praxis','einen Dienstwagen','eine Wohnung'],0],
+['Wie kann man sich bewerben?',['per Post','nur per E-Mail bis zum 30. November','persönlich in der Praxis'],1]]}]}
+],
+schreiben:[
+{id:'b2s1',title:'Schreiben · Teil 1: Forumsbeitrag',task:'In einem Online-Forum wird diskutiert: „Soll jeder Schüler in der Schule eine zweite Fremdsprache lernen müssen?“ Schreiben Sie Ihre Meinung (circa 150 Wörter).\n• Nennen Sie Ihre Meinung.\n• Nennen Sie Vor- und Nachteile.\n• Bringen Sie ein Beispiel oder eine eigene Erfahrung.\n• Schreiben Sie einen Schluss.',min:110,max:220,greet:'',close:'',conn:3,pts:[['Eigene Meinung','meiner meinung|ich finde|ich bin der ansicht|ich denke|ich glaube|meiner ansicht|aus meiner sicht'],['Vor- und Nachteile','vorteil|nachteil|einerseits|andererseits|positiv|negativ|problem'],['Beispiel / Erfahrung','beispiel|erfahrung|ich habe|in meinem|bei mir|in meiner'],['Schluss','zusammenfassend|abschlie[sß]end|insgesamt|deshalb|daher|fazit|zum schluss']],model:'Meiner Meinung nach sollte jeder Schüler eine zweite Fremdsprache lernen. Einerseits ist das ein großer Vorteil für den späteren Beruf, denn viele Firmen suchen Mitarbeiter, die mehrere Sprachen sprechen. Andererseits haben manche Kinder schon Probleme mit der ersten Fremdsprache, deshalb kann eine zweite Sprache sie überfordern.\nIch habe zum Beispiel selbst in der Schule Französisch gelernt, obwohl ich es anfangs nicht mochte. Heute bin ich froh darüber, weil ich in Frankreich leichter Freunde gefunden habe.\nZusammenfassend finde ich, dass man die zweite Fremdsprache anbieten sollte, aber mit mehr Unterstützung für schwächere Schüler.'},
+{id:'b2s2',title:'Schreiben · Teil 2: Formelle E-Mail',task:'Sie haben an einem Fortbildungskurs für Zahnärzte teilgenommen. Der Kurs war nicht so, wie er angekündigt war. Schreiben Sie an den Veranstalter (circa 100 Wörter).\n• Beschreiben Sie die Probleme (der Referent war krank, der Raum war zu klein, das Material fehlte).\n• Fordern Sie eine teilweise Erstattung der Kursgebühr.\n• Bitten Sie um eine Antwort bis zu einem Datum.',min:80,max:160,greet:'(sehr geehrte|guten tag)',close:'(mit freundlichen gr[üu][sß]en|freundliche gr[üu][sß]e|hochachtungsvoll)',conn:2,pts:[['Probleme beschreiben','referent|krank|raum|zu klein|material|fehlte|fehlten|eng|unterlagen'],['Erstattung fordern','erstatt|zur[üu]ck|kursgeb[üu]hr|geb[üu]hr|r[üu]ckzahlung|teilweise|gutschrift'],['Antwort bis Datum','antwort|bis zum|bis spätestens|frist|melden sie sich|ich bitte']],model:'Sehr geehrte Damen und Herren,\nich habe am 12. Mai an Ihrem Fortbildungskurs „Moderne Endodontie“ teilgenommen. Leider war der Kurs nicht wie angekündigt. Der Referent war krank, deshalb hat ein Kollege die Vorträge gehalten, der kaum Erfahrung hatte. Außerdem war der Raum viel zu klein, und das Kursmaterial fehlte.\nAus diesen Gründen bitte ich Sie, mir einen Teil der Kursgebühr zu erstatten. Ich möchte Sie bitten, mir bis zum 30. Mai zu antworten.\nMit freundlichen Grüßen\nDr. Sara Nasser'},
+{id:'b2s3',title:'Schreiben · Teil 1: Forumsbeitrag (Gesundheit)',task:'In einem Forum wird diskutiert: „Sollen Ärzte ihre Patienten auch per Video-Sprechstunde behandeln?“ Schreiben Sie Ihre Meinung (circa 150 Wörter).\n• Nennen Sie Ihre Meinung.\n• Nennen Sie Vor- und Nachteile.\n• Bringen Sie ein Beispiel.\n• Schreiben Sie einen Schluss.',min:110,max:220,greet:'',close:'',conn:3,pts:[['Eigene Meinung','meiner meinung|ich finde|ich bin der ansicht|ich denke|ich glaube|aus meiner sicht'],['Vor- und Nachteile','vorteil|nachteil|einerseits|andererseits|positiv|negativ|problem'],['Beispiel','beispiel|erfahrung|ich habe|bei mir|zum beispiel'],['Schluss','zusammenfassend|abschlie[sß]end|insgesamt|deshalb|daher|fazit|zum schluss']],model:'Meiner Meinung nach sind Video-Sprechstunden eine sinnvolle Ergänzung, aber kein Ersatz für den Arztbesuch. Einerseits sparen Patienten Zeit und müssen nicht lange im Wartezimmer sitzen. Das ist besonders für ältere Menschen auf dem Land ein großer Vorteil. Andererseits kann der Arzt viele Krankheiten nur durch eine körperliche Untersuchung erkennen.\nZum Beispiel kann man bei Zahnschmerzen per Video nicht feststellen, ob ein Zahn wirklich entzündet ist. Für Rezepte oder Kontrolltermine ist das Angebot dagegen sehr praktisch.\nIch finde deshalb, dass die Video-Sprechstunde für einfache Fälle gut ist, aber bei ernsten Beschwerden sollte man weiterhin in die Praxis kommen.'}
+],
+sprechen:[
+{id:'b2p1',title:'Sprechen · Modelltest 1',steps:[
+{t:'Teil 1 · Präsentation: Einleitung',p:'Thema: „Social Media für Kinder – soll man sie einschränken?“ Beginnen Sie Ihre Präsentation: Nennen Sie das Thema und warum es wichtig ist.',min:35,pts:[['Thema nennen','thema|soziale medien|social media|kinder|handy'],['Ankündigung / Gliederung','m[öo]chte|zuerst|erstens|spreche|berichten|vorstellen|präsentieren']],model:'Guten Tag, ich möchte heute über das Thema Social Media für Kinder sprechen. Dieses Thema ist wichtig, weil schon Achtjährige ein Smartphone haben. Zuerst berichte ich über meine eigene Erfahrung, danach über die Situation in meinem Heimatland, und zum Schluss nenne ich Vor- und Nachteile und meine Meinung.'},
+{t:'Teil 1 · Präsentation: Erfahrung und Heimatland',p:'Berichten Sie von Ihrer eigenen Erfahrung und von der Situation in Ihrem Heimatland.',min:40,pts:[['Eigene Erfahrung','ich habe|meine erfahrung|bei mir|mein sohn|meine tochter|meine kinder|als kind'],['Heimatland','heimatland|in meinem land|bei uns|in syrien|in der t[üu]rkei|in indien|in meiner heimat|zu hause']],model:'Ich habe selbst erst mit 15 Jahren ein Handy bekommen. Bei uns im Heimatland benutzen Kinder heute schon sehr früh Smartphones, aber die Eltern kontrollieren das selten. Meine Nichte ist zum Beispiel zehn und sitzt jeden Tag drei Stunden vor dem Bildschirm.'},
+{t:'Teil 1 · Präsentation: Vor- und Nachteile, Meinung',p:'Nennen Sie Vor- und Nachteile und sagen Sie Ihre eigene Meinung. Beenden Sie die Präsentation.',min:45,pts:[['Vorteile / Nachteile','vorteil|nachteil|einerseits|andererseits|positiv|negativ|gefahr'],['Meinung','meiner meinung|ich finde|ich denke|ich glaube|ich bin der ansicht'],['Schluss / Dank','zum schluss|abschlie[sß]end|zusammenfassend|danke|vielen dank|fazit']],model:'Einerseits können Kinder über Social Media schnell Kontakt zu Freunden halten und viel lernen. Andererseits gibt es Gefahren wie Mobbing oder zu viel Bildschirmzeit. Meiner Meinung nach sollte man die Nutzung nicht verbieten, aber zeitlich begrenzen. Zum Schluss möchte ich sagen, dass Eltern eine große Verantwortung haben. Vielen Dank für Ihre Aufmerksamkeit.'},
+{t:'Teil 2 · Diskussion',p:'Ihr Gesprächspartner sagt: „Ich finde, Kinder unter 14 Jahren sollten gar kein Smartphone haben. Das ist doch viel zu gefährlich!“ Reagieren Sie: Stimmen Sie zu oder widersprechen Sie, und begründen Sie Ihre Meinung.',min:40,pts:[['Zustimmen / Widersprechen','stimme|zustimmen|einverstanden|da haben sie recht|das sehe ich anders|nicht ganz|widerspreche|das stimmt|ich bin dagegen|ich bin der gleichen'],['Begründung','weil|denn|da |deshalb|daher|zum beispiel|grund'],['Gegenvorschlag / Kompromiss','kompromiss|vorschlag|besser|sollte|k[öo]nnte|aber|jedoch']],model:'Da bin ich nicht ganz Ihrer Meinung. Ein generelles Verbot finde ich übertrieben, denn viele Kinder brauchen ein Handy, um ihre Eltern zu erreichen. Besser wäre ein Kompromiss: Die Kinder bekommen ein einfaches Handy ohne Internet und später, mit zwölf oder dreizehn, ein Smartphone mit Kindersicherung.'}]},
+{id:'b2p2',title:'Sprechen · Modelltest 2',steps:[
+{t:'Teil 1 · Präsentation: Einleitung',p:'Thema: „Homeoffice – Fluch oder Segen?“ Beginnen Sie Ihre Präsentation: Nennen Sie das Thema und kündigen Sie Ihre Gliederung an.',min:35,pts:[['Thema nennen','thema|homeoffice|home-office|zu hause arbeiten'],['Ankündigung / Gliederung','m[öo]chte|zuerst|erstens|spreche|berichten|vorstellen|präsentieren']],model:'Guten Tag, mein Thema ist heute das Homeoffice. Seit einigen Jahren arbeiten viele Menschen von zu Hause aus, und ich möchte fragen: Ist das ein Fluch oder ein Segen? Zuerst erzähle ich von meinen Erfahrungen, dann nenne ich Vor- und Nachteile, und am Ende sage ich meine Meinung.'},
+{t:'Teil 1 · Präsentation: Erfahrung und Heimatland',p:'Berichten Sie von Ihrer Erfahrung mit Homeoffice und wie es in Ihrem Heimatland ist.',min:40,pts:[['Eigene Erfahrung','ich habe|meine erfahrung|bei mir|ich arbeite|ich arbeitete|mein mann|meine frau|kollegen'],['Heimatland','heimatland|in meinem land|bei uns|in meiner heimat|zu hause']],model:'Ich habe während der Pandemie zwei Jahre im Homeoffice gearbeitet. In meinem Heimatland ist das noch nicht so verbreitet, weil viele Firmen ihren Mitarbeitern nicht vertrauen. Meine Schwester arbeitet zum Beispiel in einer Bank und muss jeden Tag ins Büro.'},
+{t:'Teil 1 · Präsentation: Vor- und Nachteile, Meinung',p:'Nennen Sie Vor- und Nachteile und sagen Sie Ihre Meinung. Beenden Sie die Präsentation.',min:45,pts:[['Vorteile / Nachteile','vorteil|nachteil|einerseits|andererseits|positiv|negativ'],['Meinung','meiner meinung|ich finde|ich denke|ich glaube|ich bin der ansicht'],['Schluss / Dank','zum schluss|abschlie[sß]end|zusammenfassend|danke|vielen dank|fazit']],model:'Ein Vorteil ist, dass man keinen langen Arbeitsweg hat. Ein Nachteil ist, dass man oft zu viel arbeitet, weil die Grenze zwischen Arbeit und Freizeit verschwindet. Meiner Meinung nach ist ein gemischtes Modell am besten. Zum Schluss danke ich Ihnen für Ihre Aufmerksamkeit.'},
+{t:'Teil 2 · Diskussion',p:'Ihr Gesprächspartner sagt: „Eine Zuckersteuer auf alle Süßigkeiten und Limonaden wäre sinnvoll, um die Zahngesundheit zu verbessern.“ Reagieren Sie und begründen Sie Ihre Meinung.',min:40,pts:[['Zustimmen / Widersprechen','stimme|zustimmen|einverstanden|da haben sie recht|das sehe ich anders|nicht ganz|widerspreche|das stimmt|ich bin dagegen|ich bin der gleichen'],['Begründung','weil|denn|da |deshalb|daher|zum beispiel|grund'],['Gegenvorschlag / Kompromiss','kompromiss|vorschlag|besser|sollte|k[öo]nnte|aber|jedoch|aufklärung']],model:'Da stimme ich Ihnen teilweise zu. Eine Zuckersteuer könnte Limonaden teurer machen, und das würde den Konsum senken. Als Zahnärztin sehe ich aber, dass Aufklärung noch wichtiger ist, denn viele Patienten wissen nicht, wie oft Zucker die Zähne schädigt. Ich würde deshalb beides kombinieren: eine moderate Steuer und mehr Information in den Schulen.'}]}
+]
+}
+
+  };
+  /* =====================================================
+     EXAM  (A2 and B2: Hören, Lesen, Schreiben, Sprechen)
+     ===================================================== */
+  var EX_SK = [['hoeren','Listening','Hören','h'], ['lesen','Reading','Lesen','l'], ['schreiben','Writing','Schreiben','s'], ['sprechen','Speaking','Sprechen','p']];
+  var EX_INFO = {
+    A2: { hoeren:'Real exam: about 30 minutes, 4 parts. Short messages, dialogues and announcements, played twice.',
+          lesen:'Real exam: 30 minutes, 4 parts. E-mails, advertisements and notices.',
+          schreiben:'Real exam: 30 minutes, 2 tasks. A short message (SMS or note) and a short e-mail.',
+          sprechen:'Real exam: about 15 minutes, 3 parts. Introduce yourself, answer questions, make requests.' },
+    B2: { hoeren:'Real exam: about 40 minutes, 4 parts. Radio reports, talks, discussions and interviews.',
+          lesen:'Real exam: 65 minutes, 5 parts. Articles, reports, letters and advertisements.',
+          schreiben:'Real exam: 75 minutes, 2 tasks. A forum post (about 150 words) and a formal e-mail.',
+          sprechen:'Real exam: about 15 minutes, 2 parts. A presentation (4 minutes) and a discussion.' }
+  };
+  var EX_CONN = /(weil|dass|denn|obwohl|deshalb|deswegen|daher|trotzdem|au[sß]erdem|jedoch|aber|damit|wenn|falls|einerseits|andererseits|zum beispiel|zusammenfassend|allerdings|dagegen|sondern|w[äa]hrend|bevor|nachdem|sodass|zwar|dann|au[sß]erdem|also)/g;
+  var X = { lvl:'A2', run:null };
+  var XREC = null;
+
+  function exTests(lvl, sk) { return (EXAM[lvl] && EXAM[lvl][sk]) || []; }
+  function exFind(lvl, sk, id) { var a = exTests(lvl, sk); for (var i = 0; i < a.length; i++) if (a[i].id === id) return a[i]; return null; }
+  function exRec(id) { return (state.exam && state.exam[id]) || null; }
+  function exSaveScore(id, pct) {
+    if (!state.exam) state.exam = {};
+    var r = state.exam[id] || { l:0, b:0, n:0 };
+    r.l = pct; r.b = Math.max(r.b, pct); r.n = Math.min(r.n + 1, 999);
+    state.exam[id] = r; save();
+  }
+  function exSkillPct(lvl, sk) {
+    var v = [];
+    exTests(lvl, sk).forEach(function (t) { var r = exRec(t.id); if (r) v.push(r.l); });
+    return v.length ? Math.round(v.reduce(function (a, b) { return a + b; }, 0) / v.length) : null;
+  }
+  function exVerdict(p) { return p >= 80 ? 'Very good' : (p >= 60 ? 'Pass level' : (p >= 40 ? 'Getting closer' : 'Keep practising')); }
+  function exWords(s) { return String(s || '').trim().split(/\s+/).filter(Boolean); }
+  function exRx(src) { try { return new RegExp(src, 'i'); } catch (e) { return /$^/; } }
+  function exConnCount(s) {
+    var m = String(s || '').toLowerCase().match(EX_CONN) || [], seen = {}, n = 0;
+    m.forEach(function (x) { if (!seen[x]) { seen[x] = 1; n++; } });
+    return n;
+  }
+
+  /* ----- audio ----- */
+  function exStop() { try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {} }
+  function exPlay(lines, rate) {
+    try {
+      if (!window.speechSynthesis) return false;
+      var syn = window.speechSynthesis; syn.cancel();
+      var vs = syn.getVoices().filter(function (v) { return v.lang && v.lang.indexOf('de') === 0; });
+      lines.forEach(function (l) {
+        var sp = l[0], parts = String(l[1]).match(/[^.!?]+[.!?]*/g) || [String(l[1])];
+        parts.forEach(function (txt) {
+          var u = new SpeechSynthesisUtterance(txt.trim());
+          u.lang = 'de-DE'; u.rate = rate || 0.9;
+          if (sp === 'F') { u.pitch = 1.2; if (vs[0]) u.voice = vs[0]; }
+          else if (sp === 'M') { u.pitch = 0.8; if (vs[1] || vs[0]) u.voice = vs[1] || vs[0]; }
+          else if (vs[0]) u.voice = vs[0];
+          syn.speak(u);
+        });
+      });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  /* ----- views ----- */
+  function viewExam() {
+    if (X.run) return viewExRun();
+    var lvl = X.lvl, h = '<h1 class="page-title">Exam practice</h1>' +
+      '<p class="glead muted">Practise like the real Goethe-Zertifikat. Pick a level, try each skill and see how ready you are. 60% is the pass mark.</p>';
+    h += '<div class="chips" role="group" aria-label="Exam level">' + ['A2', 'B2'].map(function (l) {
+      return '<button data-act="exlvl" data-v="' + l + '" aria-pressed="' + (lvl === l ? 'true' : 'false') + '">' + l + '</button>';
+    }).join('') + '</div>';
+    var vals = EX_SK.map(function (s) { return exSkillPct(lvl, s[0]); });
+    var tried = vals.filter(function (v) { return v !== null; }).length;
+    var overall = Math.round(vals.reduce(function (a, v) { return a + (v || 0); }, 0) / 4);
+    h += '<section class="card exready"><h2>How prepared are you for ' + lvl + '?</h2>';
+    if (!tried) h += '<p class="muted">Do your first test below. Your result will appear here.</p>';
+    else {
+      h += '<div class="exbig"><b>' + overall + '%</b><span>' + esc(tried < 4 ? 'So far (' + tried + ' of 4 skills tried)' : exVerdict(overall)) + '</span></div>';
+      h += '<div class="exbar big"><i style="width:' + overall + '%"></i><u></u></div>';
+      EX_SK.forEach(function (s, k) {
+        var v = vals[k];
+        h += '<div class="exrow"><span>' + s[2] + ' <small class="muted">' + s[1] + '</small></span><div class="exbar"><i class="' + (v !== null && v >= 60 ? 'ok' : 'low') + '" style="width:' + (v || 0) + '%"></i><u></u></div><b>' + (v === null ? '–' : v + '%') + '</b></div>';
+      });
+      if (tried < 4) h += '<p class="say-note">Try all four skills for a complete picture. Skills you have not tried count as 0%.</p>';
+      else h += '<p class="say-note">' + (overall >= 60 ? 'You are at pass level in your average. Keep every skill above 60%, because the real exam is passed per skill.' : 'Focus on the skills with the red bar, then repeat the tests.') + '</p>';
+    }
+    h += '</section>';
+    EX_SK.forEach(function (s) {
+      h += '<section class="card"><h2>' + s[2] + ' <small class="muted">' + s[1] + '</small></h2><p class="muted">' + esc(EX_INFO[lvl][s[0]]) + '</p>';
+      exTests(lvl, s[0]).forEach(function (t) {
+        var r = exRec(t.id);
+        h += '<div class="extest"><div><b>' + esc(t.title) + '</b>' + (r ? '<div class="say-note">Last ' + r.l + '% · Best ' + r.b + '% · ' + r.n + '×</div>' : '<div class="say-note">Not tried yet</div>') +
+          '</div><button class="btn small" data-act="exstart" data-v="' + s[0] + '|' + t.id + '">' + (r ? 'Again' : 'Start') + '</button></div>';
+      });
+      h += '</section>';
+    });
+    h += '<p class="say-note" style="margin-top:16px">Listening, Reading: marked automatically. Writing and Speaking: the app checks content points, length and linking words. It cannot check your grammar, so treat the percentage as an estimate and let a teacher read your texts before the real exam.</p>';
+    return h;
+  }
+
+  function viewExRun() {
+    var R = X.run, t = exFind(R.lvl, R.skill, R.id);
+    if (!t) { X.run = null; return viewExam(); }
+    var h = '<button class="linkbtn" data-act="exquit">← Exam menu</button><h1 class="page-title" style="margin-top:8px">' + esc(R.lvl) + ' · ' + esc(t.title) + '</h1>';
+    if (R.done) h += exResultHtml(R, t);
+    if (R.skill === 'hoeren' || R.skill === 'lesen') h += exQuizHtml(R, t);
+    else if (R.skill === 'schreiben') h += exWriteHtml(R, t);
+    else h += exSpeakHtml(R, t);
+    return h;
+  }
+
+  function exQuizHtml(R, t) {
+    var h = '';
+    var hasSpeech = !!(window.speechSynthesis);
+    t.parts.forEach(function (p, pi) {
+      h += '<section class="card"><h2>' + esc(p.t) + '</h2><p class="muted">' + esc(p.inst) + '</p>';
+      if (R.skill === 'hoeren') {
+        var used = R.plays[pi] || 0, left = Math.max(0, p.plays - used);
+        if (hasSpeech) h += '<div class="exaudio"><button class="btn small" data-act="explay" data-v="' + pi + '"' + (left ? '' : ' disabled') + '>' + icon('speaker') + ' &nbsp;Play (' + left + ' left)</button><button class="btn small ghost" data-act="exstop">Stop</button></div>';
+        else h += '<div class="notice">Audio is not available on this device. Read the text instead.</div><div class="extext">' + esc(p.lines.map(function (l) { return l[1]; }).join('\n')) + '</div>';
+      } else {
+        h += '<div class="extext">' + esc(p.text) + '</div>';
+      }
+      p.qs.forEach(function (q, qi) {
+        var key = pi + '-' + qi;
+        h += '<div class="exq"><p><b>' + (qi + 1) + '.</b> ' + esc(q[0]) + '</p><div class="exopts">';
+        q[1].forEach(function (o, oi) {
+          var cls = '';
+          if (R.done) { if (oi === q[2]) cls = ' good'; else if (R.ans[key] === oi) cls = ' bad'; }
+          h += '<button class="exo' + cls + '" data-act="exans" data-q="' + key + '" data-v="' + oi + '" aria-pressed="' + (R.ans[key] === oi ? 'true' : 'false') + '"' + (R.done ? ' disabled' : '') + '>' + esc(o) + '</button>';
+        });
+        h += '</div></div>';
+      });
+      if (R.done && R.skill === 'hoeren') h += '<details class="extrans"><summary>Show the transcript</summary><div class="extext">' + esc(p.lines.map(function (l) { return (l[0] === 'N' ? '' : (l[0] === 'F' ? 'Frau: ' : 'Mann: ')) + l[1]; }).join('\n')) + '</div></details>';
+      h += '</section>';
+    });
+    if (!R.done) h += '<button class="btn" data-act="exsubmit" style="margin-top:16px">Check my answers</button>';
+    return h;
+  }
+  function exWriteHtml(R, t) {
+    var w = exWords(R.txt.w).length;
+    var h = '<section class="card"><h2>Task</h2><div class="extext">' + esc(t.task) + '</div><p class="say-note">Length: ' + t.min + ' to ' + t.max + ' words. Write without a dictionary, like in the exam.</p></section>';
+    h += '<textarea id="exw" class="extarea" rows="12" placeholder="Schreiben Sie hier ..." autocapitalize="sentences" spellcheck="false"' + (R.done ? ' readonly' : '') + '>' + esc(R.txt.w || '') + '</textarea>';
+    h += '<p id="excount" class="say-note">' + w + ' words</p>';
+    if (!R.done) h += '<button class="btn" data-act="exsubmit">Check my text</button>';
+    return h;
+  }
+  function exSpeakHtml(R, t) {
+    var can = !!speechCtor();
+    var h = '<p class="muted">' + (can ? 'Tap the microphone, speak in German, tap again to stop. You can fix the text before you check it.' : 'This device cannot record speech. Type what you would say instead.') + '</p>';
+    t.steps.forEach(function (s, i) {
+      var v = R.txt['s' + i] || '';
+      h += '<section class="card"><h2>' + esc(s.t) + '</h2><div class="extext">' + esc(s.p) + '</div>' + sayBtn(s.p.replace(/^Thema:\s*/, ''), 'task') +
+        '<textarea id="exs' + i + '" class="extarea" rows="5" placeholder="Ihre Antwort ..." spellcheck="false"' + (R.done ? ' readonly' : '') + '>' + esc(v) + '</textarea>' +
+        '<p class="say-note" id="exc' + i + '">' + exWords(v).length + ' words (aim for at least ' + s.min + ')</p>';
+      if (!R.done && can) h += '<button class="btn small' + (R.rec === i ? '' : ' ghost') + '" data-act="exrec" data-v="' + i + '">' + (R.rec === i ? '■ Stop recording' : '🎤 Record') + '</button>';
+      h += '</section>';
+    });
+    if (!R.done) h += '<button class="btn" data-act="exsubmit" style="margin-top:16px">Check my answers</button>';
+    return h;
+  }
+
+  function exResultHtml(R, t) {
+    var r = R.res, h = '<section class="card exres ' + (r.pct >= 60 ? 'passed' : 'failed') + '"><div class="exbig"><b>' + r.pct + '%</b><span>' + esc(exVerdict(r.pct)) + (r.pct >= 60 ? '' : ' · pass mark is 60%') + '</span></div>';
+    if (r.lines) h += '<ul class="exlist">' + r.lines.map(function (l) { return '<li class="' + (l[0] ? 'ok' : 'bad') + '">' + (l[0] ? '✓' : '✗') + ' ' + esc(l[1]) + '</li>'; }).join('') + '</ul>';
+    if (r.note) h += '<p class="say-note">' + esc(r.note) + '</p>';
+    h += '<div class="btns"><button class="btn ghost" data-act="exquit">Exam menu</button><button class="btn" data-act="exstart" data-v="' + R.skill + '|' + R.id + '">Try again</button></div></section>';
+    if (R.skill === 'schreiben') h += '<section class="card"><h2>Model answer</h2><div class="extext">' + esc(t.model) + '</div></section>';
+    if (R.skill === 'sprechen') t.steps.forEach(function (s, i) {
+      h += '<section class="card"><h2>' + esc(s.t) + '</h2><p><b>Your score ' + r.steps[i] + '%</b></p><ul class="exlist">' + r.stepLines[i].map(function (l) { return '<li class="' + (l[0] ? 'ok' : 'bad') + '">' + (l[0] ? '✓' : '✗') + ' ' + esc(l[1]) + '</li>'; }).join('') + '</ul><p class="muted" style="margin-top:8px"><b>Model answer</b></p><div class="extext">' + esc(s.model) + '</div>' + sayBtn(s.model, 'model answer') + '</section>';
+    });
+    return h;
+  }
+
+  /* ----- scoring ----- */
+  function exScoreQuiz(R, t) {
+    var tot = 0, ok = 0;
+    t.parts.forEach(function (p, pi) { p.qs.forEach(function (q, qi) { tot++; if (R.ans[pi + '-' + qi] === q[2]) ok++; }); });
+    return { pct: Math.round(ok / tot * 100), note: ok + ' of ' + tot + ' answers correct. Correct answers are marked green below.' };
+  }
+  function exScoreWrite(R, t) {
+    var txt = String(R.txt.w || ''), low = txt.toLowerCase(), words = exWords(txt), n = words.length, lines = [], pts = 0;
+    var lenOk = n >= t.min && n <= t.max;
+    var lenScore = lenOk ? 1 : (n < t.min ? n / t.min : 0.85);
+    lines.push([lenOk, 'Length: ' + n + ' words (needed ' + t.min + ' to ' + t.max + ')']);
+    var hit = 0;
+    t.pts.forEach(function (p) { var ok = exRx(p[1]).test(low); if (ok) hit++; lines.push([ok, 'Content: ' + p[0]]); });
+    var cScore = hit / t.pts.length;
+    var conn = exConnCount(low), connScore = Math.min(1, conn / t.conn);
+    lines.push([conn >= t.conn, 'Linking words (weil, dass, aber, deshalb ...): ' + conn + ' used, aim for ' + t.conn + ' or more']);
+    var total;
+    if (t.greet || t.close) {
+      var g = t.greet ? exRx(t.greet).test(low) : true, c = t.close ? exRx(t.close).test(low) : true;
+      if (t.greet) lines.push([g, 'Greeting at the start (Liebe/Sehr geehrte ...)']);
+      if (t.close) lines.push([c, 'Closing line (Viele Grüße / Mit freundlichen Grüßen)']);
+      total = cScore * 45 + lenScore * 20 + ((g ? 1 : 0) + (c ? 1 : 0)) / ((t.greet ? 1 : 0) + (t.close ? 1 : 0)) * 15 + connScore * 20;
+    } else {
+      var uniq = {}; words.forEach(function (w) { uniq[w.toLowerCase().replace(/[^a-zäöüß]/g, '')] = 1; });
+      var ratio = n ? Object.keys(uniq).length / n : 0, varScore = Math.min(1, ratio / 0.6);
+      lines.push([ratio >= 0.6, 'Varied vocabulary: ' + Math.round(ratio * 100) + '% different words']);
+      total = cScore * 45 + lenScore * 20 + varScore * 15 + connScore * 20;
+    }
+    if (n < 5) total = 0;
+    return { pct: Math.max(0, Math.min(100, Math.round(total))), lines: lines, note: 'Automatic estimate of content, length, form and linking words. Grammar is not checked.' };
+  }
+  function exScoreSpeak(R, t) {
+    var steps = [], stepLines = [];
+    t.steps.forEach(function (s, i) {
+      var txt = String(R.txt['s' + i] || ''), low = txt.toLowerCase(), n = exWords(txt).length, lines = [], hit = 0;
+      s.pts.forEach(function (p) { var ok = exRx(p[1]).test(low); if (ok) hit++; lines.push([ok, 'Content: ' + p[0]]); });
+      var need = R.lvl === 'B2' ? 2 : 1, conn = exConnCount(low);
+      lines.push([n >= s.min, 'Length: ' + n + ' words (aim for ' + s.min + ' or more)']);
+      lines.push([conn >= need, 'Linking words: ' + conn + ' used, aim for ' + need + ' or more']);
+      var sc = n < 3 ? 0 : (hit / s.pts.length) * 45 + Math.min(1, n / s.min) * 35 + Math.min(1, conn / need) * 20;
+      steps.push(Math.round(sc)); stepLines.push(lines);
+    });
+    return { pct: Math.round(steps.reduce(function (a, b) { return a + b; }, 0) / steps.length), steps: steps, stepLines: stepLines, note: 'Automatic estimate from what you said (content points, length, linking words). Pronunciation and grammar are not judged. Listen to the model answers and say them aloud.' };
+  }
+
+  /* ----- speech recognition for the Speaking tests ----- */
+  function exRecStop() { var r = XREC; XREC = null; if (r) { try { r.stop(); } catch (e) {} } if (X.run) X.run.rec = -1; }
+  function exRecStart(i) {
+    var Ctor = speechCtor(), R = X.run; if (!Ctor || !R) return;
+    exStop(); exRecStop();
+    var rec; try { rec = new Ctor(); } catch (e) { return; }
+    XREC = rec; R.rec = i;
+    var base = R.txt['s' + i] || '';
+    rec.lang = 'de-DE'; rec.interimResults = true; rec.continuous = true; rec.maxAlternatives = 1;
+    rec.onresult = function (ev) {
+      var fin = '', tmp = '';
+      for (var k = 0; k < ev.results.length; k++) { var tx = ev.results[k][0].transcript; if (ev.results[k].isFinal) fin += tx + ' '; else tmp += tx; }
+      var val = (base ? base.replace(/\s+$/, '') + ' ' : '') + fin + tmp;
+      R.txt['s' + i] = val.trim();
+      var ta = $('#exs' + i); if (ta) ta.value = R.txt['s' + i];
+      var c = $('#exc' + i); if (c) c.textContent = exWords(R.txt['s' + i]).length + ' words';
+    };
+    rec.onerror = function () { };
+    rec.onend = function () { if (XREC === rec) { XREC = null; if (X.run) { X.run.rec = -1; render(); } } };
+    try { rec.start(); } catch (e) { XREC = null; R.rec = -1; }
+    render();
+  }
+
+  /* ----- events ----- */
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest ? e.target.closest('[data-act^="ex"]') : null;
+    if (!el) return;
+    var act = el.getAttribute('data-act'), v = el.getAttribute('data-v'), R = X.run;
+    switch (act) {
+      case 'exlvl': if (v === 'A2' || v === 'B2') { X.lvl = v; render(); } break;
+      case 'exstart': {
+        var a = String(v).split('|'), t = exFind(X.lvl, a[0], a[1]); if (!t) break;
+        exStop(); exRecStop();
+        X.run = { lvl:X.lvl, skill:a[0], id:a[1], ans:{}, plays:{}, txt:{}, done:false, res:null, rec:-1 };
+        render(true); break;
+      }
+      case 'exquit': exStop(); exRecStop(); X.run = null; render(true); break;
+      case 'explay': {
+        if (!R) break; var pi = Number(v), t2 = exFind(R.lvl, R.skill, R.id), p = t2 && t2.parts[pi]; if (!p) break;
+        if ((R.plays[pi] || 0) >= p.plays) break;
+        if (exPlay(p.lines, R.lvl === 'B2' ? 0.95 : 0.88)) { R.plays[pi] = (R.plays[pi] || 0) + 1; render(); }
+        break;
+      }
+      case 'exstop': exStop(); break;
+      case 'exans': {
+        if (!R || R.done) break; R.ans[el.getAttribute('data-q')] = Number(v);
+        var sib = el.parentNode.children; for (var i = 0; i < sib.length; i++) sib[i].setAttribute('aria-pressed', sib[i] === el ? 'true' : 'false');
+        break;
+      }
+      case 'exrec': if (R) { if (R.rec === Number(v)) { exRecStop(); render(); } else exRecStart(Number(v)); } break;
+      case 'exsubmit': {
+        if (!R || R.done) break; exStop(); exRecStop();
+        var t3 = exFind(R.lvl, R.skill, R.id); if (!t3) break;
+        if (R.skill === 'hoeren' || R.skill === 'lesen') R.res = exScoreQuiz(R, t3);
+        else if (R.skill === 'schreiben') R.res = exScoreWrite(R, t3);
+        else R.res = exScoreSpeak(R, t3);
+        R.done = true; exSaveScore(R.id, R.res.pct); render(true); break;
+      }
+    }
+  });
+  document.addEventListener('input', function (e) {
+    var t = e.target; if (!t || !t.id || !X.run) return;
+    if (t.id === 'exw') { X.run.txt.w = t.value; var c = $('#excount'); if (c) c.textContent = exWords(t.value).length + ' words'; }
+    else if (/^exs\d+$/.test(t.id)) { var i = t.id.slice(3); X.run.txt['s' + i] = t.value; var c2 = $('#exc' + i); if (c2) c2.textContent = exWords(t.value).length + ' words'; }
+  });
+
   /* =====================================================
      RENDER
      ===================================================== */
   function renderNav() {
     var items = state.track === 'allg'
       ? [['practise','Practise'], ['verbs','Verbs'], ['words','Words'], ['grammar','Grammar'], ['chat','Chat'], ['progress','Progress'], ['account','Account']]
-      : [['fvocab','Vocabulary'], ['fphrase','Phrases'], ['fdialog','Dialogues'], ['chat','Chat'], ['account','Account']];
+      : (state.track === 'exam' ? [['exam','Exam'], ['chat','Chat'], ['account','Account']] : [['fvocab','Vocabulary'], ['fphrase','Phrases'], ['fdialog','Dialogues'], ['chat','Chat'], ['account','Account']]);
     $('#nav').innerHTML = items.map(function (it) {
       return '<button data-act="tab" data-v="' + it[0] + '"' + (tab === it[0] ? ' aria-current="page"' : '') + '><span class="pill">' + icon(it[0]) + '</span>' + it[1] + '</button>';
     }).join('');
@@ -2287,9 +2777,12 @@ details.all[open] summary::after{content:"Hide"}
     } else {
       document.body.classList.remove('in-session');
       var isF = /^f(vocab|phrase|dialog)$/.test(tab);
-      if (state.track !== 'allg' && !isF && tab !== 'chat' && tab !== 'account') tab = 'fvocab';
-      if (state.track === 'allg' && isF) tab = 'practise';
-      html = tab === 'verbs' ? viewVerbs() : (tab === 'progress' ? viewProgress() : (tab === 'account' ? viewAccount() : (tab === 'chat' ? viewChat() : (tab === 'words' ? viewWords() : (tab === 'grammar' ? viewGrammar() : (/^f(vocab|phrase|dialog)$/.test(tab) ? viewFsp() : viewPractise()))))));
+      if (state.track === 'exam') { if (tab !== 'exam' && tab !== 'chat' && tab !== 'account') tab = 'exam'; }
+      else {
+        if (state.track !== 'allg' && !isF && tab !== 'chat' && tab !== 'account') tab = 'fvocab';
+        if (state.track === 'allg' && (isF || tab === 'exam')) tab = 'practise';
+      }
+      html = tab === 'exam' ? viewExam() : tab === 'verbs' ? viewVerbs() : (tab === 'progress' ? viewProgress() : (tab === 'account' ? viewAccount() : (tab === 'chat' ? viewChat() : (tab === 'words' ? viewWords() : (tab === 'grammar' ? viewGrammar() : (/^f(vocab|phrase|dialog)$/.test(tab) ? viewFsp() : viewPractise()))))));
       renderNav();
       html = trackBar() + html;
     }
@@ -2331,7 +2824,7 @@ details.all[open] summary::after{content:"Hide"}
     switch (act) {
       case 'tab': tab = v; if (v !== 'chat') chatStop(); render(true); if (v === 'chat') chatOpen(); break;
       case 'xtrack':
-        if (v === 'allg' || v === 'zm' || v === 'med') { state.track = v; F = { id:'', mode:'', c:null, z:null, d:null }; tab = v === 'allg' ? 'practise' : 'fvocab'; chatStop(); save(); render(true); }
+        if (v === 'allg' || v === 'zm' || v === 'med' || v === 'exam') { exStop(); exRecStop(); X.run = null; state.track = v; F = { id:'', mode:'', c:null, z:null, d:null }; tab = v === 'allg' ? 'practise' : (v === 'exam' ? 'exam' : 'fvocab'); chatStop(); save(); render(true); }
         break;
       case 'xopen': F = { id:v, mode:'', c:null, z:null, d:null }; render(true); break;
       case 'xback': if (F.mode) { F.mode = ''; F.c = F.z = F.d = null; } else { F.id = ''; } render(true); break;
