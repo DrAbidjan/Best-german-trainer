@@ -280,6 +280,20 @@ details.all[open] summary::after{content:"Hide"}
 .rules{margin:14px 0;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);font-size:15px}
 .rules ul{margin:6px 0 0 18px;list-style:disc}.rules li{margin:3px 0}#chnick{margin-bottom:4px}.chk{display:flex;gap:10px;align-items:center;margin:10px 0 14px;font-size:16px}
 .linkbtn{text-decoration:underline;color:var(--muted);font-size:13.5px}
+
+.glead{font-size:17px;line-height:1.5;margin:0 0 12px}
+.gtab{width:100%;border-collapse:collapse;margin:14px 0;font-size:16px}
+.gtab th,.gtab td{padding:8px 10px;border:1px solid var(--line);text-align:left}
+.gtab th{background:var(--surface);font-weight:700}
+.gex{list-style:none;padding:0;margin:8px 0}
+.gex li{padding:10px 2px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:flex-start}
+.gex .de{font-weight:700;font-size:17px}.gex small{display:block;color:var(--muted);font-size:14px}
+.gbadge{margin-left:auto;font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}
+.gbadge.full{color:var(--good)}
+.gq{font-family:var(--serif);font-size:24px;line-height:1.35;margin:6px 0 18px;overflow-wrap:anywhere}
+.gblank{display:inline-block;min-width:60px;border-bottom:3px solid var(--accent);margin:0 3px;text-align:center}
+#nav button{min-width:0;font-size:10.5px}
+#nav .pill{padding:4px 14px}
 </style>
 </head>
 <body>
@@ -339,6 +353,12 @@ details.all[open] summary::after{content:"Hide"}
     {"cat": "Obst", "en": "Fruit", "emo": "🍎", "items": [["der", "Apfel", "apple", "🍎", "Apple"], ["die", "Banane", "banana", "🍌", "Banana"], ["die", "Orange", "orange", "🍊", "Orange (fruit)"], ["die", "Zitrone", "lemon", "🍋", "Lemon"], ["die", "Erdbeere", "strawberry", "🍓", "Strawberry"], ["die", "Traube", "grape", "🍇", "Grape"], ["die", "Birne", "pear", "🍐", "Pear"], ["die", "Kirsche", "cherry", "🍒", "Cherry"], ["die", "Ananas", "pineapple", "🍍", "Pineapple"], ["die", "Wassermelone", "watermelon", "🍉", "Watermelon"], ["der", "Pfirsich", "peach", "🍑", "Peach"], ["die", "Heidelbeere", "blueberry", "🫐", "Blueberry"]]}
   ];
   var WORD_CATS = FREE_WORDS.slice();
+
+  /* Grammar lessons. A1 and A2 are inside this file (free); B1, B2 and C1 come from the account (Premium). */
+  var FREE_GRAMMAR = [{"id":"a1-pronouns","level":"A1","title":"Pronomen und sein/haben","en":"Pronouns, to be and to have","intro":["The personal pronouns are the subject of the sentence. The two most important verbs, sein (to be) and haben (to have), are irregular, so learn them by heart.","Sie (capital S) is the polite 'you' for strangers, adults you do not know well and at work. It uses the same verb form as sie (they)."],"ex":[["Ich bin Zahnarzt.","I am a dentist."],["Hast du Zeit?","Do you have time?"],["Wir sind müde.","We are tired."],["Sie haben einen Termin.","You have an appointment. (polite)"]],"q":[["Ich ___ aus Indien.",["bin","bist","ist","sind"],0,"With ich we use bin."],["___ du Hunger?",["Bist","Hast","Habe","Hat"],1,"'Hunger haben' uses haben; with du it is hast."],["Er ___ heute krank.",["hat","bin","ist","sind"],2,"With er/sie/es we use ist."],["Wir ___ zwei Kinder.",["sind","haben","hat","habt"],1,"'Kinder haben': wir haben."],["Herr Müller, ___ Sie schon da?",["ist","bist","sind","seid"],2,"Polite Sie takes sind."]],"table":[["","sein","haben"],["ich","bin","habe"],["du","bist","hast"],["er / sie / es","ist","hat"],["wir","sind","haben"],["ihr","seid","habt"],["sie / Sie","sind","haben"]]},{"id":"a1-present","level":"A1","title":"Präsens: regelmäßige Verben","en":"Present tense of regular verbs","intro":["Take the infinitive, remove -en and add the ending: -e, -st, -t, -en, -t, -en.","Verbs whose stem ends in -t or -d add an extra e (du arbeitest, er arbeitet). Some verbs change their vowel with du and er/sie/es: sprechen → du sprichst, fahren → du fährst, lesen → du liest."],"ex":[["Ich lerne Deutsch.","I am learning German."],["Du arbeitest viel.","You work a lot."],["Sie spricht sehr gut Englisch.","She speaks English very well."],["Wir wohnen in Berlin.","We live in Berlin."]],"q":[["Ich ___ in München.",["wohne","wohnst","wohnt","wohnen"],0,"ich + stem + e."],["Du ___ jeden Tag.",["lernt","lerne","lernst","lernen"],2,"du + stem + st."],["Er ___ im Krankenhaus.",["arbeiten","arbeitet","arbeitest","arbeite"],1,"Stem ends in -t, so er arbeitet."],["Was ___ du?",["liest","lest","lese","lesen"],0,"lesen changes e → ie with du: du liest."],["Ihr ___ gut Deutsch.",["sprichst","sprechen","sprecht","spricht"],2,"ihr + stem + t; no vowel change with ihr."]],"table":[["","machen","arbeiten","sprechen"],["ich","mache","arbeite","spreche"],["du","machst","arbeitest","sprichst"],["er/sie/es","macht","arbeitet","spricht"],["wir","machen","arbeiten","sprechen"],["ihr","macht","arbeitet","sprecht"],["sie/Sie","machen","arbeiten","sprechen"]]},{"id":"a1-articles","level":"A1","title":"Nomen und Artikel","en":"Nouns, gender and articles","intro":["Every German noun is masculine (der), feminine (die) or neuter (das) and is written with a capital letter. Always learn the article together with the noun.","The indefinite article is ein (der/das nouns) and eine (die nouns). In the plural the article is always die, and there is no indefinite article: die Bücher, Bücher.","Useful hints: nouns ending in -ung, -heit, -keit, -schaft are feminine; -chen and -lein are neuter; many nouns ending in -er for people are masculine."],"ex":[["der Arzt, die Ärztin","the doctor (male, female)"],["das Kind, die Kinder","the child, the children"],["die Zahnbürste","the toothbrush"],["Ich habe eine Frage.","I have a question."]],"q":[["___ Mädchen ist neun Jahre alt. (-chen)",["Der","Die","Das","Ein"],2,"Words ending in -chen are neuter: das Mädchen."],["___ Wohnung ist teuer. (-ung)",["Der","Die","Das","Den"],1,"Words ending in -ung are feminine."],["Das ist ___ Tisch.",["eine","ein","einen","einem"],1,"der Tisch is masculine; ein in the nominative."],["Das ist ___ Lampe.",["ein","eine","einen","einer"],1,"die Lampe is feminine: eine."],["Plural von 'das Buch':",["die Buchs","die Büche","die Bücher","die Buchen"],2,"das Buch → die Bücher."]]},{"id":"a1-wordorder","level":"A1","title":"Satzbau und Fragen","en":"Word order and questions","intro":["In a normal statement the verb is always in position 2: Ich lerne heute Deutsch. If you start with another element, the subject moves behind the verb: Heute lerne ich Deutsch.","Yes/no questions start with the verb: Lernst du Deutsch? Questions with a question word (wer, was, wo, wann, wie, warum, woher, wohin) put the question word first and the verb second: Wo wohnst du?"],"ex":[["Heute habe ich frei.","Today I have the day off."],["Wann beginnt der Kurs?","When does the course start?"],["Kommst du aus Pakistan?","Do you come from Pakistan?"],["Woher kommen Sie?","Where do you come from? (polite)"]],"q":[["Morgen ___ ich nach Hamburg.",["fahre","ich fahre","fahren","fährt"],0,"Position 1 is 'Morgen', so the verb comes next and the subject follows: Morgen fahre ich."],["___ wohnst du?",["Wo","Wer","Was","Wann"],0,"Wo asks about place."],["Ordne: 'Deutsch / du / sprichst / ?'",["Sprichst du Deutsch?","Du sprichst Deutsch?","Deutsch du sprichst?","Du Deutsch sprichst?"],0,"Yes/no question: verb first."],["___ kommt der Bus? – Um acht Uhr.",["Wo","Wann","Wer","Woher"],1,"Wann asks about time."],["Am Montag ___ Unterricht.",["wir haben","haben wir","wir hat","hat wir"],1,"Verb in position 2, then the subject: Am Montag haben wir Unterricht."]]},{"id":"a1-negation","level":"A1","title":"Verneinung: nicht und kein","en":"Negation: nicht and kein","intro":["Use kein/keine to negate a noun that has ein/eine or no article: Ich habe ein Auto → Ich habe kein Auto. Ich habe Zeit → Ich habe keine Zeit.","Use nicht for everything else: verbs, adjectives, nouns with a definite article. Nicht usually goes at the end of the sentence, or before the word it negates: Ich arbeite nicht. Das ist nicht gut."],"ex":[["Ich habe keine Zeit.","I have no time."],["Er ist nicht müde.","He is not tired."],["Das ist kein Problem.","That is not a problem."],["Ich verstehe das nicht.","I do not understand that."]],"q":[["Ich habe ___ Hunger.",["nicht","kein","keinen","keine"],2,"Hunger is masculine; the negative is keinen in the accusative."],["Das ist ___ gut.",["kein","keine","nicht","nein"],2,"Negating an adjective needs nicht."],["Wir haben ___ Auto.",["nicht","kein","keine","keinen"],1,"das Auto is neuter: kein."],["Sie kommt heute ___.",["kein","keine","nicht","nichts"],2,"A verb is negated with nicht."],["Er hat ___ Geschwister.",["kein","keine","nicht","keinen"],1,"Plural noun: keine."]]},{"id":"a1-akkusativ","level":"A1","title":"Nominativ und Akkusativ","en":"Nominative and accusative","intro":["The nominative is the subject. The accusative is the direct object, the thing that is directly affected by the verb: Ich sehe den Mann.","Only masculine changes: der → den, ein → einen, kein → keinen. Feminine, neuter and plural stay the same."],"ex":[["Ich kaufe einen Apfel.","I buy an apple."],["Er liest das Buch.","He reads the book."],["Wir besuchen die Tante.","We visit the aunt."],["Siehst du den Hund?","Do you see the dog?"]],"q":[["Ich brauche ___ Stift. (der Stift)",["ein","einen","einem","einer"],1,"Masculine accusative: einen."],["Sie liest ___ Zeitung. (die Zeitung)",["den","einen","die","der"],2,"Feminine does not change: die."],["Er kauft ___ Auto. (das Auto)",["ein","einen","eine","einem"],0,"Neuter does not change: ein."],["Wir besuchen ___ Lehrer. (der Lehrer)",["der","den","dem","denen"],1,"Masculine accusative: den."],["Ich habe ___ Bruder. (der Bruder)",["kein","keine","keinen","keinem"],2,"Masculine accusative: keinen."]],"table":[["","Nominativ","Akkusativ"],["maskulin","der / ein","den / einen"],["feminin","die / eine","die / eine"],["neutral","das / ein","das / ein"],["Plural","die / –","die / –"]]},{"id":"a2-dativ","level":"A2","title":"Dativ","en":"The dative case","intro":["The dative marks the indirect object (to whom / for whom): Ich gebe dem Mann das Buch. It also follows certain prepositions: aus, bei, mit, nach, seit, von, zu, and certain verbs: helfen, gefallen, gehören, danken.","Dative articles: dem (der/das nouns), der (die nouns), den + -n on the noun in the plural: den Kindern."],"ex":[["Ich fahre mit dem Bus.","I go by bus."],["Sie hilft ihrer Mutter.","She helps her mother."],["Das Buch gehört meinem Bruder.","The book belongs to my brother."],["Nach dem Unterricht gehe ich nach Hause.","After class I go home."]],"q":[["Ich fahre mit ___ Zug. (der Zug)",["den","dem","der","einen"],1,"mit + dative; masculine: dem."],["Wir wohnen bei ___ Eltern. (die Eltern)",["die","den","dem","der"],1,"bei + dative; plural: den."],["Sie hilft ___ Frau. (die Frau)",["die","den","der","dem"],2,"helfen + dative; feminine: der."],["Nach ___ Essen trinke ich Tee. (das Essen)",["das","dem","den","der"],1,"nach + dative; neuter: dem."],["Das Handy gehört ___ Kind. (das Kind)",["das","dem","den","der"],1,"gehören + dative; neuter: dem."]],"table":[["","Nominativ","Dativ"],["maskulin","der / ein","dem / einem"],["feminin","die / eine","der / einer"],["neutral","das / ein","dem / einem"],["Plural","die","den (+n)"]]},{"id":"a2-perfekt","level":"A2","title":"Perfekt","en":"The perfect tense (spoken past)","intro":["In conversation we use the Perfekt: haben or sein in position 2 + past participle at the end. Regular participle: ge- + stem + -t (gemacht). Irregular: ge- + stem + -en (gesehen, gegangen).","Use sein for verbs of movement or change of state (gehen, fahren, kommen, bleiben, werden, sein): Ich bin nach Hause gegangen. Use haben for most other verbs.","Verbs ending in -ieren and verbs with an inseparable prefix (be-, ver-, er-, ent-, ge-) have no ge-: telefoniert, besucht, verstanden. Separable verbs put ge- in the middle: aufgestanden."],"ex":[["Ich habe Deutsch gelernt.","I learned German."],["Er ist nach Köln gefahren.","He went to Cologne."],["Wir haben den Film gesehen.","We saw the film."],["Sie hat mich angerufen.","She called me."]],"q":[["Gestern ___ ich im Kino gewesen.",["habe","bin","hat","ist"],1,"The perfect of sein is formed with sein: ich bin gewesen."],["Er hat das Buch ___.",["gelesen","gelest","lesen","geliest"],0,"lesen → gelesen (irregular)."],["Wir ___ nach Berlin gefahren.",["haben","hat","sind","seid"],2,"Movement: sein → wir sind gefahren."],["Sie hat den Arzt ___.",["gebesucht","besucht","besuchtet","gebesuchen"],1,"Inseparable prefix be-: no ge-: besucht."],["Ich bin um 7 Uhr ___.",["aufgestehen","gestanden auf","aufgestanden","aufstanden"],2,"aufstehen (separable): auf + ge + standen → aufgestanden, with sein."]]},{"id":"a2-modal","level":"A2","title":"Modalverben","en":"Modal verbs","intro":["können (can), müssen (must), dürfen (may), wollen (want), sollen (should), mögen/möchte (like/would like). The modal verb is in position 2 and the main verb goes to the end as an infinitive.","ich and er/sie/es have the same form for modals and no ending: ich kann, er kann. Möchte is very common for polite requests: Ich möchte einen Kaffee."],"ex":[["Ich kann gut schwimmen.","I can swim well."],["Du musst heute arbeiten.","You have to work today."],["Wir wollen nach Italien fahren.","We want to travel to Italy."],["Darf ich Sie etwas fragen?","May I ask you something?"]],"q":[["Ich ___ heute lange arbeiten.",["muss","musst","müsst","müssen"],0,"ich muss."],["Du ___ hier nicht rauchen.",["darf","dürfen","darfst","dürft"],2,"du darfst."],["Wir ___ morgen früh aufstehen.",["muss","müssen","musst","müsst"],1,"wir müssen."],["Sie kann sehr gut Klavier ___.",["spielt","gespielt","spielen","zu spielen"],2,"After a modal the main verb is an infinitive at the end."],["___ ich Sie etwas fragen?",["Darf","Dürfen","Kannst","Müssen"],0,"Darf ich... is the polite way to ask for permission."]],"table":[["","können","müssen","wollen","möchte"],["ich","kann","muss","will","möchte"],["du","kannst","musst","willst","möchtest"],["er/sie/es","kann","muss","will","möchte"],["wir","können","müssen","wollen","möchten"]]},{"id":"a2-trennbar","level":"A2","title":"Trennbare Verben","en":"Separable verbs","intro":["Many verbs have a prefix that separates in the present tense and goes to the end of the sentence: aufstehen → Ich stehe um 6 Uhr auf. Common prefixes: an-, auf-, aus-, ein-, mit-, vor-, zu-, zurück-, fern-.","With a modal verb the verb stays together at the end: Ich muss um 6 Uhr aufstehen. In a subordinate clause it also stays together: ..., weil ich früh aufstehe."],"ex":[["Der Zug fährt um acht Uhr ab.","The train leaves at eight."],["Ich rufe dich morgen an.","I will call you tomorrow."],["Kommst du mit?","Are you coming along?"],["Ich muss noch einkaufen.","I still have to go shopping."]],"q":[["Ich stehe jeden Tag um 6 Uhr ___. (aufstehen)",["auf","aufstehe","gestanden","stehen"],0,"The prefix goes to the end: Ich stehe ... auf."],["Er ruft seine Mutter ___. (anrufen)",["an","auf","ab","aus"],0,"anrufen: Er ruft seine Mutter an."],["Wann ___ der Film an? (anfangen)",["fängt","fangt","fange","anfängt"],0,"anfangen: er/sie/es fängt ... an (vowel change)."],["Wir müssen jetzt ___.",["aussteigen","steigen aus","ausgestiegen","aus steigen"],0,"With a modal verb the verb is not separated."],["Ich sehe heute Abend ___. (fernsehen)",["fern","fernsehen","ferngesehen","an"],0,"Ich sehe heute Abend fern."]]},{"id":"a2-weil","level":"A2","title":"weil und dass: Verb am Ende","en":"weil and dass: verb at the end","intro":["After conjunctions such as weil (because), dass (that), wenn (if/when), ob (whether) the conjugated verb goes to the very end of the clause.","Main clause + comma + subordinate clause: Ich bleibe zu Hause, weil ich krank bin. If the subordinate clause comes first, the main clause starts with the verb: Weil ich krank bin, bleibe ich zu Hause."],"ex":[["Ich lerne Deutsch, weil ich in Deutschland arbeiten möchte.","I learn German because I would like to work in Germany."],["Ich glaube, dass er recht hat.","I think that he is right."],["Weil es regnet, bleiben wir zu Hause.","Because it is raining, we stay at home."],["Ich weiß nicht, ob er kommt.","I do not know whether he is coming."]],"q":[["Ich bleibe zu Hause, weil ich krank ___.",["bin","ich bin","sein","ist ich"],0,"Verb at the end: ... weil ich krank bin."],["Er sagt, dass er heute keine Zeit ___.",["hat","hat er","er hat","haben"],0,"dass-clause: verb at the end."],["Weil es spät ist, ___ wir nach Hause.",["gehen","wir gehen","gehen wir","gegangen"],2,"The main clause starts with the verb after a first subordinate clause: ..., gehen wir."],["Ich weiß nicht, ob sie morgen ___.",["kommt","kommen sie","kommt sie","sie kommt"],0,"ob-clause: verb at the end."],["Ich lerne Deutsch, weil ich in Berlin ___ will.",["arbeiten","arbeite","arbeitet","gearbeitet"],0,"With a modal in the subordinate clause: ... arbeiten will."]]},{"id":"a2-wechsel","level":"A2","title":"Wechselpräpositionen","en":"Two-way prepositions (accusative or dative)","intro":["These prepositions can take the accusative or the dative: an, auf, hinter, in, neben, über, unter, vor, zwischen.","Wohin? (movement to a place) → accusative: Ich gehe in die Küche. Wo? (position, no movement to a new place) → dative: Ich bin in der Küche.","Stellen/legen/setzen/hängen (put) go with accusative; stehen/liegen/sitzen/hängen (be somewhere) go with dative."],"ex":[["Ich lege das Buch auf den Tisch.","I put the book on the table."],["Das Buch liegt auf dem Tisch.","The book is lying on the table."],["Wir gehen in die Stadt.","We go into town."],["Er wartet vor der Tür.","He is waiting in front of the door."]],"q":[["Ich gehe in ___ Park. (der Park)",["der","dem","den","einem"],2,"Wohin? movement → accusative: in den Park."],["Ich bin in ___ Park. (der Park)",["den","dem","der","einen"],1,"Wo? position → dative: im/in dem Park."],["Die Lampe hängt über ___ Tisch. (der Tisch)",["den","dem","der","das"],1,"Position → dative: über dem Tisch."],["Sie stellt die Flasche auf ___ Tisch. (der Tisch)",["dem","den","der","das"],1,"Movement (stellen) → accusative: auf den Tisch."],["Das Kino ist ___ Bahnhof. (neben, der Bahnhof)",["neben dem","neben den","neben die","neben der"],0,"Position, masculine dative: neben dem Bahnhof."]]}];
+  var GRAMMAR = FREE_GRAMMAR.slice();
+  var GRAM_LOCKED = { B1:6, B2:6, C1:5 };
+  var G = { level:'A1', topic:'', quiz:null };
   var PW = {};
   var PW_LIST = [];
   function buildWords() {
@@ -384,6 +404,7 @@ details.all[open] summary::after{content:"Hide"}
       words:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',
       account:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
       chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-5.4A8 8 0 1 1 21 12z"/>',
+      grammar:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
       lock:'<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>'
     }[name];
     return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">' + p + '</svg>';
@@ -431,7 +452,7 @@ details.all[open] summary::after{content:"Hide"}
     return {
       stats: { correct:0, wrong:0, score:0, streak:0, bestStreak:0, dayStreak:0, lastDay:'', sessions:0 },
       verbs: {}, scope:'all', englishFirst:false, hideInstall:false,
-      speak:{ tries:0, good:0 }, speakTarget:'word', savedAt:0, owner:'', pics:{}
+      speak:{ tries:0, good:0 }, speakTarget:'word', savedAt:0, owner:'', pics:{}, gram:{}
     };
   }
   function num(x) { return (typeof x === 'number' && isFinite(x) && x >= 0 && x < 1e9) ? Math.floor(x) : 0; }
@@ -449,6 +470,10 @@ details.all[open] summary::after{content:"Hide"}
     if (p.pics && typeof p.pics === 'object') Object.keys(p.pics).slice(0, 400).forEach(function (id) {
       var x = p.pics[id];
       if (/^[a-z]{1,40}$/.test(id) && x && typeof x === 'object') d.pics[id] = { c:num(x.c), w:num(x.w), run:num(x.run) };
+    });
+    if (p.gram && typeof p.gram === 'object') Object.keys(p.gram).slice(0, 100).forEach(function (id) {
+      var x = p.gram[id];
+      if (/^[a-z0-9-]{1,40}$/.test(id) && typeof x === 'number' && x >= 0 && x <= 5) d.gram[id] = Math.floor(x);
     });
     if (validScope(p.scope)) d.scope = p.scope;
     d.englishFirst = !!p.englishFirst;
@@ -768,8 +793,20 @@ details.all[open] summary::after{content:"Hide"}
   }
 
   /* ---- Premium content: only ever comes from the server ---- */
+  function strs(a, n) { return (Array.isArray(a) ? a : []).filter(function (x) { return typeof x === 'string'; }).slice(0, n); }
+  function cleanTopic(t) {
+    if (!t || typeof t !== 'object' || !/^[a-z0-9-]{1,40}$/.test(String(t.id)) || !/^(A1|A2|B1|B2|C1)$/.test(String(t.level))) return null;
+    var qs = (Array.isArray(t.q) ? t.q : []).filter(function (q) {
+      return Array.isArray(q) && typeof q[0] === 'string' && Array.isArray(q[1]) && q[1].length >= 2 && q[1].length <= 6 && q[1].every(function (o) { return typeof o === 'string'; }) &&
+             typeof q[2] === 'number' && q[2] >= 0 && q[2] < q[1].length && typeof q[3] === 'string';
+    }).slice(0, 10);
+    if (!qs.length) return null;
+    return { id:String(t.id), level:String(t.level), title:String(t.title || '').slice(0, 80), en:String(t.en || '').slice(0, 120), intro:strs(t.intro, 8),
+             table:(Array.isArray(t.table) ? t.table : []).filter(Array.isArray).slice(0, 12).map(function (r) { return strs(r, 6); }),
+             ex:(Array.isArray(t.ex) ? t.ex : []).filter(function (e) { return Array.isArray(e) && typeof e[0] === 'string' && typeof e[1] === 'string'; }).slice(0, 8), q:qs };
+  }
   function setPremiumContent(rows) {
-    var days = [], sim = [], wc = [];
+    var days = [], sim = [], wc = [], gr = [];
     (rows || []).forEach(function (r) {
       var p = r && r.payload;
       if (!p) return;
@@ -778,6 +815,8 @@ details.all[open] summary::after{content:"Hide"}
                     verbs:p.verbs.filter(function (v) { return Array.isArray(v) && v.length >= 4 && v.slice(0, 4).every(function (x) { return typeof x === 'string'; }); }) });
       } else if (r.kind === 'similar' && Array.isArray(p.groups)) {
         sim = p.groups.filter(Array.isArray);
+      } else if (r.kind === 'grammar' && Array.isArray(p.topics)) {
+        p.topics.forEach(function (t) { var g = cleanTopic(t); if (g) gr.push(g); });
       } else if (r.kind === 'words' && Array.isArray(p.items)) {
         wc.push({ key:String(r.key), cat:String(p.cat || ''), en:String(p.en || ''), emo:String(p.emo || ''),
                   items:p.items.filter(function (v) { return Array.isArray(v) && v.length >= 5 && v.slice(0, 5).every(function (x) { return typeof x === 'string'; }) && /^(der|die|das)$/.test(v[0]); }) });
@@ -790,8 +829,10 @@ details.all[open] summary::after{content:"Hide"}
     wc.sort(function (a, b) { return a.key < b.key ? -1 : 1; });
     WORD_CATS = FREE_WORDS.concat(wc);
     buildWords();
+    gr.sort(function (a, b) { return a.level === b.level ? (a.id < b.id ? -1 : 1) : (a.level < b.level ? -1 : 1); });
+    GRAMMAR = FREE_GRAMMAR.concat(gr);
   }
-  function clearPremiumContent() { DAYS = FREE_DAYS.slice(); SIMILAR = FREE_SIMILAR.slice(); buildVerbs(); WORD_CATS = FREE_WORDS.slice(); buildWords(); }
+  function clearPremiumContent() { DAYS = FREE_DAYS.slice(); SIMILAR = FREE_SIMILAR.slice(); buildVerbs(); WORD_CATS = FREE_WORDS.slice(); buildWords(); GRAMMAR = FREE_GRAMMAR.slice(); if (G.quiz && /^(B1|B2|C1)$/.test(G.level)) { G.quiz = null; G.topic = ''; } }
   function readCache() { var c = lsGet(PCACHE_KEY); return (c && typeof c.uid === 'string' && Array.isArray(c.rows) && typeof c.at === 'number') ? c : null; }
   function applyPremium(rows, offline) { setPremiumContent(rows); account.premium = true; account.offline = !!offline; }
   function applyFree(wipeCache) {
@@ -982,6 +1023,7 @@ details.all[open] summary::after{content:"Hide"}
       var o = other.pics[id], x = out.pics[id];
       if (!x || (o.c + o.w) > (x.c + x.w)) out.pics[id] = o;
     });
+    Object.keys(other.gram).forEach(function (id) { if (!(id in out.gram) || other.gram[id] > out.gram[id]) out.gram[id] = other.gram[id]; });
     if (other.speak.tries > out.speak.tries) out.speak = other.speak;
     return out;
   }
@@ -1014,7 +1056,7 @@ details.all[open] summary::after{content:"Hide"}
   function wordExtra() { return Number(CFG.PREMIUM_WORD_COUNT) || 132; }
   function extraCount() { return Number(CFG.PREMIUM_VERB_COUNT) || 140; }
   function perks() {
-    return '<ul class="perks"><li><b>' + extraCount() + ' more verbs</b> (B2 and important B1)</li><li>Picture words: 11 more categories (about ' + wordExtra() + ' words) and picture typing</li><li>Typing test</li><li>Speaking practice</li><li>Chat with other learners (rooms A1 to B2)</li><li>Progress saved to your account</li></ul>';
+    return '<ul class="perks"><li><b>' + extraCount() + ' more verbs</b> (B2 and important B1)</li><li>Picture words: 11 more categories (about ' + wordExtra() + ' words) and picture typing</li><li>Grammar lessons and quizzes B1 to C1 (A1 and A2 are free)</li><li>Typing test</li><li>Speaking practice</li><li>Chat with other learners (rooms A1 to B2)</li><li>Progress saved to your account</li></ul>';
   }
   function legalLinks() {
     return '<p class="foot"><a href="impressum.html">Impressum</a> &middot; <a href="datenschutz.html">Datenschutz / Privacy</a> &middot; <a href="terms.html">Terms &amp; refunds</a></p>';
@@ -1538,6 +1580,109 @@ details.all[open] summary::after{content:"Hide"}
     h += '<p class="foot">Photos: Wikipedia and Wikimedia Commons (various licences), loaded when you are online. Your device connects to Wikipedia to load them.</p>';
     return h;
   }
+
+  /* =====================================================
+     GRAMMAR
+     ===================================================== */
+  var GLEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
+  function gramTopics(level) { return GRAMMAR.filter(function (t) { return t.level === level; }); }
+  function gramTopic(id) { for (var i = 0; i < GRAMMAR.length; i++) if (GRAMMAR[i].id === id) return GRAMMAR[i]; return null; }
+  function gramLocked(level) { return !account.premium && /^(B1|B2|C1)$/.test(level); }
+  function gramStart() {
+    var t = gramTopic(G.topic); if (!t) return;
+    G.quiz = { i:0, score:0, picked:-1, done:false, finished:false,
+               order:t.q.map(function (q) { return shuffle(q[1].map(function (x, k) { return k; })); }) };
+    render(true);
+  }
+  function gramPick(k) {
+    var t = gramTopic(G.topic), z = G.quiz; if (!t || !z || z.done) return;
+    var q = t.q[z.i]; if (!q || k < 0 || k >= q[1].length) return;
+    z.picked = k; z.done = true;
+    if (k === q[2]) z.score++;
+    render(); scrollToFeedback();
+  }
+  function gramNext() {
+    var t = gramTopic(G.topic), z = G.quiz; if (!t || !z || !z.done) return;
+    if (z.i + 1 >= t.q.length) {
+      z.finished = true;
+      if (!(t.id in state.gram) || z.score > state.gram[t.id]) { state.gram[t.id] = z.score; save(); }
+    } else { z.i++; z.picked = -1; z.done = false; }
+    render(true);
+  }
+  function gramSentence(text, filled) {
+    var parts = esc(text).split('___');
+    if (parts.length < 2) return esc(text);
+    return parts[0] + '<span class="gblank">' + (filled ? esc(filled) : '&nbsp;&nbsp;&nbsp;&nbsp;') + '</span>' + parts.slice(1).join('___');
+  }
+  function viewGrammar() {
+    var t = G.topic ? gramTopic(G.topic) : null;
+    if (G.topic && (!t || gramLocked(t.level))) { G.topic = ''; G.quiz = null; t = null; }
+    if (!t) return viewGramList();
+    return G.quiz ? viewGramQuiz(t) : viewGramLesson(t);
+  }
+  function viewGramList() {
+    var h = '<h1 class="page-title">Grammar</h1><p class="glead muted">Short lessons with examples, then a 5-question quiz. Pick your level.</p>';
+    h += '<div class="chips" role="group" aria-label="Level">' + GLEVELS.map(function (l) {
+      return '<button data-act="glevel" data-v="' + l + '" aria-pressed="' + (G.level === l ? 'true' : 'false') + '">' + l + (gramLocked(l) ? ' ' + icon('lock') : '') + '</button>';
+    }).join('') + '</div>';
+    if (gramLocked(G.level)) {
+      h += '<div class="upsell"><b>' + G.level + ' grammar is part of Premium.</b> ' + GRAM_LOCKED[G.level] + ' lessons with examples and quizzes. A1 and A2 are free.' +
+           (SB_OK ? '<button class="btn" data-act="upgrade">See Premium</button>' : '') + '</div>';
+      return h;
+    }
+    var list = gramTopics(G.level);
+    if (!list.length) return h + '<div class="notice">No lessons for this level yet. Open the Account tab and check your connection.</div>';
+    h += '<ul class="catlist">' + list.map(function (tp) {
+      var best = state.gram[tp.id];
+      var badge = (typeof best === 'number') ? '<span class="gbadge' + (best === tp.q.length ? ' full' : '') + '">' + best + '/' + tp.q.length + '</span>' : '';
+      return '<li><button class="row" data-act="gopen" data-v="' + esc(tp.id) + '"><span class="t"><strong>' + esc(tp.title) + '</strong><small>' + esc(tp.en) + '</small></span>' + badge + '<span class="chev">' + icon('chev') + '</span></button></li>';
+    }).join('') + '</ul>';
+    h += '<p class="foot">The lessons are short summaries for learning. Check the rules in your course book too.</p>';
+    return h;
+  }
+  function viewGramLesson(t) {
+    var h = '<div class="btns" style="margin:0 0 6px"><button class="btn ghost" data-act="gback" style="min-height:44px;width:auto;padding:0 16px">&larr; Back</button></div>';
+    h += '<h1 class="page-title">' + esc(t.title) + '</h1><p class="muted">' + esc(t.en) + ' &middot; ' + esc(t.level) + '</p>';
+    h += t.intro.map(function (p) { return '<p class="glead">' + esc(p) + '</p>'; }).join('');
+    if (t.table && t.table.length) {
+      h += '<div style="overflow-x:auto"><table class="gtab"><thead><tr>' + t.table[0].map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        t.table.slice(1).map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
+    }
+    if (t.ex && t.ex.length) {
+      h += '<h2 class="sec">Examples</h2><ul class="gex">' + t.ex.map(function (e) {
+        return '<li><div style="flex:1;min-width:0"><span class="de">' + esc(e[0]) + '</span><small>' + esc(e[1]) + '</small></div>' + sayBtn(e[0], e[0]) + '</li>';
+      }).join('') + '</ul>';
+    }
+    h += '<div class="btns" style="margin-top:22px"><button class="btn" data-act="gstart">Start the quiz (' + t.q.length + ' questions)</button></div>';
+    return h;
+  }
+  function viewGramQuiz(t) {
+    var z = G.quiz, n = t.q.length;
+    if (z.finished) {
+      var best = state.gram[t.id];
+      var h = '<h1 class="page-title">' + esc(t.title) + '</h1><section class="hero"><div><p class="hero-n">' + z.score + '<span>/' + n + '</span></p><p class="l">correct' + (typeof best === 'number' ? ' &middot; your best: ' + best + '/' + n : '') + '</p></div></section>';
+      h += '<p class="glead" style="margin-top:14px">' + (z.score === n ? 'Perfect! Sehr gut.' : (z.score >= n - 1 ? 'Very good. Read the lesson once more and try again for full marks.' : 'Read the lesson again, then try the quiz once more.')) + '</p>';
+      h += '<div class="btns"><button class="btn ghost" data-act="gopen" data-v="' + esc(t.id) + '">Lesson</button><button class="btn" data-act="gstart">Try again</button></div>';
+      h += '<div class="btns"><button class="btn ghost" data-act="gback">All lessons</button></div>';
+      return h;
+    }
+    var q = t.q[z.i], ord = z.order[z.i];
+    var h = '<div class="btns" style="margin:0 0 6px"><button class="btn ghost" data-act="gback" style="min-height:44px;width:auto;padding:0 16px">&larr; Leave quiz</button></div>';
+    h += '<p class="qlabel">' + esc(t.title) + ' &middot; ' + (z.i + 1) + ' of ' + n + '</p>';
+    h += '<p class="gq">' + gramSentence(q[0], z.done ? q[1][q[2]] : '') + '</p>';
+    h += '<div class="opts">' + ord.map(function (k) {
+      var cls = 'opt de-opt';
+      if (z.done) cls += k === q[2] ? ' correct' : (k === z.picked ? ' wrong' : ' dim');
+      return '<button class="' + cls + '" data-act="gpick" data-i="' + k + '"' + (z.done ? ' disabled' : '') + '><span>' + esc(q[1][k]) + '</span></button>';
+    }).join('') + '</div>';
+    if (z.done) {
+      var ok = z.picked === q[2];
+      h += '<section class="fb ' + (ok ? 'good' : 'bad') + '" role="status"><h3>' + (ok ? 'Richtig!' : 'Nicht ganz.') + '</h3><p class="line">' + esc(q[3]) + '</p>' +
+           '<button class="btn" data-act="gnext">' + (z.i + 1 >= n ? 'See result' : 'Next') + '</button></section>';
+    }
+    return h;
+  }
+
   function viewPCards() {
     var id = P.queue[0], w = PW[id];
     var h = sessionBar(P.resolved, P.initial, true);
@@ -1766,7 +1911,7 @@ details.all[open] summary::after{content:"Hide"}
      RENDER
      ===================================================== */
   function renderNav() {
-    var items = [['practise','Practise'], ['verbs','Verbs'], ['words','Words'], ['chat','Chat'], ['progress','Progress'], ['account','Account']];
+    var items = [['practise','Practise'], ['verbs','Verbs'], ['words','Words'], ['grammar','Grammar'], ['chat','Chat'], ['progress','Progress'], ['account','Account']];
     $('#nav').innerHTML = items.map(function (it) {
       return '<button data-act="tab" data-v="' + it[0] + '"' + (tab === it[0] ? ' aria-current="page"' : '') + '><span class="pill">' + icon(it[0]) + '</span>' + it[1] + '</button>';
     }).join('');
@@ -1782,7 +1927,7 @@ details.all[open] summary::after{content:"Hide"}
       else html = S.mode === 'cards' ? viewCards() : (S.mode === 'speak' ? viewSpeak() : viewQuestion());
     } else {
       document.body.classList.remove('in-session');
-      html = tab === 'verbs' ? viewVerbs() : (tab === 'progress' ? viewProgress() : (tab === 'account' ? viewAccount() : (tab === 'chat' ? viewChat() : (tab === 'words' ? viewWords() : viewPractise()))));
+      html = tab === 'verbs' ? viewVerbs() : (tab === 'progress' ? viewProgress() : (tab === 'account' ? viewAccount() : (tab === 'chat' ? viewChat() : (tab === 'words' ? viewWords() : (tab === 'grammar' ? viewGrammar() : viewPractise())))));
       renderNav();
     }
     app.innerHTML = html;
@@ -1822,6 +1967,12 @@ details.all[open] summary::after{content:"Hide"}
 
     switch (act) {
       case 'tab': tab = v; if (v !== 'chat') chatStop(); render(true); if (v === 'chat') chatOpen(); break;
+      case 'glevel': G.level = v; G.topic = ''; G.quiz = null; render(); break;
+      case 'gopen': G.topic = v; G.quiz = null; render(true); break;
+      case 'gback': if (G.quiz && !G.quiz.finished) { G.quiz = null; } else { G.quiz = null; G.topic = ''; } render(true); break;
+      case 'gstart': gramStart(); break;
+      case 'gpick': gramPick(Number(el.getAttribute('data-i'))); break;
+      case 'gnext': gramNext(); break;
       case 'chretry': chatReset(); chatOpen(); break;
       case 'chjoin': chatJoin(); break;
       case 'chroom': CH.room = v; CH.msgs = []; CH.err = ''; render(); chatFetch(true); break;
