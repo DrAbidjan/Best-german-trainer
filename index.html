@@ -275,6 +275,8 @@ details.all[open] summary::after{content:"Hide"}
 .cmsg .cact{display:flex;gap:14px}.cmsg .cact button{font-size:12.5px;opacity:.7;text-decoration:underline;padding:4px 0}
 .fs{font-size:18px!important}
 .tform{display:flex;gap:8px;margin-top:8px}.tform .field{flex:1;min-width:0}.tform .btn{width:auto;min-width:84px}
+.plans{display:flex;gap:10px;margin:12px 0}.plan{flex:1;padding:14px 10px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);text-align:center;display:flex;flex-direction:column;gap:3px}
+.plan b{font-size:17px}.plan .pr{font-size:18px;font-weight:700}.plan small{color:var(--muted);font-size:13px}.plan.best{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}.plan[disabled]{opacity:.5}
 .rules{margin:14px 0;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);font-size:15px}
 .rules ul{margin:6px 0 0 18px;list-style:disc}.rules li{margin:3px 0}#chnick{margin-bottom:4px}.chk{display:flex;gap:10px;align-items:center;margin:10px 0 14px;font-size:16px}
 .linkbtn{text-decoration:underline;color:var(--muted);font-size:13.5px}
@@ -712,7 +714,7 @@ details.all[open] summary::after{content:"Hide"}
   var PREMIUM_MODES = ['type', 'speak'];
   var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   var account = { session:null, premium:false, offline:false, checked:false, step:'email', email:'', busy:'', msg:'', kind:'',
-                  waiting:false, cooldownUntil:0, sync:'', orders:[], lastRefresh:0 };
+                  waiting:false, cooldownUntil:0, sync:'', orders:[], sub:null, lastRefresh:0 };
 
   function lsGet(k) { try { return JSON.parse(window.localStorage.getItem(k)); } catch (e) { return null; } }
   function lsSet(k, v) { try { window.localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
@@ -808,9 +810,14 @@ details.all[open] summary::after{content:"Hide"}
     });
   }
   function loadOrders(token) {
-    return api('/rest/v1/rpc/my_purchases', { method:'POST', body:{} }, token).then(function (r) {
-      account.orders = (r.ok && Array.isArray(r.data)) ? r.data.slice(0, 20) : [];
-    }).catch(function () { /* optional information */ });
+    return Promise.all([
+      api('/rest/v1/rpc/my_purchases', { method:'POST', body:{} }, token).then(function (r) {
+        account.orders = (r.ok && Array.isArray(r.data)) ? r.data.slice(0, 20) : [];
+      }),
+      api('/rest/v1/rpc/my_subscription', { method:'POST', body:{} }, token).then(function (r) {
+        account.sub = (r.ok && Array.isArray(r.data) && r.data[0]) ? r.data[0] : null;
+      })
+    ]).catch(function () { /* optional information */ });
   }
 
   /* Ask the server who we are and whether we have Premium. Only a successful server answer can switch Premium OFF;
@@ -822,10 +829,10 @@ details.all[open] summary::after{content:"Hide"}
     var uid = account.session.user.id;
     return getToken().then(function (token) {
       if (!token) { applyFree(true); return; }
-      return api('/rest/v1/entitlements?select=premium&user_id=eq.' + uid, {}, token).then(function (r) {
+      return api('/rest/v1/entitlements?select=premium,premium_until&user_id=eq.' + uid, {}, token).then(function (r) {
         if (r.status === 401) { dropSession(); return; }
         if (!r.ok || !Array.isArray(r.data)) throw new Error('offline');
-        if (r.data.length && r.data[0].premium === true) return loadContent(token, uid).then(function () { return loadOrders(token); });
+        if (r.data.length && r.data[0].premium === true && (!r.data[0].premium_until || new Date(r.data[0].premium_until).getTime() > Date.now())) return loadContent(token, uid).then(function () { return loadOrders(token); });
         applyFree(true);
         return loadOrders(token);
       });
@@ -878,23 +885,23 @@ details.all[open] summary::after{content:"Hide"}
       account.session = null; lsDel(SESSION_KEY);
       applyFree(true);
       P = null; state = defaults(); persistLocal();     // the progress is safe in the account; this phone starts clean
-      account.step = 'email'; account.email = ''; account.orders = []; account.sync = '';
+      account.step = 'email'; account.email = ''; account.orders = []; account.sub = null; account.sync = '';
       setMsg('You are signed out.', '');
       render(true);
     });
   }
 
   /* ---- buying and restoring ---- */
-  function callFn(name) {
+  function callFn(name, body) {
     return getToken().then(function (token) {
       if (!token) throw new Error('signedout');
-      return api('/functions/v1/' + name, { method:'POST', body:{} }, token);
+      return api('/functions/v1/' + name, { method:'POST', body:body || {} }, token);
     });
   }
-  function startCheckout() {
-    if (account.busy) return;
-    account.busy = 'buy'; setMsg(''); render();
-    callFn('create-checkout').then(function (r) {
+  function startCheckout(plan) {
+    if (account.busy || (plan !== 'monthly' && plan !== 'yearly')) return;
+    account.busy = 'buy:' + plan; setMsg(''); render();
+    callFn('create-checkout', { plan:plan }).then(function (r) {
       account.busy = '';
       if (r.ok && r.data && r.data.alreadyPremium) { setMsg('You already have Premium.', 'good'); return refreshAccount(); }
       if (r.ok && r.data && typeof r.data.url === 'string' && /^https:\/\/([a-z0-9-]+\.)*lemonsqueezy\.com\//i.test(r.data.url)) { window.location.href = r.data.url; return; }
@@ -903,6 +910,15 @@ details.all[open] summary::after{content:"Hide"}
       account.busy = '';
       setMsg(e && e.message === 'signedout' ? 'Please sign in first.' : 'You need an internet connection to buy.', 'bad'); render();
     });
+  }
+  function openPortal() {
+    if (account.busy) return;
+    account.busy = 'portal'; setMsg(''); render();
+    callFn('sync-purchases', { portal:true }).then(function (r) {
+      account.busy = '';
+      if (r.ok && r.data && typeof r.data.portalUrl === 'string' && /^https:\/\/([a-z0-9-]+\.)*lemonsqueezy\.com\//i.test(r.data.portalUrl)) { window.location.href = r.data.portalUrl; return; }
+      setMsg(r.status === 429 ? 'Please wait a few seconds and try again.' : (r.status === 404 ? 'No subscription was found for this account.' : 'The subscription page could not be opened. Please try again in a minute.'), 'bad'); render();
+    }).catch(function () { account.busy = ''; setMsg('You need an internet connection to manage your subscription.', 'bad'); render(); });
   }
   function checkPurchase() {
     if (account.busy) return;
@@ -991,11 +1007,14 @@ details.all[open] summary::after{content:"Hide"}
   }
 
   /* ---- account screen ---- */
-  function priceLabel() { return esc(CFG.PRICE_LABEL || '€2.99'); }
+  function priceMonthly() { return esc(CFG.PRICE_MONTHLY || '€5.99'); }
+  function priceYearly() { return esc(CFG.PRICE_YEARLY || '€9.99'); }
+  function priceFrom() { return priceMonthly() + ' a month (or ' + priceYearly() + ' a year)'; }
+  function perMonthOfYear() { var n = parseFloat(String(CFG.PRICE_YEARLY || '9.99').replace(',', '.').replace(/[^0-9.]/g, '')); return isFinite(n) ? '€' + (n / 12).toFixed(2) : ''; }
   function wordExtra() { return Number(CFG.PREMIUM_WORD_COUNT) || 132; }
   function extraCount() { return Number(CFG.PREMIUM_VERB_COUNT) || 140; }
   function perks() {
-    return '<ul class="perks"><li><b>' + extraCount() + ' more verbs</b> (B2 and important B1)</li><li>Picture words: 11 more categories (about ' + wordExtra() + ' words) and picture typing</li><li>Typing test</li><li>Speaking practice</li><li>Progress saved to your account</li></ul>';
+    return '<ul class="perks"><li><b>' + extraCount() + ' more verbs</b> (B2 and important B1)</li><li>Picture words: 11 more categories (about ' + wordExtra() + ' words) and picture typing</li><li>Typing test</li><li>Speaking practice</li><li>Chat with other learners (rooms A1 to B2)</li><li>Progress saved to your account</li></ul>';
   }
   function legalLinks() {
     return '<p class="foot"><a href="impressum.html">Impressum</a> &middot; <a href="datenschutz.html">Datenschutz / Privacy</a> &middot; <a href="terms.html">Terms &amp; refunds</a></p>';
@@ -1004,6 +1023,42 @@ details.all[open] summary::after{content:"Hide"}
     var to = String(CFG.SUPPORT_EMAIL || '');
     var body = 'Hello,\n\nMy account email: ' + (account.session ? account.session.user.email : '(not signed in)') + '\n' + (extra || '') + '\nMy question:\n';
     return 'mailto:' + encodeURIComponent(to).replace('%40', '@') + '?subject=' + encodeURIComponent('Verbtrainer support') + '&body=' + encodeURIComponent(body);
+  }
+  function fmtDate(iso) {
+    var d = new Date(iso); if (isNaN(d.getTime())) return '';
+    return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + d.getFullYear();
+  }
+  function plansCard(canBuy) {
+    var busy = account.busy, h = '<div class="card"><h2>Premium</h2><p class="muted small">Choose a plan. It renews automatically until you cancel. Cancel any time in this screen: you keep Premium until the end of the period you paid for.</p>' + perks();
+    var sub = account.sub;
+    if (canBuy && sub && (sub.status === 'expired' || sub.status === 'cancelled' || sub.status === 'unpaid')) h += '<p class="muted small"><b>Your last subscription has ended.</b> You can subscribe again below.</p>';
+    if (canBuy && sub && sub.status === 'paused') h += '<p class="muted small"><b>Your subscription is paused.</b> Use "Manage subscription" to resume it.</p>';
+    if (canBuy) {
+      h += '<div class="plans">' +
+        '<button class="plan" data-act="buy" data-v="monthly"' + (busy ? ' disabled' : '') + '><b>Monthly</b><span class="pr">' + priceMonthly() + ' / month</span><small>Cancel any time</small></button>' +
+        '<button class="plan best" data-act="buy" data-v="yearly"' + (busy ? ' disabled' : '') + '><b>Yearly</b><span class="pr">' + priceYearly() + ' / year</span><small>' + (perMonthOfYear() ? 'only ' + perMonthOfYear() + ' a month' : 'best value') + '</small></button></div>';
+      if (busy.indexOf('buy:') === 0) h += '<p class="muted small" role="status">Opening checkout...</p>';
+      h += '<p class="muted small">Prices include VAT where it applies. Payment is handled by Lemon Squeezy. By subscribing you agree to the <a href="terms.html">terms</a>. After paying, come back to this app. If Premium does not appear, tap the button below.</p>' +
+        '<div class="btns"><button class="btn ghost" data-act="checkbuy"' + (busy ? ' disabled' : '') + '>' + (busy === 'check' ? 'Checking...' : 'Check my purchase') + '</button></div>';
+      if (sub && sub.status !== 'expired') h += '<div class="btns"><button class="btn ghost" data-act="portal"' + (busy ? ' disabled' : '') + '>Manage subscription</button></div>';
+    } else {
+      h += '<p><b>Monthly</b> ' + priceMonthly() + ' / month<br><b>Yearly</b> ' + priceYearly() + ' / year' + (perMonthOfYear() ? ' (only ' + perMonthOfYear() + ' a month)' : '') + '</p><p class="muted small">Sign in to subscribe. Premium belongs to your email address.</p>';
+    }
+    return h + '</div>';
+  }
+  function subscriptionCard() {
+    var sub = account.sub, h = '<div class="card"><h2>Your subscription</h2>';
+    if (sub) {
+      var plan = sub.plan === 'yearly' ? 'Yearly plan' : 'Monthly plan', line = '';
+      if (sub.status === 'active' || sub.status === 'on_trial') line = sub.renews_at ? 'Renews automatically on ' + fmtDate(sub.renews_at) + '.' : 'Renews automatically.';
+      else if (sub.status === 'cancelled') line = 'Cancelled. Premium stays on until ' + fmtDate(sub.ends_at) + '.';
+      else if (sub.status === 'past_due') line = 'The last payment failed. Please update your payment method with "Manage subscription" to keep Premium.';
+      h += '<p><b>' + plan + '</b>' + (sub.test_mode ? ' (test)' : '') + '</p>' + (line ? '<p class="muted small">' + esc(line) + '</p>' : '');
+      h += '<div class="btns"><button class="btn ghost" data-act="portal"' + (account.busy ? ' disabled' : '') + '>' + (account.busy === 'portal' ? 'Opening...' : 'Manage or cancel subscription') + '</button></div>';
+    } else {
+      h += '<p class="muted small">Everything is unlocked. Thank you!</p>';
+    }
+    return h + '</div>';
   }
   function viewAccount() {
     var h = '<h1 class="page-title">Account</h1>';
@@ -1027,20 +1082,16 @@ details.all[open] summary::after{content:"Hide"}
           '<div class="btns"><button class="btn" data-act="sendcode"' + (account.busy ? ' disabled' : '') + '>' + (account.busy === 'send' ? 'Sending...' : 'Send me a code') + '</button></div>'
         h += '<p class="small" style="margin-top:12px"><button class="linkbtn" data-act="havecode">I already have a code</button></p>';
       }
-      h += '</div><div class="card"><h2>Premium &middot; ' + priceLabel() + ' once</h2><p class="muted small">One payment, no subscription.</p>' + perks() +
-        '<p class="muted small">Free: the first 15 verbs, flashcards, multiple choice and review.</p></div>';
+      h += '</div>' + plansCard(false);
     } else {
       var email = account.session.user.email;
       h += '<div class="card"><p class="muted small">Signed in as</p><p class="acct-email">' + esc(email) + '</p>' +
         '<span class="status ' + (account.premium ? 'ok' : '') + '">' + (account.premium ? 'Premium' : 'Free plan') + '</span>' +
         (account.offline ? '<p class="muted small">Premium was verified earlier. Connect to the internet to refresh it.</p>' : '') + '</div>';
       if (!account.premium) {
-        h += '<div class="card"><h2>Premium &middot; ' + priceLabel() + ' once</h2><p class="muted small">One payment, no subscription. Payment is handled by Lemon Squeezy.</p>' + perks() +
-          '<div class="btns"><button class="btn" data-act="buy"' + (account.busy ? ' disabled' : '') + '>' + (account.busy === 'buy' ? 'Opening checkout...' : 'Buy Premium') + '</button></div>' +
-          '<p class="muted small">After paying, come back to this app. If Premium does not appear, tap the button below.</p>' +
-          '<div class="btns"><button class="btn ghost" data-act="checkbuy"' + (account.busy ? ' disabled' : '') + '>' + (account.busy === 'check' ? 'Checking...' : 'Check my purchase') + '</button></div></div>';
+        h += plansCard(true);
       } else {
-        h += '<div class="card"><h2>Thank you!</h2><p class="muted small">Everything is unlocked.</p></div>';
+        h += subscriptionCard();
       }
       if (account.orders.length) {
         h += '<div class="card"><h2>Your orders</h2><ul class="orders">' + account.orders.map(function (o) {
@@ -1152,7 +1203,7 @@ details.all[open] summary::after{content:"Hide"}
     }
 
     if (!account.premium && SB_OK) {
-      h += '<div class="upsell"><b>Free plan: 15 verbs.</b> Premium adds ' + extraCount() + ' more verbs, the typing test and speaking practice for ' + priceLabel() + ', paid once.' +
+      h += '<div class="upsell"><b>Free plan: 15 verbs.</b> Premium adds ' + extraCount() + ' more verbs, the typing test and speaking practice from ' + priceFrom() + ', cancel anytime.' +
         '<button class="btn" data-act="upgrade">See Premium</button></div>';
     }
     if (!isStandalone() && !state.hideInstall) {
@@ -1191,7 +1242,7 @@ details.all[open] summary::after{content:"Hide"}
       h += list.map(entryHtml).join('');
     });
     h += '<p class="nores" id="nores" hidden>No verbs found.</p>';
-    if (!account.premium && SB_OK) h += '<div class="upsell"><b>More verbs with Premium.</b> ' + extraCount() + ' more B2 and B1 verbs for ' + priceLabel() + ', paid once.<button class="btn" data-act="upgrade">See Premium</button></div>';
+    if (!account.premium && SB_OK) h += '<div class="upsell"><b>More verbs with Premium.</b> ' + extraCount() + ' more B2 and B1 verbs from ' + priceFrom() + ', cancel anytime.<button class="btn" data-act="upgrade">See Premium</button></div>';
     return h;
   }
   function applySearch() {
@@ -1483,7 +1534,7 @@ details.all[open] summary::after{content:"Hide"}
         return '<article class="wcard">' + picHtml(w) + '<p class="wname">' + artHtml(w) + '<span class="de">' + esc(w.de) + '</span></p><p class="muted small">' + esc(w.en) + ' ' + sayBtn(wfull(w), wfull(w)) + '</p></article>';
       }).join('') + '</div>';
     }
-    if (!account.premium && SB_OK) h += '<div class="upsell"><b>Free: the Fruit category.</b> Premium adds ' + (WORD_CATS.length > 1 ? '' : '11 more categories with about ') + wordExtra() + ' more words and picture typing for ' + priceLabel() + ', paid once.<button class="btn" data-act="upgrade">See Premium</button></div>';
+    if (!account.premium && SB_OK) h += '<div class="upsell"><b>Free: the Fruit category.</b> Premium adds ' + (WORD_CATS.length > 1 ? '' : '11 more categories with about ') + wordExtra() + ' more words and picture typing from ' + priceFrom() + ', cancel anytime.<button class="btn" data-act="upgrade">See Premium</button></div>';
     h += '<p class="foot">Photos: Wikipedia and Wikimedia Commons (various licences), loaded when you are online. Your device connects to Wikipedia to load them.</p>';
     return h;
   }
@@ -1685,7 +1736,7 @@ details.all[open] summary::after{content:"Hide"}
     var h = '<h1 class="page-title">Chat</h1>';
     if (!SB_OK) return h + '<p class="muted">The chat is not switched on in this copy of the app.</p>';
     if (!account.session) return h + '<p class="muted">Write German with other learners. Sign in to your account first.</p><button class="btn" data-act="tab" data-v="account">Go to Account</button>';
-    if (!account.premium) return h + '<div class="upsell"><b>Chat is for Premium members.</b> Write German with other learners in rooms for A1, A2, B1 and B2. Included with Premium (' + priceLabel() + ', paid once).<button class="btn" data-act="upgrade">See Premium</button></div>';
+    if (!account.premium) return h + '<div class="upsell"><b>Chat is for Premium members.</b> Write German with other learners in rooms for A1, A2, B1 and B2. Included with Premium (from ' + priceFrom() + ', cancel anytime).<button class="btn" data-act="upgrade">See Premium</button></div>';
     if (account.offline) return h + '<p class="muted">The chat needs an internet connection.</p>';
     if (CH.phase === 'load' || CH.phase === 'idle') return h + '<p class="muted">Loading...</p>';
     if (CH.phase === 'error') return h + '<p class="fb bad" style="padding:14px">' + esc(CH.err) + '</p><button class="btn" data-act="chretry">Try again</button>';
@@ -1803,7 +1854,8 @@ details.all[open] summary::after{content:"Hide"}
       case 'verify': verifyCode(); break;
       case 'changeemail': account.step = 'email'; setMsg(''); render(); break;
       case 'signout': signOut(); break;
-      case 'buy': startCheckout(); break;
+      case 'buy': startCheckout(v); break;
+      case 'portal': openPortal(); break;
       case 'checkbuy': checkPurchase(); break;
       case 'upgrade': openUpgrade(); break;
       case 'wstart': startPics(el.getAttribute('data-mode')); break;
