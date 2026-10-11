@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>B2 Verb Trainer (Free)</title>
+<title>B2 Verb Trainer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FFD400" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F1318" media="(prefers-color-scheme: dark)">
@@ -266,23 +266,18 @@ details.all[open] summary::after{content:"Hide"}
 .pflash .pic{max-width:300px}
 .pflash .tap{text-align:center}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-.emo{font-size:26px;width:34px;text-align:center}
-.tdone{font-size:13px;font-weight:700;color:var(--good)}
-.setting{color:var(--muted);font-size:14.5px;margin:2px 0 10px}
-.chat{display:flex;flex-direction:column;gap:8px;margin:6px 0 12px}
-.bub{max-width:86%;padding:10px 14px;border-radius:18px;line-height:1.4;font-size:17px}
-.bub b{display:block;font-size:12.5px;color:var(--muted);margin-bottom:2px}
-.bub.them{align-self:flex-start;background:var(--surface);border:1px solid var(--line)}
-.bub.me{align-self:flex-end;background:var(--accent);color:var(--accent-ink)}
-.bub.me.off{opacity:.65}
-.bub .tr{font-size:14px;color:var(--muted);font-style:italic;margin-top:4px}
-.hintline{margin:8px 0 0;font-size:16px}
-.slot{background:rgba(120,120,255,.18);border-radius:6px;padding:0 5px;font-style:italic}
-.exlist{display:flex;flex-direction:column;gap:6px;margin:10px 0 0;font-size:17px}
-.exlist span{padding:8px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
-.tform{display:flex;gap:8px;margin-top:12px}.tform .field{flex:1;min-width:0;font-size:19px}.tform .btn{width:auto;min-width:90px}
-.sentence-s{font-size:19px;line-height:1.6}
-.chat.done{margin-top:14px;text-align:left}
+
+.chatlist{max-height:46vh;min-height:160px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px;border:1px solid var(--line);border-radius:16px;background:var(--surface);display:flex;flex-direction:column;gap:8px}
+.cmsg{max-width:90%;align-self:flex-start;padding:8px 12px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
+.cmsg.mine{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.cmsg .chead{display:flex;gap:10px;justify-content:space-between;font-size:12.5px;opacity:.75}
+.cmsg p{margin:2px 0;overflow-wrap:anywhere;font-size:16.5px;line-height:1.35}
+.cmsg .cact{display:flex;gap:14px}.cmsg .cact button{font-size:12.5px;opacity:.7;text-decoration:underline;padding:4px 0}
+.fs{font-size:18px!important}
+.tform{display:flex;gap:8px;margin-top:8px}.tform .field{flex:1;min-width:0}.tform .btn{width:auto;min-width:84px}
+.rules{margin:14px 0;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);font-size:15px}
+.rules ul{margin:6px 0 0 18px;list-style:disc}.rules li{margin:3px 0}#chnick{margin-bottom:4px}.chk{display:flex;gap:10px;align-items:center;margin:10px 0 14px;font-size:16px}
+.linkbtn{text-decoration:underline;color:var(--muted);font-size:13.5px}
 </style>
 </head>
 <body>
@@ -290,6 +285,7 @@ details.all[open] summary::after{content:"Hide"}
 <nav id="nav" aria-label="Main"></nav>
 <noscript><p style="padding:24px">This app needs JavaScript turned on.</p></noscript>
 
+<script src="config.js"></script>
 <script>
 (function () {
   'use strict';
@@ -304,67 +300,9 @@ details.all[open] summary::after{content:"Hide"}
   var FREE_DAYS = [
     {"level": "B2", "verbs": [["vermeiden", "to avoid", "Ich versuche, Fehler zu [vermeiden].", "I try to avoid mistakes."], ["ermöglichen", "to enable / make possible", "Diese Ausbildung [ermöglicht] mir neue Chancen.", "This training makes new opportunities possible for me."], ["berücksichtigen", "to take into account", "Wir müssen deine Meinung [berücksichtigen].", "We have to take your opinion into account."], ["sich bemühen", "to make an effort", "Ich [bemühe] mich, Deutsch zu sprechen.", "I'm making an effort to speak German."], ["abhängen", "to depend on", "Das [hängt] vom Wetter [ab].", "That depends on the weather."]]},
     {"level": "B2", "verbs": [["behaupten", "to claim", "Er [behauptet], dass er die Wahrheit sagt.", "He claims that he is telling the truth."], ["zustimmen", "to agree", "Ich [stimme] dir vollkommen [zu].", "I completely agree with you."], ["widersprechen", "to contradict / disagree", "Ich möchte dir nicht [widersprechen].", "I don't want to contradict you."], ["begründen", "to justify", "Bitte [begründen] Sie Ihre Entscheidung.", "Please justify your decision."], ["überzeugen", "to convince", "Er konnte mich von seiner Idee [überzeugen].", "He was able to convince me of his idea."]]},
-    {"level": "B2", "verbs": [["übernehmen", "to take over", "Ich [übernehme] die Verantwortung für diesen Fehler.", "I take responsibility for this mistake."], ["erledigen", "to complete / take care of", "Ich muss heute noch einige wichtige Aufgaben [erledigen].", "I still have to take care of some important tasks today."], ["vereinbaren", "to arrange", "Ich möchte einen Termin beim Zahnarzt [vereinbaren].", "I'd like to arrange an appointment at the dentist."], ["voraussetzen", "to require", "Diese Stelle [setzt] gute Deutschkenntnisse [voraus].", "This position requires good German skills."], ["gewährleisten", "to ensure", "Wir müssen die Sicherheit der Patienten [gewährleisten].", "We must ensure the safety of the patients."]]},
-    {"level": "B2", "verbs": [["erörtern", "to discuss in detail", "Wir [erörtern] das Problem in der nächsten Sitzung.", "We will discuss the problem in detail at the next meeting."], ["betonen", "to emphasize", "Der Arzt [betont], wie wichtig Zahnpflege ist.", "The doctor emphasizes how important dental care is."], ["bezweifeln", "to doubt", "Ich [bezweifle], dass das Ergebnis stimmt.", "I doubt that the result is correct."], ["andeuten", "to hint at", "Sie [deutet] [an], dass sie die Stelle wechseln möchte.", "She hints that she wants to change jobs."], ["einräumen", "to concede / admit", "Er [räumt] [ein], dass er einen Fehler gemacht hat.", "He admits that he made a mistake."]]},
-    {"level": "B2", "verbs": [["bestreiten", "to deny / dispute", "Er [bestreitet], den Termin vergessen zu haben.", "He denies having forgotten the appointment."], ["befürworten", "to be in favour of / advocate", "Viele Ärzte [befürworten] diese neue Methode.", "Many doctors are in favour of this new method."], ["ablehnen", "to reject / decline", "Ich muss dein Angebot leider [ablehnen].", "Unfortunately I have to decline your offer."], ["bemängeln", "to criticize / find fault with", "Der Patient [bemängelt] die lange Wartezeit.", "The patient complains about the long waiting time."], ["anmerken", "to remark / note", "Darf ich kurz etwas [anmerken]?", "May I make a quick remark?"]]},
-    {"level": "B2", "verbs": [["sich entwickeln", "to develop", "Das Kind [entwickelt] sich sehr gut.", "The child is developing very well."], ["verändern", "to change", "Der Umzug [verändert] mein ganzes Leben.", "The move is changing my whole life."], ["verbessern", "to improve", "Ich möchte meine Aussprache [verbessern].", "I want to improve my pronunciation."], ["sich verschlechtern", "to get worse", "Sein Zustand [verschlechtert] sich langsam.", "His condition is slowly getting worse."], ["fördern", "to promote / encourage", "Die Firma [fördert] junge Talente.", "The company promotes young talent."]]},
-    {"level": "B2", "verbs": [["erweitern", "to expand / broaden", "Ich will meinen Wortschatz [erweitern].", "I want to expand my vocabulary."], ["einschränken", "to restrict / limit", "Du solltest deinen Zuckerkonsum [einschränken].", "You should limit your sugar consumption."], ["reduzieren", "to reduce", "Wir wollen die Kosten [reduzieren].", "We want to reduce the costs."], ["steigern", "to increase / boost", "Sport kann die Leistung [steigern].", "Exercise can boost performance."], ["zunehmen", "to increase / gain weight", "Die Zahl der Patienten [nimmt] stark [zu].", "The number of patients is increasing sharply."]]},
-    {"level": "B2", "verbs": [["sich bewerben", "to apply (for a job)", "Ich [bewerbe] mich um eine Stelle in Hamburg.", "I am applying for a job in Hamburg."], ["kündigen", "to quit / terminate", "Er [kündigt] seinen Mietvertrag zum Monatsende.", "He is terminating his lease at the end of the month."], ["beantragen", "to apply for / request officially", "Ich möchte ein Visum [beantragen].", "I would like to apply for a visa."], ["genehmigen", "to approve / authorize", "Der Chef [genehmigt] meinen Urlaub.", "The boss approves my vacation."], ["verlängern", "to extend", "Wir müssen den Vertrag [verlängern].", "We have to extend the contract."]]},
-    {"level": "B2", "verbs": [["leiten", "to lead / manage", "Sie [leitet] die Abteilung seit zwei Jahren.", "She has been managing the department for two years."], ["beauftragen", "to commission / assign", "Die Praxis [beauftragt] ein externes Labor.", "The practice commissions an external lab."], ["unterstützen", "to support / back up", "Meine Familie [unterstützt] mich bei der Prüfung.", "My family supports me with the exam."], ["ergänzen", "to add to / complete", "Bitte [ergänzen] Sie die fehlenden Angaben.", "Please fill in the missing details."], ["vertreten", "to represent / stand in for", "Ich [vertrete] heute meine Kollegin.", "I am standing in for my colleague today."]]},
-    {"level": "B2", "verbs": [["mitteilen", "to notify / let know", "Bitte [teilen] Sie uns Ihre neue Adresse [mit].", "Please let us know your new address."], ["erwähnen", "to mention", "Du solltest die Allergie unbedingt [erwähnen].", "You should definitely mention the allergy."], ["verweisen", "to refer / direct (to)", "Ich [verweise] auf die Informationen im Anhang.", "I refer to the information in the attachment."], ["vorschlagen", "to suggest", "Ich [schlage] einen anderen Termin [vor].", "I suggest a different appointment."], ["empfehlen", "to recommend", "Der Zahnarzt [empfiehlt] eine professionelle Zahnreinigung.", "The dentist recommends a professional teeth cleaning."]]},
-    {"level": "B2", "verbs": [["darlegen", "to set out / state", "Er [legt] seine Gründe ausführlich [dar].", "He sets out his reasons in detail."], ["schildern", "to describe / recount", "Bitte [schildern] Sie die Beschwerden genau.", "Please describe the symptoms precisely."], ["erläutern", "to explain / elaborate", "Die Ärztin [erläutert] den Ablauf der Behandlung.", "The doctor explains the course of the treatment."], ["zusammenfassen", "to summarize", "Kannst du den Text kurz [zusammenfassen]?", "Can you briefly summarize the text?"], ["hinweisen", "to point out", "Ich möchte Sie auf die Risiken [hinweisen].", "I would like to point out the risks to you."]]},
-    {"level": "B2", "verbs": [["annehmen", "to assume / accept", "Ich [nehme] [an], dass er heute kommt.", "I assume that he is coming today."], ["vermuten", "to suspect", "Die Ärztin [vermutet] eine Entzündung.", "The doctor suspects an inflammation."], ["befürchten", "to fear", "Ich [befürchte], dass wir zu spät kommen.", "I fear that we will be late."], ["feststellen", "to determine / notice", "Der Zahnarzt [stellt] Karies [fest].", "The dentist finds a cavity."], ["erkennen", "to recognize", "Ich [erkenne] das Problem sofort.", "I recognize the problem right away."]]},
-    {"level": "B2", "verbs": [["beurteilen", "to judge", "Das kann ich noch nicht [beurteilen].", "I can't judge that yet."], ["bewerten", "to rate / grade", "Die Kunden [bewerten] den Service sehr positiv.", "The customers rate the service very positively."], ["vergleichen", "to compare", "Wir [vergleichen] die Preise verschiedener Anbieter.", "We compare the prices of different providers."], ["unterscheiden", "to distinguish", "Man muss zwischen beiden Fällen [unterscheiden].", "You have to distinguish between the two cases."], ["analysieren", "to analyze", "Die Forscher [analysieren] die Daten.", "The researchers analyze the data."]]},
-    {"level": "B2", "verbs": [["sich entscheiden", "to decide", "Ich [entscheide] mich für den zweiten Termin.", "I am choosing the second appointment."], ["beschließen", "to resolve / decide formally", "Der Vorstand [beschließt] neue Regeln.", "The board decides on new rules."], ["sich verpflichten", "to commit oneself", "Ich [verpflichte] mich, pünktlich zu sein.", "I commit to being on time."], ["verzichten", "to do without / give up", "Ich [verzichte] auf Zucker.", "I am giving up sugar."], ["sich einigen", "to reach an agreement", "Wir [einigen] uns auf einen Kompromiss.", "We agree on a compromise."]]},
-    {"level": "B2", "verbs": [["bestehen", "to consist of / to pass (an exam)", "Die Prüfung [besteht] aus zwei Teilen.", "The exam consists of two parts."], ["beruhen", "to be based on", "Diese Aussage [beruht] auf einem Irrtum.", "This statement is based on a mistake."], ["betreffen", "to concern / affect", "Die neue Regel [betrifft] alle Mitarbeiter.", "The new rule affects all employees."], ["sich handeln", "to be a matter of (es handelt sich um)", "Es [handelt] sich um einen Notfall.", "It is an emergency."], ["gelten", "to apply / be valid", "Diese Regel [gilt] für alle.", "This rule applies to everyone."]]},
-    {"level": "B2", "verbs": [["beheben", "to fix / remedy", "Der Techniker [behebt] den Fehler.", "The technician fixes the fault."], ["bewältigen", "to cope with / manage", "Sie [bewältigt] die Arbeit problemlos.", "She manages the work without problems."], ["überwinden", "to overcome", "Er muss seine Angst vor dem Zahnarzt [überwinden].", "He has to overcome his fear of the dentist."], ["scheitern", "to fail", "Das Projekt [scheitert] am fehlenden Geld.", "The project fails because of a lack of money."], ["verhindern", "to prevent", "Wir wollen weitere Schäden [verhindern].", "We want to prevent further damage."]]},
-    {"level": "B2", "verbs": [["beseitigen", "to eliminate / remove", "Der Zahnarzt [beseitigt] den Zahnstein.", "The dentist removes the tartar."], ["vorbeugen", "to take precautions against", "Regelmäßiges Putzen kann Karies [vorbeugen].", "Regular brushing can help against cavities."], ["ausschließen", "to rule out / exclude", "Wir können einen Irrtum nicht [ausschließen].", "We cannot rule out a mistake."], ["riskieren", "to risk", "Du [riskierst] deine Gesundheit.", "You are risking your health."], ["gefährden", "to endanger", "Rauchen [gefährdet] die Gesundheit.", "Smoking endangers your health."]]},
-    {"level": "B2", "verbs": [["behandeln", "to treat", "Die Ärztin [behandelt] den Patienten seit Montag.", "The doctor has been treating the patient since Monday."], ["untersuchen", "to examine", "Der Zahnarzt [untersucht] die Zähne genau.", "The dentist examines the teeth carefully."], ["verschreiben", "to prescribe", "Der Arzt [verschreibt] ein Antibiotikum.", "The doctor prescribes an antibiotic."], ["lindern", "to relieve / ease", "Diese Tabletten [lindern] die Schmerzen.", "These tablets relieve the pain."], ["heilen", "to heal / cure", "Die Wunde [heilt] gut.", "The wound is healing well."]]},
-    {"level": "B2", "verbs": [["überweisen", "to refer (a patient) / transfer money", "Der Hausarzt [überweist] mich zum Facharzt.", "The family doctor refers me to a specialist."], ["betäuben", "to anesthetize / numb", "Wir müssen den Zahn vorher [betäuben].", "We have to numb the tooth beforehand."], ["aufklären", "to explain the risks / educate", "Der Arzt muss den Patienten über Risiken [aufklären].", "The doctor has to inform the patient about the risks."], ["einwilligen", "to consent", "Der Patient [willigt] in die Behandlung [ein].", "The patient consents to the treatment."], ["sich erholen", "to recover / rest", "Ich [erhole] mich gut nach der Operation.", "I am recovering well after the operation."]]},
-    {"level": "B2", "verbs": [["entstehen", "to arise / come into being", "Durch Bakterien [entsteht] Karies.", "Cavities arise from bacteria."], ["verursachen", "to cause", "Zucker [verursacht] Karies.", "Sugar causes cavities."], ["bewirken", "to bring about / achieve", "Die Behandlung [bewirkt] eine schnelle Besserung.", "The treatment brings about a quick improvement."], ["auslösen", "to trigger", "Stress kann Kopfschmerzen [auslösen].", "Stress can trigger headaches."], ["zurückführen", "to trace back (to)", "Man kann den Fehler auf einen Irrtum [zurückführen].", "The mistake can be traced back to an error."]]},
-    {"level": "B2", "verbs": [["sich ereignen", "to occur (of events)", "Solche Unfälle [ereignen] sich oft im Winter.", "Such accidents often occur in winter."], ["stattfinden", "to take place", "Die Konferenz [findet] nächste Woche [statt].", "The conference takes place next week."], ["verlaufen", "to proceed / run its course", "Die Operation [verläuft] ohne Komplikationen.", "The operation is going without complications."], ["eintreten", "to set in / come into effect", "Die Wirkung [tritt] nach etwa 30 Minuten [ein].", "The effect sets in after about 30 minutes."], ["geschehen", "to happen", "Das [geschieht] nicht zum ersten Mal.", "This isn't happening for the first time."]]},
-    {"level": "B2", "verbs": [["sich verabreden", "to arrange to meet", "Ich [verabrede] mich morgen mit einer Freundin.", "I'm arranging to meet a friend tomorrow."], ["sich beschweren", "to complain", "Er [beschwert] sich über den Lärm.", "He complains about the noise."], ["sich entschuldigen", "to apologize", "Ich [entschuldige] mich für die Verspätung.", "I apologize for being late."], ["sich beteiligen", "to take part / contribute", "Alle sollen sich an der Diskussion [beteiligen].", "Everyone should take part in the discussion."], ["sich kümmern", "to take care of / see to", "Ich [kümmere] mich um die Unterlagen.", "I will take care of the documents."]]},
-    {"level": "B2", "verbs": [["sich auseinandersetzen", "to deal with / engage with", "Wir [setzen] uns intensiv mit dem Thema [auseinander].", "We are dealing intensively with the topic."], ["sich beziehen", "to refer to", "Ich [beziehe] mich auf Ihre E-Mail vom Montag.", "I am referring to your email from Monday."], ["sich konzentrieren", "to concentrate", "Ich kann mich heute nicht [konzentrieren].", "I can't concentrate today."], ["sich gewöhnen", "to get used to", "Ich muss mich an das Wetter [gewöhnen].", "I have to get used to the weather."], ["sich anpassen", "to adapt", "Man muss sich an neue Situationen [anpassen].", "You have to adapt to new situations."]]},
-    {"level": "B1", "verbs": [["sich erinnern", "to remember", "Ich [erinnere] mich gut an meinen ersten Tag.", "I remember my first day well."], ["sich vorstellen", "to imagine / introduce oneself", "Das kann ich mir gut [vorstellen].", "I can imagine that well."], ["sich interessieren", "to be interested (in)", "Ich [interessiere] mich für Medizin.", "I am interested in medicine."], ["sich ärgern", "to be annoyed", "Ich [ärgere] mich über den Verkehr.", "I am annoyed about the traffic."], ["sich freuen", "to be happy / look forward to", "Ich [freue] mich auf das Wochenende.", "I am looking forward to the weekend."]]},
-    {"level": "B1", "verbs": [["vorhaben", "to plan / intend", "Was [hast] du morgen [vor]?", "What are you planning to do tomorrow?"], ["vorbereiten", "to prepare", "Ich muss die Präsentation [vorbereiten].", "I have to prepare the presentation."], ["besichtigen", "to visit / view (a place)", "Wir [besichtigen] morgen die Altstadt.", "Tomorrow we are visiting the old town."], ["übernachten", "to stay overnight", "Wir [übernachten] in einem kleinen Hotel.", "We are staying overnight in a small hotel."], ["verpassen", "to miss", "Beeil dich, sonst [verpasst] du den Zug.", "Hurry up, or you'll miss the train."]]},
-    {"level": "B1", "verbs": [["ausfallen", "to be cancelled / not take place", "Der Kurs [fällt] heute [aus].", "The class is cancelled today."], ["verschieben", "to postpone", "Können wir den Termin [verschieben]?", "Can we postpone the appointment?"], ["absagen", "to call off / cancel", "Ich muss den Termin leider [absagen].", "Unfortunately I have to cancel the appointment."], ["einladen", "to invite", "Ich [lade] dich zu meinem Geburtstag [ein].", "I am inviting you to my birthday."], ["teilnehmen", "to take part (in)", "Ich [nehme] an dem Kurs [teil].", "I am taking part in the course."]]},
-    {"level": "B1", "verbs": [["abholen", "to pick up", "Ich [hole] dich um acht Uhr vom Bahnhof [ab].", "I'll pick you up from the station at eight."], ["ausfüllen", "to fill out", "Bitte [füllen] Sie das Formular [aus].", "Please fill out the form."], ["anmelden", "to register / sign up", "Ich möchte mich für den Kurs [anmelden].", "I would like to register for the course."], ["abmelden", "to deregister / sign out", "Ich muss mich beim Amt [abmelden].", "I have to deregister at the office."], ["umziehen", "to move (house)", "Wir [ziehen] nächsten Monat nach München [um].", "We are moving to Munich next month."]]},
-    {"level": "B1", "verbs": [["erhalten", "to receive", "Sie [erhalten] die Unterlagen per Post.", "You will receive the documents by mail."], ["erfahren", "to find out / learn (news)", "Wann [erfährst] du das Ergebnis?", "When do you find out the result?"], ["verwenden", "to use", "Bitte [verwenden] Sie nur diese Zahnbürste.", "Please use only this toothbrush."], ["sich auskennen", "to know one's way around", "Ich [kenne] mich in Berlin gut [aus].", "I know my way around Berlin well."], ["bedeuten", "to mean", "Was [bedeutet] dieses Wort?", "What does this word mean?"]]},
-    {"level": "B1", "verbs": [["erzählen", "to tell / narrate", "Er [erzählt] eine lustige Geschichte.", "He tells a funny story."], ["sich unterhalten", "to chat / have a conversation", "Wir [unterhalten] uns oft auf Deutsch.", "We often chat in German."], ["streiten", "to argue / quarrel", "Sie [streiten] ständig über Kleinigkeiten.", "They constantly argue about little things."], ["versprechen", "to promise", "Ich [verspreche] dir, pünktlich zu sein.", "I promise you I'll be on time."], ["ausdrücken", "to express", "Ich kann mich auf Deutsch noch nicht gut [ausdrücken].", "I can't express myself well in German yet."]]},
-    {"level": "B1", "verbs": [["wiederholen", "to repeat / review", "Ich [wiederhole] jeden Abend die Vokabeln.", "I review the vocabulary every evening."], ["gelingen", "to succeed / work out well", "Diese Übung [gelingt] mir immer besser.", "I'm getting better and better at this exercise."], ["ausprobieren", "to try out", "Ich möchte das neue Rezept [ausprobieren].", "I want to try out the new recipe."], ["klappen", "to work out (informal)", "Hoffentlich [klappt] alles.", "Hopefully everything works out."], ["mitbringen", "to bring along", "Ich [bringe] Kuchen [mit].", "I'm bringing cake."]]},
-    {"level": "B1", "verbs": [["sich verlaufen", "to get lost (on foot)", "Ich [verlaufe] mich in dieser Stadt immer.", "I always get lost in this city."], ["umsteigen", "to change (trains)", "Wir müssen in Köln [umsteigen].", "We have to change trains in Cologne."], ["aussteigen", "to get off", "Ich [steige] an der nächsten Haltestelle [aus].", "I get off at the next stop."], ["abfahren", "to depart", "Der Zug [fährt] um 9 Uhr [ab].", "The train departs at 9 o'clock."], ["ankommen", "to arrive", "Wann [kommst] du in Berlin [an]?", "When do you arrive in Berlin?"]]},
-    {"level": "B1", "verbs": [["aufräumen", "to tidy up", "Ich [räume] mein Zimmer jeden Samstag [auf].", "I tidy up my room every Saturday."], ["putzen", "to clean", "Wir [putzen] heute die ganze Wohnung.", "We are cleaning the whole apartment today."], ["waschen", "to wash", "Ich [wasche] meine Hände vor dem Essen.", "I wash my hands before eating."], ["einkaufen", "to go shopping", "Am Freitag [kaufe] ich für das Wochenende [ein].", "On Friday I shop for the weekend."], ["bezahlen", "to pay", "Kann ich mit Karte [bezahlen]?", "Can I pay by card?"]]},
-    {"level": "B1", "verbs": [["anrufen", "to call (phone)", "Ich [rufe] dich heute Abend [an].", "I'll call you this evening."], ["antworten", "to answer / reply", "Bitte [antworten] Sie bis Freitag auf die E-Mail.", "Please reply to the email by Friday."], ["fragen", "to ask", "Darf ich Sie etwas [fragen]?", "May I ask you something?"], ["erklären", "to explain", "Können Sie mir das bitte noch einmal [erklären]?", "Could you please explain that to me once more?"], ["verstehen", "to understand", "Ich [verstehe] die Aufgabe leider nicht.", "Unfortunately I don't understand the task."]]},
-    {"level": "B1", "verbs": [["sich fühlen", "to feel", "Ich [fühle] mich heute viel besser.", "I feel much better today."], ["sich langweilen", "to be bored", "Im Urlaub [langweile] ich mich nie.", "I am never bored on holiday."], ["sich aufregen", "to get upset", "Du [regst] dich zu schnell über Kleinigkeiten [auf].", "You get upset too quickly about small things."], ["sich entspannen", "to relax", "Am Abend [entspanne] ich mich mit Musik.", "In the evening I relax with music."], ["sich wundern", "to be surprised", "Ich [wundere] mich, dass er noch nicht da ist.", "I'm surprised that he isn't here yet."]]},
-    {"level": "B1", "verbs": [["buchen", "to book", "Wir [haben] den Flug schon [gebucht].", "We have already booked the flight."], ["reservieren", "to reserve", "Ich möchte einen Tisch für vier Personen [reservieren].", "I would like to reserve a table for four people."], ["verreisen", "to go away on a trip", "Im Sommer [verreisen] wir oft nach Italien.", "In summer we often travel to Italy."], ["packen", "to pack", "Hast du deinen Koffer schon [gepackt]?", "Have you already packed your suitcase?"], ["mieten", "to rent", "Wir [mieten] im Urlaub ein Auto.", "We rent a car on holiday."]]},
-    {"level": "B1", "verbs": [["wehtun", "to hurt (be painful)", "Mein Rücken [tut] seit gestern [weh].", "My back has hurt since yesterday."], ["husten", "to cough", "Der Patient [hustet] schon seit einer Woche.", "The patient has been coughing for a week."], ["sich verletzen", "to injure oneself", "Er [hat] sich beim Fußball am Knie [verletzt].", "He injured his knee playing football."], ["sich ausruhen", "to rest", "Nach der Arbeit [ruhe] ich mich ein bisschen [aus].", "After work I rest a little."], ["einnehmen", "to take (medicine)", "Sie sollen die Tabletten dreimal täglich [einnehmen].", "You should take the tablets three times a day."]]},
-    {"level": "B1", "verbs": [["verdienen", "to earn", "Sie [verdient] als Ärztin gut.", "She earns a good income as a doctor."], ["einstellen", "to hire", "Die Firma [stellt] neue Mitarbeiter [ein].", "The company is hiring new employees."], ["entlassen", "to dismiss / to discharge", "Der Patient [wird] morgen aus dem Krankenhaus [entlassen].", "The patient is being discharged from hospital tomorrow."], ["sich verspäten", "to be late", "Der Zug [hat] sich wegen eines Defekts [verspätet].", "The train was delayed because of a fault."], ["arbeiten", "to work", "Ich [arbeite] von Montag bis Freitag.", "I work from Monday to Friday."]]},
-    {"level": "B1", "verbs": [["einziehen", "to move in", "Nächsten Monat [ziehen] wir in die neue Wohnung [ein].", "Next month we are moving into the new apartment."], ["ausziehen", "to move out", "Mein Bruder [ist] letztes Jahr [ausgezogen].", "My brother moved out last year."], ["vermieten", "to rent out", "Sie [vermietet] das Zimmer an einen Studenten.", "She rents the room out to a student."], ["renovieren", "to renovate", "Wir müssen die Küche dringend [renovieren].", "We urgently have to renovate the kitchen."], ["reparieren", "to repair", "Können Sie mein Fahrrad bis morgen [reparieren]?", "Can you repair my bicycle by tomorrow?"]]},
-    {"level": "B1", "verbs": [["üben", "to practise", "Ich [übe] jeden Tag zwanzig Minuten Deutsch.", "I practise German for twenty minutes every day."], ["korrigieren", "to correct", "Die Lehrerin [korrigiert] die Hausaufgaben.", "The teacher is correcting the homework."], ["nachschlagen", "to look up", "Wenn ich ein Wort nicht kenne, [schlage] ich es im Wörterbuch [nach].", "If I don't know a word, I look it up in the dictionary."], ["buchstabieren", "to spell", "Können Sie Ihren Nachnamen bitte [buchstabieren]?", "Could you please spell your surname?"], ["durchfallen", "to fail (an exam)", "Leider [ist] er bei der Prüfung [durchgefallen].", "Unfortunately he failed the exam."]]},
-    {"level": "B1", "verbs": [["einsteigen", "to get on / board", "Bitte [steigen] Sie hinten [ein].", "Please get on at the back."], ["parken", "to park", "Hier dürfen Sie nicht [parken].", "You are not allowed to park here."], ["überholen", "to overtake", "Auf dieser Straße darf man nicht [überholen].", "You must not overtake on this road."], ["abbiegen", "to turn (off)", "An der Ampel müssen Sie links [abbiegen].", "At the traffic light you have to turn left."], ["verbieten", "to forbid", "Der Arzt [hat] ihm das Rauchen [verboten].", "The doctor has forbidden him to smoke."]]},
-    {"level": "B1", "verbs": [["heiraten", "to marry", "Meine Schwester [heiratet] im Mai.", "My sister is getting married in May."], ["sich trennen", "to separate", "Sie [haben] sich nach drei Jahren [getrennt].", "They separated after three years."], ["sich verlieben", "to fall in love", "Er [hat] sich in eine Kollegin [verliebt].", "He fell in love with a colleague."], ["vermissen", "to miss", "Ich [vermisse] meine Familie sehr.", "I miss my family a lot."], ["vertrauen", "to trust", "Du kannst mir [vertrauen].", "You can trust me."]]},
-    {"level": "B1", "verbs": [["schicken", "to send", "Ich [schicke] Ihnen die Unterlagen per E-Mail.", "I'll send you the documents by email."], ["zeigen", "to show", "Können Sie mir den Weg zum Bahnhof [zeigen]?", "Can you show me the way to the station?"], ["ändern", "to change", "Wir müssen den Termin leider [ändern].", "Unfortunately we have to change the appointment."], ["bestellen", "to order", "Ich [bestelle] noch ein Glas Wasser.", "I'll order another glass of water."], ["liefern", "to deliver", "Der Händler [liefert] die Ware innerhalb von drei Tagen.", "The seller delivers the goods within three days."]]},
-    {"level": "B1", "verbs": [["dauern", "to last / take (time)", "Die Fahrt [dauert] etwa zwei Stunden.", "The journey takes about two hours."], ["beginnen", "to begin", "Der Kurs [beginnt] um neun Uhr.", "The course begins at nine o'clock."], ["enden", "to end", "Die Sprechstunde [endet] um 16 Uhr.", "Office hours end at 4 pm."], ["sich beeilen", "to hurry", "Wir müssen uns [beeilen], sonst verpassen wir den Zug.", "We have to hurry, otherwise we'll miss the train."], ["planen", "to plan", "Wir [planen] eine Reise nach Wien.", "We are planning a trip to Vienna."]]},
-    {"level": "B2", "verbs": [["kritisieren", "to criticise", "Die Opposition [kritisiert] die Entscheidung scharf.", "The opposition sharply criticises the decision."], ["einschätzen", "to assess", "Wie [schätzen] Sie die aktuelle Lage [ein]?", "How do you assess the current situation?"], ["vorwerfen", "to accuse of / reproach", "Man [wirft] ihm vor, die Zahlen manipuliert zu haben.", "He is accused of having manipulated the figures."], ["rechtfertigen", "to justify", "Diese Kosten lassen sich kaum [rechtfertigen].", "These costs can hardly be justified."], ["anerkennen", "to acknowledge / recognise", "Das Gericht [erkennt] den Anspruch [an].", "The court recognises the claim."]]},
-    {"level": "B2", "verbs": [["diskutieren", "to discuss / debate", "Wir [diskutieren] seit Stunden über dieses Thema.", "We have been debating this topic for hours."], ["argumentieren", "to argue (make a case)", "Er [argumentiert] sehr sachlich.", "He argues very objectively."], ["widerlegen", "to refute", "Die Studie [widerlegt] diese Annahme.", "The study refutes this assumption."], ["belegen", "to prove / back up", "Diese Aussage müssen Sie mit Quellen [belegen].", "You must back up this statement with sources."], ["hinterfragen", "to question critically", "Man sollte Informationen immer kritisch [hinterfragen].", "One should always question information critically."]]},
-    {"level": "B2", "verbs": [["umsetzen", "to implement", "Wir wollen den Plan so schnell wie möglich [umsetzen].", "We want to implement the plan as quickly as possible."], ["durchführen", "to carry out", "Die Untersuchung wird nächste Woche [durchgeführt].", "The examination will be carried out next week."], ["einführen", "to introduce", "Die Firma [führt] ein neues System [ein].", "The company is introducing a new system."], ["abschaffen", "to abolish", "Das Land [hat] die Todesstrafe [abgeschafft].", "The country abolished the death penalty."], ["einhalten", "to comply with / keep to", "Alle Mitarbeiter müssen die Regeln [einhalten].", "All employees must comply with the rules."]]},
-    {"level": "B2", "verbs": [["erfüllen", "to fulfil / meet", "Er [erfüllt] alle Voraussetzungen für die Stelle.", "He meets all the requirements for the position."], ["versäumen", "to miss / neglect", "Er [hat] die Frist [versäumt].", "He missed the deadline."], ["nachweisen", "to prove / provide evidence", "Sie müssen Ihr Einkommen [nachweisen].", "You have to provide proof of your income."], ["vorlegen", "to present / submit", "Bitte [legen] Sie Ihren Ausweis [vor].", "Please present your ID."], ["haften", "to be liable", "Der Hersteller [haftet] für Schäden.", "The manufacturer is liable for damages."]]},
-    {"level": "B2", "verbs": [["einreichen", "to submit / file", "Sie müssen den Antrag bis Montag [einreichen].", "You have to submit the application by Monday."], ["unterzeichnen", "to sign (formally)", "Beide Parteien [unterzeichnen] den Vertrag.", "Both parties sign the contract."], ["widerrufen", "to revoke / withdraw", "Sie können Ihre Einwilligung jederzeit [widerrufen].", "You can withdraw your consent at any time."], ["beglaubigen", "to certify", "Das Zeugnis muss [beglaubigt] werden.", "The certificate has to be certified."], ["bescheinigen", "to certify / confirm in writing", "Der Arzt [bescheinigt] die Arbeitsunfähigkeit.", "The doctor certifies the inability to work."]]},
-    {"level": "B2", "verbs": [["investieren", "to invest", "Die Firma [investiert] viel Geld in neue Maschinen.", "The company is investing a lot of money in new machines."], ["finanzieren", "to finance", "Wie wollen Sie das Projekt [finanzieren]?", "How do you want to finance the project?"], ["einsparen", "to save (costs)", "Wir können durch die neue Technik viel Energie [einsparen].", "We can save a lot of energy with the new technology."], ["kalkulieren", "to calculate", "Die Kosten wurden zu niedrig [kalkuliert].", "The costs were calculated too low."], ["erwirtschaften", "to generate (profit)", "Das Unternehmen [erwirtschaftet] hohe Gewinne.", "The company generates high profits."]]},
-    {"level": "B2", "verbs": [["berichten", "to report", "Die Zeitung [berichtet] ausführlich über den Prozess.", "The newspaper reports in detail on the trial."], ["veröffentlichen", "to publish", "Die Ergebnisse [werden] im Herbst [veröffentlicht].", "The results will be published in autumn."], ["kommentieren", "to comment on", "Der Minister wollte die Vorwürfe nicht [kommentieren].", "The minister did not want to comment on the allegations."], ["recherchieren", "to research / investigate", "Die Journalistin [recherchiert] seit Monaten zu diesem Fall.", "The journalist has been researching this case for months."], ["dokumentieren", "to document", "Alle Behandlungsschritte müssen genau [dokumentiert] werden.", "All treatment steps must be documented precisely."]]},
-    {"level": "B2", "verbs": [["schützen", "to protect", "Wir müssen die Umwelt besser [schützen].", "We have to protect the environment better."], ["verbrauchen", "to consume / use up", "Das Gerät [verbraucht] sehr wenig Strom.", "The device uses very little electricity."], ["verschmutzen", "to pollute", "Abgase [verschmutzen] die Luft in den Städten.", "Exhaust fumes pollute the air in cities."], ["recyceln", "to recycle", "Viele Materialien lassen sich problemlos [recyceln].", "Many materials can be recycled without any problem."], ["nutzen", "to use / make use of", "Man sollte die Chancen [nutzen].", "One should make use of the opportunities."]]},
-    {"level": "B2", "verbs": [["verurteilen", "to convict / condemn", "Das Gericht [verurteilte] den Täter zu zwei Jahren Haft.", "The court sentenced the offender to two years in prison."], ["beschuldigen", "to accuse", "Man [beschuldigt] ihn des Betrugs.", "He is accused of fraud."], ["bestrafen", "to punish", "Verstöße [werden] mit hohen Geldbußen [bestraft].", "Violations are punished with heavy fines."], ["gestehen", "to confess", "Der Angeklagte [hat] die Tat [gestanden].", "The defendant confessed to the crime."], ["zustehen", "to be entitled to", "Ihnen [steht] ein Anspruch auf Erholungsurlaub [zu].", "You are entitled to holiday leave."]]},
-    {"level": "B2", "verbs": [["operieren", "to operate on", "Der Chirurg [operiert] den Patienten morgen früh.", "The surgeon operates on the patient tomorrow morning."], ["diagnostizieren", "to diagnose", "Der Arzt [hat] eine Entzündung [diagnostiziert].", "The doctor diagnosed an inflammation."], ["verabreichen", "to administer", "Die Pflegerin [verabreicht] dem Patienten das Medikament.", "The nurse administers the medication to the patient."], ["genesen", "to recover", "Er [ist] nach der Operation schnell [genesen].", "He recovered quickly after the operation."], ["anordnen", "to order / prescribe (a measure)", "Der Arzt [ordnet] strenge Bettruhe [an].", "The doctor orders strict bed rest."]]},
-    {"level": "B2", "verbs": [["begreifen", "to grasp / comprehend", "Ich [begreife] nicht, warum er so reagiert hat.", "I don't understand why he reacted like that."], ["durchschauen", "to see through", "Sie [hat] seinen Plan sofort [durchschaut].", "She saw through his plan immediately."], ["ableiten", "to derive", "Aus den Daten lässt sich ein klarer Trend [ableiten].", "A clear trend can be derived from the data."], ["folgern", "to conclude / infer", "Daraus können wir [folgern], dass die Methode funktioniert.", "From this we can conclude that the method works."], ["hervorheben", "to highlight", "Der Redner [hebt] die Bedeutung der Prävention [hervor].", "The speaker highlights the importance of prevention."]]},
-    {"level": "B2", "verbs": [["bekräftigen", "to reaffirm", "Der Minister [bekräftigte] seine Position.", "The minister reaffirmed his position."], ["unterstreichen", "to underline / stress", "Die Studie [unterstreicht] diese Tendenz.", "The study underlines this trend."], ["zugeben", "to admit", "Er [gab] seinen Fehler offen [zu].", "He openly admitted his mistake."], ["ankündigen", "to announce", "Die Firma [kündigt] eine Preiserhöhung [an].", "The company announces a price increase."], ["zurückweisen", "to reject / dismiss", "Er [wies] die Vorwürfe entschieden [zurück].", "He firmly rejected the accusations."]]},
-    {"level": "B2", "verbs": [["eskalieren", "to escalate", "Der Streit [eskalierte] schnell.", "The argument escalated quickly."], ["vermitteln", "to mediate / convey", "Ein Anwalt [vermittelt] zwischen beiden Seiten.", "A lawyer mediates between both sides."], ["schlichten", "to settle (a dispute)", "Der Betriebsrat [schlichtet] den Konflikt.", "The works council settles the conflict."], ["nachgeben", "to give in", "Am Ende [gab] er [nach].", "In the end he gave in."], ["durchsetzen", "to push through / enforce", "Sie konnte ihren Vorschlag im Team [durchsetzen].", "She was able to push her proposal through in the team."]]},
-    {"level": "B2", "verbs": [["erreichen", "to achieve / reach", "Wir [haben] unser Ziel [erreicht].", "We have achieved our goal."], ["verwirklichen", "to realise", "Er [hat] seinen Traum von der Selbstständigkeit [verwirklicht].", "He realised his dream of being self-employed."], ["anstreben", "to strive for", "Sie [strebt] eine Karriere in der Forschung [an].", "She strives for a career in research."], ["vorantreiben", "to drive forward", "Der Ausschuss [treibt] das Projekt [voran].", "The committee is driving the project forward."], ["sich bewähren", "to prove oneself", "Die neue Methode [hat] sich in der Praxis [bewährt].", "The new method has proven itself in practice."]]},
-    {"level": "B2", "verbs": [["sich verhalten", "to behave", "Wie soll man sich in einer solchen Situation [verhalten]?", "How should one behave in such a situation?"], ["sich anstrengen", "to make an effort", "Du musst dich mehr [anstrengen].", "You have to make more of an effort."], ["sich verlassen", "to rely on", "Auf ihn kann man sich immer [verlassen].", "You can always rely on him."], ["sich einsetzen", "to stand up for / advocate", "Sie [setzt] sich für den Umweltschutz [ein].", "She campaigns for environmental protection."], ["sich widmen", "to devote oneself to", "Er [widmet] sich ganz seiner Forschung.", "He devotes himself entirely to his research."]]},
-    {"level": "B2", "verbs": [["erfassen", "to record / capture", "Alle Daten [werden] elektronisch [erfasst].", "All data is recorded electronically."], ["auswerten", "to evaluate / analyse", "Wir müssen die Umfrage noch [auswerten].", "We still have to evaluate the survey."], ["ermitteln", "to determine / investigate", "Die Polizei [ermittelt] in diesem Fall.", "The police are investigating this case."], ["veranschaulichen", "to illustrate", "Die Grafik [veranschaulicht] die Entwicklung.", "The graph illustrates the development."], ["auflisten", "to list", "Bitte [listen] Sie alle Kosten genau [auf].", "Please list all costs precisely."]]},
-    {"level": "B2", "verbs": [["beeinflussen", "to influence", "Die Werbung [beeinflusst] unsere Entscheidungen.", "Advertising influences our decisions."], ["beeinträchtigen", "to impair / affect negatively", "Lärm [beeinträchtigt] die Konzentration.", "Noise impairs concentration."], ["beitragen", "to contribute", "Jeder kann zum Klimaschutz [beitragen].", "Everyone can contribute to climate protection."], ["sich auswirken", "to have an effect", "Das [wirkt] sich positiv auf die Gesundheit [aus].", "That has a positive effect on health."], ["zusammenhängen", "to be connected", "Beide Probleme [hängen] eng [zusammen].", "Both problems are closely connected."]]},
-    {"level": "B2", "verbs": [["verweigern", "to refuse", "Er [verweigerte] die Aussage.", "He refused to testify."], ["untersagen", "to prohibit", "Die Behörde [untersagt] das Betreten des Geländes.", "The authority prohibits entering the site."], ["zulassen", "to allow / admit", "Die Regeln [lassen] keine Ausnahmen [zu].", "The rules do not allow exceptions."], ["einwenden", "to object", "Dagegen [wende] ich [ein], dass das zu teuer ist.", "I object to that on the grounds that it is too expensive."], ["sich beschränken", "to limit oneself", "Ich [beschränke] mich auf die wichtigsten Punkte.", "I will limit myself to the most important points."]]}
+    {"level": "B2", "verbs": [["übernehmen", "to take over", "Ich [übernehme] die Verantwortung für diesen Fehler.", "I take responsibility for this mistake."], ["erledigen", "to complete / take care of", "Ich muss heute noch einige wichtige Aufgaben [erledigen].", "I still have to take care of some important tasks today."], ["vereinbaren", "to arrange", "Ich möchte einen Termin beim Zahnarzt [vereinbaren].", "I'd like to arrange an appointment at the dentist."], ["voraussetzen", "to require", "Diese Stelle [setzt] gute Deutschkenntnisse [voraus].", "This position requires good German skills."], ["gewährleisten", "to ensure", "Wir müssen die Sicherheit der Patienten [gewährleisten].", "We must ensure the safety of the patients."]]}
   ];
-  var FREE_SIMILAR = [["unterstützen", "fördern", "befürworten"], ["mitteilen", "aufklären", "darlegen", "erläutern", "hinweisen", "schildern", "erwähnen", "verweisen"], ["beurteilen", "bewerten", "analysieren", "feststellen", "erkennen", "vergleichen", "unterscheiden"], ["vermuten", "annehmen", "befürchten", "bezweifeln", "behaupten"], ["vorbeugen", "verhindern", "beseitigen", "beheben", "überwinden", "bewältigen"], ["sich ereignen", "geschehen", "stattfinden", "eintreten", "entstehen", "verlaufen"], ["verursachen", "bewirken", "auslösen", "zurückführen"], ["verbessern", "steigern", "erweitern", "sich entwickeln", "verändern", "sich anpassen", "zunehmen"], ["reduzieren", "einschränken", "verzichten", "vermeiden"], ["sich entscheiden", "beschließen", "sich einigen"], ["ablehnen", "absagen", "bestreiten", "widersprechen"], ["sich kümmern", "erledigen", "übernehmen"], ["vereinbaren", "sich verabreden", "verschieben"], ["untersuchen", "behandeln", "heilen", "lindern"], ["sich auseinandersetzen", "sich beziehen", "sich handeln", "betreffen"], ["erhalten", "erfahren", "beantragen", "genehmigen"], ["anmelden", "abmelden", "sich bewerben", "sich verpflichten"], ["erzählen", "sich unterhalten", "schildern", "ausdrücken"], ["vorschlagen", "empfehlen"], ["sich erinnern", "vergessen", "wiederholen"], ["verwenden", "ausprobieren", "benutzen"], ["kritisieren", "bemängeln", "vorwerfen", "beschuldigen"], ["durchführen", "umsetzen", "verwirklichen", "einführen"], ["bescheinigen", "beglaubigen", "nachweisen", "belegen"], ["verbieten", "untersagen", "verweigern", "zurückweisen", "ablehnen"], ["begreifen", "verstehen", "durchschauen", "erkennen"], ["betonen", "hervorheben", "bekräftigen", "unterstreichen"], ["berichten", "mitteilen", "erwähnen", "schildern"], ["vermitteln", "schlichten", "sich einigen"], ["beeinflussen", "beeinträchtigen", "sich auswirken"], ["erreichen", "verwirklichen", "anstreben", "schaffen"], ["sich entspannen", "sich ausruhen", "sich erholen"], ["aufräumen", "putzen", "waschen"], ["reparieren", "renovieren"], ["investieren", "finanzieren", "einsparen"], ["recherchieren", "ermitteln", "auswerten", "erfassen"], ["sich anstrengen", "sich bemühen", "sich einsetzen"], ["beginnen", "planen", "vorhaben"], ["schützen", "verhindern", "vorbeugen"]];
+  var FREE_SIMILAR = [];
   var DAYS = FREE_DAYS.slice();
   var SIMILAR = FREE_SIMILAR.slice();
 
@@ -396,18 +334,7 @@ details.all[open] summary::after{content:"Hide"}
   /* Picture words (daily-life nouns). Only the free category is inside this file; the others come from the account.
      Each item: [article, German, English, emoji, Wikipedia page title for the photo]. */
   var FREE_WORDS = [
-    {"cat": "Obst", "en": "Fruit", "emo": "🍎", "items": [["der", "Apfel", "apple", "🍎", "Apple"], ["die", "Banane", "banana", "🍌", "Banana"], ["die", "Orange", "orange", "🍊", "Orange (fruit)"], ["die", "Zitrone", "lemon", "🍋", "Lemon"], ["die", "Erdbeere", "strawberry", "🍓", "Strawberry"], ["die", "Traube", "grape", "🍇", "Grape"], ["die", "Birne", "pear", "🍐", "Pear"], ["die", "Kirsche", "cherry", "🍒", "Cherry"], ["die", "Ananas", "pineapple", "🍍", "Pineapple"], ["die", "Wassermelone", "watermelon", "🍉", "Watermelon"], ["der", "Pfirsich", "peach", "🍑", "Peach"], ["die", "Heidelbeere", "blueberry", "🫐", "Blueberry"]]},
-    {"cat": "Gemüse", "en": "Vegetables", "emo": "🥕", "items": [["die", "Karotte", "carrot", "🥕", "Carrot"], ["die", "Tomate", "tomato", "🍅", "Tomato"], ["die", "Kartoffel", "potato", "🥔", "Potato"], ["die", "Zwiebel", "onion", "🧅", "Onion"], ["der", "Knoblauch", "garlic", "🧄", "Garlic"], ["die", "Gurke", "cucumber", "🥒", "Cucumber"], ["die", "Paprika", "bell pepper", "🫑", "Bell pepper"], ["der", "Brokkoli", "broccoli", "🥦", "Broccoli"], ["der", "Mais", "corn", "🌽", "Maize"], ["der", "Pilz", "mushroom", "🍄", "Edible mushroom"], ["der", "Salat", "lettuce", "🥬", "Lettuce"], ["die", "Aubergine", "eggplant", "🍆", "Eggplant"]]},
-    {"cat": "Essen und Trinken", "en": "Food and drink", "emo": "🍞", "items": [["das", "Brot", "bread", "🍞", "Bread"], ["der", "Käse", "cheese", "🧀", "Cheese"], ["das", "Ei", "egg", "🥚", "Egg as food"], ["die", "Milch", "milk", "🥛", "Milk"], ["der", "Kaffee", "coffee", "☕", "Coffee"], ["der", "Tee", "tea", "🍵", "Tea"], ["der", "Reis", "rice", "🍚", "Rice"], ["die", "Nudeln", "noodles / pasta", "🍝", "Pasta"], ["das", "Fleisch", "meat", "🥩", "Meat"], ["die", "Butter", "butter", "🧈", "Butter"], ["der", "Honig", "honey", "🍯", "Honey"], ["der", "Kuchen", "cake", "🍰", "Cake"]]},
-    {"cat": "Küche", "en": "Kitchen", "emo": "🍳", "items": [["der", "Löffel", "spoon", "🥄", "Spoon"], ["die", "Gabel", "fork", "🍴", "Fork"], ["das", "Messer", "knife", "🔪", "Knife"], ["der", "Teller", "plate", "🍽️", "Plate (dishware)"], ["die", "Tasse", "mug / cup", "☕", "Mug"], ["das", "Glas", "glass", "🥛", "Drinking glass"], ["die", "Flasche", "bottle", "🍾", "Bottle"], ["der", "Topf", "pot", "🍲", "Cookware and bakeware"], ["die", "Pfanne", "frying pan", "🍳", "Frying pan"], ["der", "Kühlschrank", "fridge", "🧊", "Refrigerator"], ["der", "Herd", "stove", "🔥", "Stove"], ["der", "Ofen", "oven", "♨️", "Oven"]]},
-    {"cat": "Haus und Möbel", "en": "Home and furniture", "emo": "🏠", "items": [["das", "Haus", "house", "🏠", "House"], ["die", "Wohnung", "apartment", "🏢", "Apartment"], ["die", "Tür", "door", "🚪", "Door"], ["das", "Fenster", "window", "🪟", "Window"], ["der", "Tisch", "table", "🍽️", "Table (furniture)"], ["der", "Stuhl", "chair", "🪑", "Chair"], ["das", "Bett", "bed", "🛏️", "Bed"], ["das", "Sofa", "couch", "🛋️", "Couch"], ["die", "Lampe", "lamp", "💡", "Electric light"], ["der", "Schlüssel", "key", "🔑", "Key (lock)"], ["der", "Spiegel", "mirror", "🪞", "Mirror"], ["die", "Treppe", "stairs", "🪜", "Stairs"]]},
-    {"cat": "Kleidung", "en": "Clothes", "emo": "👕", "items": [["das", "T-Shirt", "T-shirt", "👕", "T-shirt"], ["die", "Hose", "trousers", "👖", "Trousers"], ["das", "Kleid", "dress", "👗", "Dress"], ["der", "Pullover", "sweater", "🧶", "Sweater"], ["die", "Jacke", "jacket", "🧥", "Jacket"], ["der", "Mantel", "coat", "🧥", "Coat"], ["der", "Schuh", "shoe", "👟", "Shoe"], ["die", "Socke", "sock", "🧦", "Sock"], ["die", "Mütze", "cap / hat", "🧢", "Beanie"], ["der", "Schal", "scarf", "🧣", "Scarf"], ["der", "Handschuh", "glove", "🧤", "Glove"], ["die", "Brille", "glasses", "👓", "Glasses"]]},
-    {"cat": "Körper", "en": "Body", "emo": "🧍", "items": [["der", "Kopf", "head", "🗣️", "Head"], ["das", "Auge", "eye", "👁️", "Eye"], ["das", "Ohr", "ear", "👂", "Ear"], ["die", "Nase", "nose", "👃", "Nose"], ["der", "Mund", "mouth", "👄", "Mouth"], ["der", "Zahn", "tooth", "🦷", "Tooth"], ["die", "Hand", "hand", "✋", "Hand"], ["der", "Finger", "finger", "☝️", "Finger"], ["der", "Fuß", "foot", "🦶", "Foot"], ["das", "Bein", "leg", "🦵", "Human leg"], ["der", "Arm", "arm", "💪", "Arm"], ["das", "Herz", "heart", "🫀", "Heart"]]},
-    {"cat": "Tiere", "en": "Animals", "emo": "🐶", "items": [["der", "Hund", "dog", "🐶", "Dog"], ["die", "Katze", "cat", "🐱", "Cat"], ["das", "Pferd", "horse", "🐴", "Horse"], ["die", "Kuh", "cow", "🐮", "Cattle"], ["das", "Schwein", "pig", "🐷", "Pig"], ["das", "Schaf", "sheep", "🐑", "Sheep"], ["der", "Vogel", "bird", "🐦", "Bird"], ["der", "Fisch", "fish", "🐟", "Fish"], ["die", "Maus", "mouse", "🐭", "Mouse"], ["der", "Hase", "rabbit", "🐰", "Rabbit"], ["der", "Löwe", "lion", "🦁", "Lion"], ["die", "Biene", "bee", "🐝", "Bee"]]},
-    {"cat": "Verkehr", "en": "Transport", "emo": "🚗", "items": [["das", "Auto", "car", "🚗", "Car"], ["der", "Bus", "bus", "🚌", "Bus"], ["der", "Zug", "train", "🚆", "Train"], ["das", "Fahrrad", "bicycle", "🚲", "Bicycle"], ["das", "Flugzeug", "airplane", "✈️", "Airplane"], ["das", "Schiff", "ship", "🚢", "Ship"], ["die", "Straßenbahn", "tram", "🚋", "Tram"], ["die", "U-Bahn", "underground", "🚇", "Rapid transit"], ["der", "Bahnhof", "train station", "🚉", "Train station"], ["die", "Ampel", "traffic light", "🚦", "Traffic light"], ["die", "Brücke", "bridge", "🌉", "Bridge"], ["der", "Flughafen", "airport", "🛫", "Airport"]]},
-    {"cat": "Stadt und Orte", "en": "Town and places", "emo": "🏙️", "items": [["die", "Apotheke", "pharmacy", "💊", "Pharmacy"], ["das", "Krankenhaus", "hospital", "🏥", "Hospital"], ["die", "Schule", "school", "🏫", "School"], ["die", "Bäckerei", "bakery", "🥖", "Bakery"], ["der", "Supermarkt", "supermarket", "🛒", "Supermarket"], ["die", "Bank", "bank", "🏦", "Bank"], ["die", "Post", "post office", "📮", "Post office"], ["die", "Kirche", "church", "⛪", "Church (building)"], ["der", "Park", "park", "🌳", "Park"], ["das", "Restaurant", "restaurant", "🍴", "Restaurant"], ["die", "Bibliothek", "library", "📚", "Library"], ["das", "Rathaus", "town hall", "🏛️", "Town hall"]]},
-    {"cat": "Schule und Büro", "en": "School and office", "emo": "✏️", "items": [["das", "Buch", "book", "📖", "Book"], ["der", "Stift", "pen", "🖊️", "Pen"], ["der", "Bleistift", "pencil", "✏️", "Pencil"], ["das", "Heft", "notebook", "📓", "Notebook"], ["der", "Computer", "computer", "💻", "Computer"], ["das", "Handy", "mobile phone", "📱", "Mobile phone"], ["die", "Uhr", "clock", "🕐", "Clock"], ["der", "Rucksack", "backpack", "🎒", "Backpack"], ["die", "Schere", "scissors", "✂️", "Scissors"], ["das", "Papier", "paper", "📄", "Paper"], ["die", "Tafel", "blackboard", "🧑‍🏫", "Blackboard"], ["der", "Kalender", "calendar", "📅", "Calendar"]]},
-    {"cat": "Natur und Wetter", "en": "Nature and weather", "emo": "🌤️", "items": [["die", "Sonne", "sun", "☀️", "Sun"], ["der", "Mond", "moon", "🌙", "Moon"], ["der", "Regen", "rain", "🌧️", "Rain"], ["der", "Schnee", "snow", "❄️", "Snow"], ["die", "Wolke", "cloud", "☁️", "Cloud"], ["der", "Wind", "wind", "💨", "Wind"], ["der", "Baum", "tree", "🌳", "Tree"], ["die", "Blume", "flower", "🌸", "Flower"], ["der", "Berg", "mountain", "⛰️", "Mountain"], ["der", "See", "lake", "🏞️", "Lake"], ["der", "Fluss", "river", "🌊", "River"], ["das", "Meer", "sea", "🌊", "Sea"]]}
+    {"cat": "Obst", "en": "Fruit", "emo": "🍎", "items": [["der", "Apfel", "apple", "🍎", "Apple"], ["die", "Banane", "banana", "🍌", "Banana"], ["die", "Orange", "orange", "🍊", "Orange (fruit)"], ["die", "Zitrone", "lemon", "🍋", "Lemon"], ["die", "Erdbeere", "strawberry", "🍓", "Strawberry"], ["die", "Traube", "grape", "🍇", "Grape"], ["die", "Birne", "pear", "🍐", "Pear"], ["die", "Kirsche", "cherry", "🍒", "Cherry"], ["die", "Ananas", "pineapple", "🍍", "Pineapple"], ["die", "Wassermelone", "watermelon", "🍉", "Watermelon"], ["der", "Pfirsich", "peach", "🍑", "Peach"], ["die", "Heidelbeere", "blueberry", "🫐", "Blueberry"]]}
   ];
   var WORD_CATS = FREE_WORDS.slice();
   var PW = {};
@@ -454,7 +381,7 @@ details.all[open] summary::after{content:"Hide"}
       chev:'<path d="m9 6 6 6-6 6"/>',
       words:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',
       account:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
-      talk:'<path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-5.4A8 8 0 1 1 21 12z"/>',
+      chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-5.4A8 8 0 1 1 21 12z"/>',
       lock:'<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>'
     }[name];
     return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">' + p + '</svg>';
@@ -477,7 +404,7 @@ details.all[open] summary::after{content:"Hide"}
   /* =====================================================
      SAVED PROGRESS  (localStorage, stays after closing the app)
      ===================================================== */
-  var KEY = 'verbtrainer.free.v1';
+  var KEY = 'verbtrainer.b2.v1';
   function validScope(s) {
     return s === 'all' || s === 'B1' || s === 'B2' || (typeof s === 'number' && isFinite(s) && s >= 1 && s <= 60);
   }
@@ -502,7 +429,7 @@ details.all[open] summary::after{content:"Hide"}
     return {
       stats: { correct:0, wrong:0, score:0, streak:0, bestStreak:0, dayStreak:0, lastDay:'', sessions:0 },
       verbs: {}, scope:'all', englishFirst:false, hideInstall:false,
-      speak:{ tries:0, good:0 }, speakTarget:'word', savedAt:0, owner:'', pics:{}, talk:{ done:{}, tries:0, good:0 }
+      speak:{ tries:0, good:0 }, speakTarget:'word', savedAt:0, owner:'', pics:{}
     };
   }
   function num(x) { return (typeof x === 'number' && isFinite(x) && x >= 0 && x < 1e9) ? Math.floor(x) : 0; }
@@ -526,12 +453,6 @@ details.all[open] summary::after{content:"Hide"}
     d.hideInstall = !!p.hideInstall;
     if (p.speak && typeof p.speak.tries === 'number' && typeof p.speak.good === 'number') d.speak = { tries:num(p.speak.tries), good:num(p.speak.good) };
     if (p.speakTarget === 'word' || p.speakTarget === 'sentence') d.speakTarget = p.speakTarget;
-    if (p.talk && typeof p.talk === 'object') {
-      d.talk.tries = num(p.talk.tries); d.talk.good = num(p.talk.good);
-      if (p.talk.done && typeof p.talk.done === 'object') Object.keys(p.talk.done).slice(0, 100).forEach(function (id) {
-        if (/^[a-z0-9]{1,30}$/.test(id)) d.talk.done[id] = num(p.talk.done[id]);
-      });
-    }
     d.savedAt = num(p.savedAt);
     d.owner = (typeof p.owner === 'string' && /^[0-9a-f-]{36}$/i.test(p.owner)) ? p.owner : '';
     return d;
@@ -790,7 +711,7 @@ details.all[open] summary::after{content:"Hide"}
   var CACHE_DAYS = 30;                       // how long checked Premium content may be used without internet
   var PREMIUM_MODES = ['type', 'speak'];
   var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  var account = { session:null, premium:true, offline:false, checked:false, step:'email', email:'', busy:'', msg:'', kind:'',
+  var account = { session:null, premium:false, offline:false, checked:false, step:'email', email:'', busy:'', msg:'', kind:'',
                   waiting:false, cooldownUntil:0, sync:'', orders:[], lastRefresh:0 };
 
   function lsGet(k) { try { return JSON.parse(window.localStorage.getItem(k)); } catch (e) { return null; } }
@@ -873,7 +794,7 @@ details.all[open] summary::after{content:"Hide"}
   function applyPremium(rows, offline) { setPremiumContent(rows); account.premium = true; account.offline = !!offline; }
   function applyFree(wipeCache) {
     var was = account.premium;
-    account.premium = false; account.offline = false; clearPremiumContent();
+    account.premium = false; account.offline = false; clearPremiumContent(); chatReset();
     if (wipeCache) lsDel(PCACHE_KEY);
     if (was && S) { stopListening(true); S = null; }
     if (was && P) P = null;
@@ -1009,7 +930,7 @@ details.all[open] summary::after{content:"Hide"}
     })();
   }
   function openUpgrade() {
-    stopListening(true); S = null; P = null; tab = 'account';
+    stopListening(true); S = null; P = null; tab = 'account'; chatStop();
     if (!account.session) setMsg('Create a free account to buy Premium.', ''); 
     render(true);
   }
@@ -1293,7 +1214,6 @@ details.all[open] summary::after{content:"Hide"}
       stat(s.correct, 'correct answers') + stat(s.wrong, 'incorrect answers') +
       stat(s.streak, 'current streak (best ' + s.bestStreak + ')') + stat(dayStreakNow(), 'day streak') + '</div>';
     if (state.speak.tries) h += '<p class="muted small" style="margin-top:12px">Speaking practice: ' + state.speak.good + ' of ' + state.speak.tries + ' attempts were good.</p>';
-    if (state.talk && state.talk.tries) h += '<p class="muted small" style="margin-top:8px">Talk: ' + state.talk.good + ' of ' + state.talk.tries + ' answers were understood.</p>';
     h += '<h2 class="sec">Completed verbs</h2><p class="muted small">A verb counts as mastered after 3 correct answers in a row.</p>';
     ['B2', 'B1'].forEach(function (lv) {
       var list = VERBS.filter(function (v) { return v.level === lv; });
@@ -1622,200 +1542,187 @@ details.all[open] summary::after{content:"Hide"}
   }
 
   /* =====================================================
-     TALK  (scripted conversations: the partner speaks, you answer out loud)
+     CHAT  (Premium only, group rooms by level)
+     Everything is checked by the database: Premium, nickname, rules, rate limits, bans.
+     The app only shows what the database sends. Nothing here can unlock the chat by itself.
      ===================================================== */
-  var TALK = [{"id": "kennenlernen", "level": "A1", "title": "Sich vorstellen", "en": "Introduce yourself", "emo": "👋", "who": "Anna", "setting": "You meet Anna at a language course.", "turns": [["Hallo! Ich bin Anna. Wie heißt du?", "Hello! I'm Anna. What's your name?", "Say your name.", ["Ich heiße {Abid}.", "Mein Name ist {Abid}.", "Hallo Anna, ich bin {Abid}."]], ["Freut mich! Woher kommst du?", "Nice to meet you! Where are you from?", "Say which country you come from.", ["Ich komme aus {Indien}.", "Ich komme aus {Pakistan}."]], ["Und wo wohnst du jetzt?", "And where do you live now?", "Say which city you live in.", ["Ich wohne in {Berlin}.", "Ich wohne jetzt in {Berlin}."]], ["Was machst du beruflich?", "What do you do for a living?", "Say what your job is or that you study.", ["Ich bin {Student}.", "Ich arbeite als {Zahnarzt}.", "Ich studiere {Medizin}."]], ["Sehr interessant! Sprichst du schon gut Deutsch?", "Very interesting! Do you already speak German well?", "Say you speak a little German and are learning.", ["Ich spreche ein bisschen Deutsch.", "Ich lerne Deutsch.", "Ja, ich lerne jeden Tag Deutsch."]], ["Das klingt gut. Ich muss jetzt leider gehen. Tschüss!", "That sounds good. Unfortunately I have to go now. Bye!", "Say goodbye.", ["Tschüss!", "Auf Wiedersehen!", "Tschüss, bis bald!"]]]}, {"id": "cafe", "level": "A1", "title": "Im Café", "en": "Ordering in a café", "emo": "☕", "who": "Herr Weber", "setting": "You are in a café. Herr Weber is the waiter.", "turns": [["Guten Tag! Was möchten Sie trinken?", "Hello! What would you like to drink?", "Order a coffee.", ["Ich möchte einen Kaffee, bitte.", "Einen Kaffee, bitte.", "Ich hätte gern einen Kaffee."]], ["Gern. Mit Milch und Zucker?", "Gladly. With milk and sugar?", "Say with milk, without sugar.", ["Mit Milch, bitte.", "Mit Milch, aber ohne Zucker.", "Ohne Zucker, bitte."]], ["Möchten Sie auch etwas essen? Wir haben frischen Kuchen.", "Would you like something to eat too? We have fresh cake.", "Order a piece of cake, or say no thanks.", ["Ja, ein Stück Kuchen, bitte.", "Ja, gern. Ein Stück Apfelkuchen, bitte.", "Nein, danke."]], ["Das macht dann vier Euro fünfzig.", "That comes to four euros fifty.", "Say you want to pay by card, or hand over the money.", ["Kann ich mit Karte bezahlen?", "Hier, bitte.", "Stimmt so."]], ["Mit Karte geht natürlich auch. Vielen Dank und einen schönen Tag!", "Paying by card is fine too. Thank you and have a nice day!", "Say thanks, same to you.", ["Danke, gleichfalls!", "Danke, Ihnen auch!", "Vielen Dank, tschüss!"]]]}, {"id": "weg", "level": "A1", "title": "Nach dem Weg fragen", "en": "Asking for directions", "emo": "🧭", "who": "Eine Passantin", "setting": "You are lost in the city and ask a passer-by.", "turns": [["Hallo! Brauchen Sie Hilfe?", "Hello! Do you need help?", "Ask where the station is.", ["Ja, wo ist der Bahnhof, bitte?", "Entschuldigung, wo ist der Bahnhof?", "Wo ist der Bahnhof, bitte?"]], ["Gehen Sie geradeaus bis zur Ampel und dann links.", "Go straight to the traffic light, then left.", "Repeat the directions to check.", ["Geradeaus bis zur Ampel und dann links.", "Bis zur Ampel und dann links, richtig?", "Okay, danke!"]], ["Genau! Danach sehen Sie schon den Bahnhof auf der rechten Seite.", "Exactly! After that you'll already see the station on the right.", "Ask if it is far.", ["Ist es weit von hier?", "Wie weit ist es?", "Ist das weit?"]], ["Nein, nur fünf Minuten zu Fuß.", "No, only five minutes on foot.", "Thank them for their help.", ["Vielen Dank für Ihre Hilfe!", "Danke schön!", "Danke, das ist nett."]], ["Gern geschehen! Schönen Tag noch!", "You're welcome! Have a nice day!", "Say goodbye.", ["Danke, Ihnen auch!", "Auf Wiedersehen!", "Tschüss!"]]]}, {"id": "baeckerei", "level": "A2", "title": "In der Bäckerei", "en": "At the bakery", "emo": "🥖", "who": "Die Verkäuferin", "setting": "You buy bread rolls in a bakery.", "turns": [["Guten Morgen! Was darf es sein?", "Good morning! What can I get you?", "Ask for four bread rolls.", ["Ich hätte gern vier Brötchen, bitte.", "Vier Brötchen, bitte.", "Ich möchte vier Brötchen."]], ["Sonst noch etwas?", "Anything else?", "Ask for a loaf of bread, or say that's all.", ["Ja, ein Brot, bitte.", "Ja, ein Vollkornbrot, bitte.", "Nein danke, das ist alles."]], ["Möchten Sie das Brot geschnitten haben?", "Would you like the bread sliced?", "Say yes or no.", ["Ja, bitte.", "Ja, geschnitten, bitte.", "Nein, ungeschnitten, bitte."]], ["Das macht zusammen sechs Euro zwanzig.", "That comes to six euros twenty together.", "Pay with ten euros, or ask to pay by card.", ["Hier sind zehn Euro.", "Bitte, hier sind zehn Euro.", "Kann ich mit Karte bezahlen?"]], ["Und vier Euro achtzig zurück. Danke und einen schönen Tag!", "And four euros eighty back. Thanks and have a nice day!", "Say thanks, same to you.", ["Danke, Ihnen auch!", "Danke, tschüss!"]]]}, {"id": "freunde", "level": "A2", "title": "Sich verabreden", "en": "Making plans with a friend", "emo": "🎬", "who": "Lena", "setting": "Your friend Lena calls you.", "turns": [["Hallo! Hast du am Samstag Zeit? Wir wollen ins Kino gehen.", "Hi! Do you have time on Saturday? We want to go to the cinema.", "Say yes and ask which film.", ["Ja, gern. Welchen Film wollt ihr sehen?", "Ja, ich habe Zeit.", "Am Samstag habe ich leider keine Zeit."]], ["Wir wollen die neue Komödie sehen. Der Film beginnt um acht.", "We want to see the new comedy. The film starts at eight.", "Say that sounds good and ask where to meet.", ["Das klingt gut. Wo treffen wir uns?", "Um acht passt gut. Wo treffen wir uns?", "Treffen wir uns vor dem Kino?"]], ["Wir treffen uns um halb acht vor dem Kino. Passt das?", "We meet at half past seven in front of the cinema. Does that suit you?", "Say that suits you.", ["Ja, das passt gut.", "Ja, bis dann!", "Perfekt, ich freue mich!"]], ["Super! Bis Samstag.", "Great! See you Saturday.", "Say goodbye.", ["Bis Samstag, tschüss!", "Tschüss, bis dann!"]]]}, {"id": "arzttermin", "level": "A2", "title": "Arzttermin am Telefon", "en": "Booking a doctor appointment by phone", "emo": "📞", "who": "Praxis Dr. Schmidt", "setting": "You call a doctor's practice.", "turns": [["Praxis Dr. Schmidt, guten Tag. Wie kann ich Ihnen helfen?", "Dr. Schmidt's practice, hello. How can I help you?", "Say you would like an appointment.", ["Guten Tag, ich möchte einen Termin vereinbaren.", "Ich hätte gern einen Termin.", "Ich brauche einen Termin, bitte."]], ["Worum geht es denn?", "What is it about?", "Say you have had toothache for two days.", ["Ich habe seit zwei Tagen Zahnschmerzen.", "Ich habe seit gestern Kopfschmerzen.", "Ich habe starke Schmerzen."]], ["Das klingt unangenehm. Können Sie morgen um zehn Uhr kommen?", "That sounds unpleasant. Can you come tomorrow at ten?", "Say that suits you.", ["Ja, das passt gut.", "Morgen um zehn Uhr passt.", "Leider kann ich morgen nicht."]], ["Gut. Wie ist Ihr Name, bitte?", "Good. What is your name, please?", "Say your name.", ["Mein Name ist {Abid}.", "Ich heiße {Abid}."]], ["Danke. Bitte bringen Sie Ihre Versichertenkarte mit.", "Thanks. Please bring your insurance card.", "Say you will.", ["Ja, mache ich.", "Alles klar, danke.", "Okay, vielen Dank."]], ["Dann bis morgen. Auf Wiederhören!", "See you tomorrow then. Goodbye (on the phone)!", "Say goodbye on the phone.", ["Auf Wiederhören!", "Bis morgen, auf Wiederhören!"]]]}, {"id": "arzt", "level": "B1", "title": "Beim Arzt", "en": "At the doctor", "emo": "🩺", "who": "Dr. Keller", "setting": "You visit Dr. Keller because you feel ill.", "turns": [["Guten Tag. Was führt Sie zu mir?", "Hello. What brings you to me?", "Say you have had fever and a cough for three days.", ["Ich habe seit drei Tagen Fieber und Husten.", "Seit drei Tagen habe ich Husten und Fieber.", "Ich fühle mich seit Tagen krank."]], ["Haben Sie auch Schmerzen?", "Do you also have pain?", "Say your throat hurts.", ["Ja, mein Hals tut weh.", "Ja, ich habe Halsschmerzen.", "Ja, mir tut der Hals weh."]], ["Nehmen Sie regelmäßig Medikamente?", "Do you take medication regularly?", "Say no, or that you take tablets.", ["Nein, ich nehme keine Medikamente.", "Nur Vitamintabletten.", "Ja, ich nehme Tabletten gegen Bluthochdruck."]], ["Das ist eine Erkältung. Ich verschreibe Ihnen ein Medikament.", "It's a cold. I'll prescribe you a medicine.", "Ask how often to take it.", ["Wie oft muss ich es nehmen?", "Wie soll ich das Medikament einnehmen?", "Muss ich zu Hause bleiben?"]], ["Dreimal täglich nach dem Essen. Und bleiben Sie bitte drei Tage zu Hause.", "Three times a day after meals. And please stay at home for three days.", "Say okay, and ask for a sick note.", ["Alles klar, vielen Dank.", "Okay, ich bleibe zu Hause.", "Bekomme ich eine Krankschreibung?"]], ["Natürlich. Gute Besserung!", "Of course. Get well soon!", "Thank them and say goodbye.", ["Danke, auf Wiedersehen!", "Vielen Dank, auf Wiedersehen!"]]]}, {"id": "restaurant", "level": "B1", "title": "Im Restaurant reklamieren", "en": "Complaining politely in a restaurant", "emo": "🍲", "who": "Der Kellner", "setting": "Your soup is cold.", "turns": [["Entschuldigung, ist alles in Ordnung mit dem Essen?", "Excuse me, is everything all right with the food?", "Say the soup is cold.", ["Leider nicht, die Suppe ist kalt.", "Nein, die Suppe ist leider kalt.", "Die Suppe ist nicht warm genug."]], ["Oh, das tut mir leid. Soll ich sie aufwärmen lassen?", "Oh, I'm sorry. Should I have it warmed up?", "Ask for a new soup.", ["Bringen Sie mir bitte eine neue Suppe.", "Ja, bitte, oder bringen Sie eine neue.", "Nein danke, ich möchte lieber etwas anderes."]], ["Selbstverständlich. Möchten Sie etwas anderes bestellen?", "Of course. Would you like to order something else?", "Say you'll take the salad instead.", ["Ich nehme stattdessen den Salat.", "Dann nehme ich lieber den Salat.", "Ich hätte gern das Gericht des Tages."]], ["Sehr gern. Ich bringe Ihnen auch ein Getränk aufs Haus.", "Gladly. I'll also bring you a drink on the house.", "Thank them.", ["Das ist sehr nett, vielen Dank.", "Vielen Dank, das ist freundlich."]], ["Gern geschehen. Guten Appetit!", "You're welcome. Enjoy your meal!", "Say thank you.", ["Danke schön!", "Vielen Dank!"]]]}, {"id": "bahn", "level": "B1", "title": "Zugauskunft", "en": "At the train information desk", "emo": "🚆", "who": "Die Mitarbeiterin", "setting": "Your train was cancelled.", "turns": [["Guten Tag, kann ich Ihnen helfen?", "Hello, can I help you?", "Say your train to Munich was cancelled.", ["Ja, mein Zug nach München ist ausgefallen.", "Ich habe den Zug nach München verpasst.", "Wann fährt der nächste Zug nach München?"]], ["Das tut mir leid. Der nächste Zug fährt um 15:40 Uhr von Gleis sieben.", "I'm sorry. The next train leaves at 3:40 pm from platform seven.", "Ask whether you have to change trains.", ["Muss ich umsteigen?", "Fährt der Zug direkt?", "Kann ich mit meiner Fahrkarte einsteigen?"]], ["Sie müssen in Nürnberg umsteigen. Ihre Fahrkarte bleibt gültig.", "You have to change in Nuremberg. Your ticket stays valid.", "Ask how long the journey takes.", ["Wie lange dauert die Fahrt?", "Wann komme ich in München an?"]], ["Etwa drei Stunden. Sie kommen um 18:45 Uhr an.", "About three hours. You arrive at 6:45 pm.", "Thank them for the information.", ["Vielen Dank für die Auskunft.", "Danke, das hilft mir sehr."]], ["Gern. Gute Reise!", "You're welcome. Have a good trip!", "Say goodbye.", ["Danke, auf Wiedersehen!", "Tschüss!"]]]}, {"id": "bewerbung", "level": "B1", "title": "Vorstellungsgespräch", "en": "Job interview", "emo": "💼", "who": "Frau Hoffmann", "setting": "A short job interview.", "turns": [["Guten Tag, nehmen Sie bitte Platz. Erzählen Sie mir etwas über sich.", "Hello, please take a seat. Tell me something about yourself.", "Say what you studied and how long you have worked.", ["Ich habe {Medizin} studiert und arbeite seit zwei Jahren als {Arzt}.", "Ich habe {Informatik} studiert und arbeite seit drei Jahren in diesem Bereich.", "Ich komme aus {Indien} und lebe seit zwei Jahren in Deutschland."]], ["Warum interessieren Sie sich für diese Stelle?", "Why are you interested in this job?", "Say the job fits your training.", ["Die Stelle passt sehr gut zu meiner Ausbildung.", "Ich möchte mich weiterentwickeln.", "Ich suche eine neue Herausforderung."]], ["Was sind Ihre größten Stärken?", "What are your greatest strengths?", "Say you work well in a team and are reliable.", ["Ich arbeite gern im Team und bin sehr zuverlässig.", "Ich bin zuverlässig und lerne schnell.", "Meine Stärke ist, dass ich genau arbeite."]], ["Und wie gut sind Ihre Deutschkenntnisse?", "And how good is your German?", "Describe your German level.", ["Ich spreche Deutsch auf dem Niveau B2.", "Ich lerne täglich und verbessere mich ständig.", "Ich kann mich im Alltag gut verständigen."]], ["Wann könnten Sie bei uns anfangen?", "When could you start with us?", "Say when you could start.", ["Ich könnte sofort anfangen.", "Ich könnte in einem Monat anfangen.", "Ich habe eine Kündigungsfrist von drei Monaten."]], ["Vielen Dank für das Gespräch. Wir melden uns nächste Woche bei Ihnen.", "Thank you for the conversation. We'll get back to you next week.", "Thank them politely.", ["Vielen Dank, ich freue mich auf Ihre Antwort.", "Danke, auf Wiedersehen!"]]]}, {"id": "homeoffice", "level": "B2", "title": "Meinung zum Homeoffice", "en": "Giving your opinion on working from home", "emo": "🏠", "who": "Markus", "setting": "A colleague asks for your opinion.", "turns": [["Was hältst du eigentlich vom Homeoffice? Ich bin da noch unentschlossen.", "What do you actually think about working from home? I'm still undecided.", "Give your opinion.", ["Meiner Meinung nach hat Homeoffice große Vorteile.", "Ich finde, dass man zu Hause konzentrierter arbeiten kann.", "Ich halte es für eine gute Lösung."]], ["Aber geht dabei nicht der Kontakt zu den Kollegen verloren?", "But doesn't contact with colleagues get lost?", "Partly agree and name a solution.", ["Das stimmt, aber man kann Videokonferenzen nutzen.", "Da hast du recht, deshalb sollte man auch ins Büro kommen.", "Einerseits ja, andererseits spart man viel Zeit."]], ["Stimmt. Und was ist mit der Motivation? Manche arbeiten zu Hause weniger.", "True. And what about motivation? Some people work less at home.", "Say it depends on the person.", ["Ich bin der Meinung, dass es von der Person abhängt.", "Das hängt meiner Ansicht nach von der Selbstdisziplin ab.", "Ich glaube nicht, dass man weniger arbeitet."]], ["Wie sollte die Firma das deiner Meinung nach organisieren?", "How should the company organise it, in your opinion?", "Make a suggestion.", ["Ich würde zwei Tage im Büro und drei zu Hause vorschlagen.", "Am besten gibt es klare Regeln für alle.", "Ich schlage ein flexibles Modell vor."]], ["Das klingt vernünftig. Ich werde das beim nächsten Treffen ansprechen.", "That sounds reasonable. I'll raise it at the next meeting.", "Say you support him.", ["Gute Idee, ich unterstütze dich dabei.", "Das wäre sehr hilfreich, danke."]]]}, {"id": "vermieter", "level": "B2", "title": "Beschwerde beim Vermieter", "en": "Complaining to the property manager", "emo": "🔧", "who": "Hausverwaltung Neumann", "setting": "Your heating is broken.", "turns": [["Hausverwaltung Neumann, guten Tag. Worum geht es?", "Neumann property management, hello. What is it about?", "Say your heating has not worked for a week.", ["Ich rufe an, weil die Heizung in meiner Wohnung seit einer Woche nicht funktioniert.", "Es geht um einen Defekt in meiner Wohnung.", "Ich möchte mich über ein Problem beschweren."]], ["Das tut mir leid. Haben Sie den Schaden schon gemeldet?", "I'm sorry. Have you already reported the damage?", "Say you sent an email three days ago.", ["Ja, ich habe vor drei Tagen eine E-Mail geschickt.", "Ich habe Ihnen letzte Woche schon eine Nachricht geschrieben.", "Bisher noch nicht, deshalb rufe ich jetzt an."]], ["Da muss ein Fehler passiert sein. Ich schicke einen Techniker vorbei.", "A mistake must have happened. I'll send a technician.", "Ask when the technician can come.", ["Wann kann der Techniker kommen?", "Können Sie mir einen genauen Termin nennen?", "Das muss aber bitte schnell passieren."]], ["Morgen Vormittag zwischen acht und zwölf Uhr. Sind Sie dann zu Hause?", "Tomorrow morning between eight and twelve. Will you be at home?", "Say you will be there.", ["Ja, ich werde da sein.", "Leider arbeite ich bis zwölf. Geht es auch nachmittags?", "Ja, bitte rufen Sie vorher kurz an."]], ["In Ordnung. Ich notiere mir das.", "All right. I'll make a note of that.", "Thank them and say goodbye.", ["Vielen Dank, ich erwarte Ihren Techniker.", "Danke für Ihre Hilfe, auf Wiederhören!"]]]}, {"id": "urlaub", "level": "B2", "title": "Urlaub verhandeln", "en": "Negotiating holiday with your boss", "emo": "🌴", "who": "Frau Lange", "setting": "You talk to your boss about holiday.", "turns": [["Sie wollten mich sprechen? Worum geht es?", "You wanted to speak to me? What is it about?", "Say you want to talk about your holiday.", ["Ich möchte gern über meinen Urlaub sprechen.", "Ich würde gern im August drei Wochen Urlaub nehmen."]], ["Drei Wochen am Stück? Das ist schwierig, weil wir im August ein großes Projekt haben.", "Three weeks in a row? That's difficult because we have a big project in August.", "Show understanding and suggest a compromise.", ["Ich verstehe, aber ich habe den Urlaub schon lange geplant.", "Ich könnte vorher alles übergeben.", "Könnten wir einen Kompromiss finden?"]], ["Hm. Wie wäre es mit zwei Wochen im August und einer im September?", "Hm. How about two weeks in August and one in September?", "Say that would be fine.", ["Das wäre für mich in Ordnung.", "Das klingt nach einer guten Lösung.", "Ich müsste kurz darüber nachdenken."]], ["Wer würde Sie in der Zeit vertreten?", "Who would cover for you in that time?", "Say a colleague can take over.", ["Mein Kollege kann meine Aufgaben übernehmen.", "Ich werde alles gut vorbereiten und dokumentieren.", "Ich kläre das mit dem Team."]], ["Gut, dann genehmige ich das. Bitte reichen Sie den Antrag bis Freitag ein.", "Good, then I'll approve it. Please submit the request by Friday.", "Thank her and say you will submit it.", ["Vielen Dank, ich reiche ihn morgen ein.", "Das mache ich gleich, danke für Ihr Verständnis."]]]}];
-  var T = null;            // current conversation or null
-  function talkById(id) { for (var i = 0; i < TALK.length; i++) if (TALK[i].id === id) return TALK[i]; return null; }
-  function slotHtml(s) {
-    return esc(s).replace(/\{([^}]*)\}/g, '<span class="slot">$1</span>');
+  var CHAT_ROOMS = [['a1','A1'], ['a2','A2'], ['b1','B1'], ['b2','B2']];
+  var CH = { phase:'idle', uid:'', nick:'', room:'b1', msgs:[], err:'', info:'', sending:false, draft:'', nickDraft:'', accept:false, timer:null, busy:false, fetching:false };
+  var CHAT_ERR = {
+    slow_down:'Please wait a moment before sending again.', not_allowed:'The chat is only open to Premium members who have joined.',
+    premium_required:'The chat is only for Premium members.', nickname_taken:'That nickname is already taken. Try another.',
+    bad_nickname:'Use 3 to 20 letters, numbers or underscores. No spaces.', rules_not_accepted:'Please tick the box to accept the chat rules.',
+    banned:'This account has been removed from the chat.', bad_length:'A message must be 1 to 500 characters.', not_found:'That message no longer exists.',
+    cannot_block_self:'You cannot block yourself.', not_signed_in:'Please sign in again.'
+  };
+  function chatErr(r) {
+    var m = r && r.data && (r.data.message || r.data.msg);
+    return CHAT_ERR[m] || 'Something went wrong. Please try again.';
   }
-  function slotPlain(s) { return s.replace(/\{([^}]*)\}/g, '$1'); }
-  function evalTalk(models, alts) {
-    var best = null;
-    alts.forEach(function (alt) {
-      var ht = fold(alt).split(' ').filter(Boolean), joined = ht.join('');
-      models.forEach(function (m, mi) {
-        var toks = m.split(/\s+/), marks = [], scored = 0, pts = 0;
-        toks.forEach(function (tk) {
-          var slot = /\{[^}]*\}/.test(tk);
-          var w = tk.replace(/[{}]/g, '').replace(/^[^\wÄÖÜäöüß]+|[^\wÄÖÜäöüß]+$/g, '');
-          var st = slot ? 'skip' : matchWord(fold(w), ht, joined);
-          marks.push({ w:w, st:st, slot:slot });
-          if (st !== 'skip') { scored++; pts += st === 'ok' ? 1 : (st === 'close' ? 0.7 : 0); }
-        });
-        var ratio = scored ? pts / scored : (ht.length ? 1 : 0);
-        if (!best || ratio > best.ratio) best = { heard:alt, marks:marks, ratio:ratio, model:mi };
-      });
-    });
-    if (!best) best = { heard:'', marks:[], ratio:0, model:0 };
-    best.pass = best.ratio >= 0.6;
-    return best;
-  }
-  function startTalk(id) {
-    var sc = talkById(id); if (!sc) return;
-    stopListening(true);
-    T = { sc:sc, i:0, log:[], status:'idle', msg:'', result:null, showTr:false, showHint:false, typing:false, typed:'', passed:0, tried:0, finished:false };
-    render(true);
-    speak(sc.turns[0][0]);
-  }
-  function talkSay() { if (T && !T.finished) speak(T.sc.turns[T.i][0]); }
-  function talkListen() {
-    var Ctor = speechCtor();
-    if (!Ctor) { T.status = 'error'; T.msg = MSG_UNSUPPORTED; T.typing = true; render(); return; }
-    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
-    stopListening(true);
-    var rec, tt = T;
-    try { rec = new Ctor(); } catch (e) { tt.status = 'error'; tt.msg = MSG_UNAVAILABLE; tt.typing = true; render(); return; }
-    REC = rec;
-    rec.lang = 'de-DE'; rec.interimResults = false; rec.maxAlternatives = 5; rec.continuous = false;
-    var finished = false, started = false;
-    rec.onstart = function () { started = true; clearTimeout(recTimer); };
-    rec.onresult = function (e) {
-      if (REC !== rec || finished || T !== tt) return;
-      finished = true; clearTimeout(recTimer); REC = null;
-      var res = e.results[e.results.length - 1], alts = [];
-      for (var i = 0; i < res.length; i++) alts.push(res[i].transcript);
-      talkAnswer(alts);
-    };
-    rec.onerror = function (e) {
-      if (REC !== rec || finished || T !== tt) return;
-      finished = true; clearTimeout(recTimer); REC = null;
-      if (e.error === 'aborted') { tt.status = 'idle'; tt.msg = ''; }
-      else { tt.status = 'error'; tt.msg = speechError(e.error); tt.typing = true; }
+  function chatReady() { return SB_OK && !!account.session && account.premium && !account.offline; }
+  function chatStop() { if (CH.timer) { clearInterval(CH.timer); CH.timer = null; } }
+  function chatReset() { chatStop(); CH.phase = 'idle'; CH.uid = ''; CH.nick = ''; CH.msgs = []; CH.err = ''; CH.info = ''; CH.draft = ''; CH.nickDraft = ''; CH.accept = false; CH.sending = false; CH.busy = false; }
+  function chatOpen() {
+    if (tab !== 'chat' || S || P) return;
+    if (!chatReady()) { chatStop(); return; }
+    if (CH.uid !== account.session.user.id) chatReset();
+    if (CH.phase === 'ready') { chatStart(); return; }
+    if (CH.phase === 'load') return;
+    CH.phase = 'load'; CH.uid = account.session.user.id; render();
+    getToken().then(function (tok) {
+      if (!tok) throw new Error('auth');
+      return api('/rest/v1/chat_profiles?select=nickname,banned', {}, tok);
+    }).then(function (r) {
+      if (!r.ok) throw new Error('http');
+      var p = r.data && r.data[0];
+      if (p && p.banned) CH.phase = 'banned';
+      else if (p && p.nickname) { CH.nick = p.nickname; CH.phase = 'ready'; }
+      else CH.phase = 'setup';
       render();
-    };
-    rec.onend = function () {
-      if (REC !== rec) return;
-      clearTimeout(recTimer); REC = null;
-      if (!finished && T === tt) { tt.status = 'error'; tt.msg = "I didn't hear anything. Tap the microphone and answer again, or type your answer."; render(); }
-    };
-    tt.status = 'listening'; tt.msg = '';
-    render();
-    recTimer = setTimeout(function () {
-      if (!started && REC === rec) { stopListening(true); tt.status = 'error'; tt.msg = MSG_UNAVAILABLE; tt.typing = true; render(); }
-    }, 20000);
-    try { rec.start(); } catch (e) { stopListening(true); tt.status = 'error'; tt.msg = MSG_UNAVAILABLE; tt.typing = true; render(); }
+      if (CH.phase === 'ready') chatStart();
+    }).catch(function () { CH.phase = 'error'; CH.err = 'The chat could not be loaded. Check your internet connection.'; render(); });
   }
-  function talkAnswer(alts) {
-    var turn = T.sc.turns[T.i];
-    var r = evalTalk(turn[3], alts);
-    T.result = r; T.status = 'result'; T.tried++;
-    if (r.pass) T.passed++;
-    if (!state.talk) state.talk = { done:{}, tries:0, good:0 };
-    state.talk.tries++; if (r.pass) state.talk.good++;
-    save();
-    render(); scrollToFeedback();
+  function chatStart() {
+    chatStop(); chatFetch(true);
+    CH.timer = setInterval(function () {
+      if (tab !== 'chat' || S || P || document.hidden) return;
+      chatFetch(false);
+    }, 4000);
   }
-  function talkNext() {
-    if (!T) return;
-    var turn = T.sc.turns[T.i], r = T.result;
-    T.log.push({ me:false, text:turn[0], tr:turn[1] });
-    T.log.push({ me:true, text:(r && r.heard) ? r.heard : slotPlain(turn[3][0]), ok:!!(r && r.pass) });
-    T.i++; T.status = 'idle'; T.msg = ''; T.result = null; T.showHint = false; T.showTr = false; T.typed = ''; T.typing = false;
-    if (T.i >= T.sc.turns.length) {
-      T.finished = true;
-      if (!state.talk) state.talk = { done:{}, tries:0, good:0 };
-      state.talk.done[T.sc.id] = Math.max(state.talk.done[T.sc.id] || 0, T.passed);
-      save(); render(true); return;
+  function chatFetch(first) {
+    if (CH.fetching || CH.phase !== 'ready') return;
+    CH.fetching = true;
+    var room = CH.room;
+    getToken().then(function (tok) {
+      if (!tok) throw new Error('auth');
+      return api('/rest/v1/chat_messages?select=id,nick,body,created_at&room=eq.' + encodeURIComponent(room) + '&order=id.desc&limit=60', {}, tok);
+    }).then(function (r) {
+      CH.fetching = false;
+      if (room !== CH.room || CH.phase !== 'ready') return;
+      if (r.status === 401 || r.status === 403) { CH.phase = 'error'; CH.err = 'The chat is not available for this account (Premium is needed).'; chatStop(); render(); return; }
+      if (!r.ok || !Array.isArray(r.data)) { CH.info = 'Connection problem. Trying again...'; chatInfo(); return; }
+      CH.msgs = r.data.slice().reverse(); CH.info = '';
+      chatList(first);
+    }).catch(function () { CH.fetching = false; CH.info = 'Connection problem. Trying again...'; chatInfo(); });
+  }
+  function chatTime(iso) {
+    var d = new Date(iso); if (isNaN(d.getTime())) return '';
+    var now = new Date(), hm = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    return d.toDateString() === now.toDateString() ? hm : ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '. ' + hm;
+  }
+  function chatListHtml() {
+    if (!CH.msgs.length) return '<p class="muted small" style="text-align:center;margin:30px 0">No messages yet. Say "Hallo!" to start.</p>';
+    var me = CH.nick.toLowerCase();
+    return CH.msgs.map(function (m) {
+      var mine = String(m.nick).toLowerCase() === me;
+      return '<div class="cmsg' + (mine ? ' mine' : '') + '"><div class="chead"><b>' + esc(m.nick) + '</b><span>' + esc(chatTime(m.created_at)) + '</span></div>' +
+        '<p>' + esc(m.body) + '</p><div class="cact">' +
+        (mine ? '<button data-act="chdel" data-id="' + Number(m.id) + '">Delete</button>'
+              : '<button data-act="chrep" data-id="' + Number(m.id) + '">Report</button><button data-act="chblock" data-id="' + Number(m.id) + '">Block</button>') +
+        '</div></div>';
+    }).join('');
+  }
+  function chatList(forceBottom) {
+    var el = $('#chatlist'); if (!el) return;
+    var nearBottom = forceBottom || (el.scrollHeight - el.scrollTop - el.clientHeight < 80);
+    var sig = CH.msgs.length ? CH.msgs[CH.msgs.length - 1].id + ':' + CH.msgs.length : '0';
+    if (el.getAttribute('data-sig') === sig + '|' + CH.room && !forceBottom) { chatInfo(); return; }
+    el.innerHTML = chatListHtml(); el.setAttribute('data-sig', sig + '|' + CH.room);
+    if (nearBottom) el.scrollTop = el.scrollHeight;
+    chatInfo();
+  }
+  function chatInfo() { var el = $('#chatinfo'); if (el) el.textContent = CH.info || CH.err || ''; }
+  function chatSend() {
+    var inp = $('#chmsg'); if (!inp || CH.sending) return;
+    var text = inp.value.trim(); CH.draft = inp.value;
+    if (!text) { inp.focus(); return; }
+    CH.sending = true; CH.err = ''; var btn = $('#chsend'); if (btn) btn.disabled = true;
+    getToken().then(function (tok) {
+      if (!tok) throw new Error('auth');
+      return api('/rest/v1/rpc/chat_send', { method:'POST', body:{ p_room:CH.room, p_body:text } }, tok);
+    }).then(function (r) {
+      CH.sending = false; var b2 = $('#chsend'); if (b2) b2.disabled = false;
+      if (r.ok) { CH.draft = ''; var i2 = $('#chmsg'); if (i2) { i2.value = ''; i2.focus(); } CH.err = ''; chatFetch(true); }
+      else { CH.err = chatErr(r); chatInfo(); }
+    }).catch(function () { CH.sending = false; var b3 = $('#chsend'); if (b3) b3.disabled = false; CH.err = 'Not sent. Check your internet connection.'; chatInfo(); });
+  }
+  function chatCall(fn, body, okMsg, confirmText) {
+    if (confirmText && !window.confirm(confirmText)) return;
+    getToken().then(function (tok) {
+      if (!tok) throw new Error('auth');
+      return api('/rest/v1/rpc/' + fn, { method:'POST', body:body }, tok);
+    }).then(function (r) {
+      if (r.ok) { CH.err = ''; CH.info = okMsg; chatInfo(); chatFetch(false); setTimeout(function () { if (CH.info === okMsg) { CH.info = ''; chatInfo(); } }, 4000); }
+      else { CH.err = chatErr(r); chatInfo(); }
+    }).catch(function () { CH.err = 'Please check your internet connection.'; chatInfo(); });
+  }
+  function chatDelete(id) {
+    if (!window.confirm('Delete your message?')) return;
+    getToken().then(function (tok) {
+      if (!tok) throw new Error('auth');
+      return api('/rest/v1/chat_messages?id=eq.' + Number(id), { method:'DELETE', headers:{ Prefer:'return=minimal' } }, tok);
+    }).then(function (r) { if (r.ok) chatFetch(false); else { CH.err = 'Could not delete the message.'; chatInfo(); } })
+      .catch(function () { CH.err = 'Please check your internet connection.'; chatInfo(); });
+  }
+  function chatJoin() {
+    if (CH.busy) return;
+    var ni = $('#chnick'), ac = $('#chaccept');
+    var nick = ni ? ni.value.trim() : '', ok = !!(ac && ac.checked);
+    CH.nickDraft = nick; CH.accept = ok;
+    if (!/^[A-Za-z0-9_]{3,20}$/.test(nick)) { CH.err = CHAT_ERR.bad_nickname; render(); return; }
+    if (!ok) { CH.err = CHAT_ERR.rules_not_accepted; render(); return; }
+    CH.busy = true; CH.err = ''; render();
+    getToken().then(function (tok) {
+      if (!tok) throw new Error('auth');
+      return api('/rest/v1/rpc/chat_join', { method:'POST', body:{ p_nick:nick, p_accept:true } }, tok);
+    }).then(function (r) {
+      CH.busy = false;
+      if (r.ok) { CH.nick = nick; CH.phase = 'ready'; CH.err = ''; render(true); chatStart(); }
+      else { CH.err = chatErr(r); render(); }
+    }).catch(function () { CH.busy = false; CH.err = 'Please check your internet connection.'; render(); });
+  }
+  function viewChat() {
+    var h = '<h1 class="page-title">Chat</h1>';
+    if (!SB_OK) return h + '<p class="muted">The chat is not switched on in this copy of the app.</p>';
+    if (!account.session) return h + '<p class="muted">Write German with other learners. Sign in to your account first.</p><button class="btn" data-act="tab" data-v="account">Go to Account</button>';
+    if (!account.premium) return h + '<div class="upsell"><b>Chat is for Premium members.</b> Write German with other learners in rooms for A1, A2, B1 and B2. Included with Premium (' + priceLabel() + ', paid once).<button class="btn" data-act="upgrade">See Premium</button></div>';
+    if (account.offline) return h + '<p class="muted">The chat needs an internet connection.</p>';
+    if (CH.phase === 'load' || CH.phase === 'idle') return h + '<p class="muted">Loading...</p>';
+    if (CH.phase === 'error') return h + '<p class="fb bad" style="padding:14px">' + esc(CH.err) + '</p><button class="btn" data-act="chretry">Try again</button>';
+    if (CH.phase === 'banned') return h + '<p class="muted">' + esc(CHAT_ERR.banned) + ' Contact support if you think this is a mistake.</p>';
+    if (CH.phase === 'setup') {
+      h += '<p class="muted">Choose a nickname. Other members will see only this nickname, never your email.</p>';
+      h += '<label class="lbl" for="chnick">Nickname (3 to 20 letters, numbers or _)</label>' +
+        '<input id="chnick" class="field fs" type="text" maxlength="20" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" value="' + esc(CH.nickDraft) + '">';
+      h += '<div class="rules"><b>Chat rules</b><ul><li>Write in German when you can. Mistakes are fine.</li><li>Be kind. No insults, hate, harassment or spam.</li><li>Do not share private data (phone, address, passwords, bank details).</li><li>Messages are visible to all Premium members in the room and are deleted after 30 days.</li><li>You can report or block anyone. Reports are read by the app owner, who can remove messages and members.</li></ul></div>';
+      h += '<label class="chk"><input id="chaccept" type="checkbox"' + (CH.accept ? ' checked' : '') + '> I accept the chat rules</label>';
+      if (CH.err) h += '<p class="fb bad" style="padding:12px">' + esc(CH.err) + '</p>';
+      return h + '<button class="btn" data-act="chjoin"' + (CH.busy ? ' disabled' : '') + '>' + (CH.busy ? 'Please wait...' : 'Join the chat') + '</button>';
     }
-    render(true);
-    speak(T.sc.turns[T.i][0]);
-  }
-  function talkTypeSend() {
-    var inp = $('#tans'); if (!inp || !T) return;
-    var val = inp.value.trim();
-    if (!val) { inp.focus(); return; }
-    T.typed = val;
-    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-    talkAnswer([val]);
-  }
-  function viewTalkList() {
-    var h = '<h1 class="page-title">Talk</h1>' +
-      '<p class="muted">Have a short conversation in German. Your partner speaks, you answer out loud. Start easy and work up.</p>';
-    ['A1', 'A2', 'B1', 'B2'].forEach(function (lv) {
-      var list = TALK.filter(function (s) { return s.level === lv; });
-      if (!list.length) return;
-      h += '<h2 class="sec">' + lv + '</h2><div class="modes">';
-      list.forEach(function (s) {
-        var d = state.talk && state.talk.done[s.id];
-        h += '<button class="row" data-act="tstart" data-v="' + esc(s.id) + '"><span class="emo">' + s.emo + '</span><span class="t"><strong>' + esc(s.title) + '</strong><small>' +
-          esc(s.en) + ' · ' + s.turns.length + ' turns with ' + esc(s.who) + '</small></span>' +
-          (d !== undefined ? '<span class="tdone">' + d + '/' + s.turns.length + '</span>' : '') + '<span class="chev">' + icon('chev') + '</span></button>';
-      });
-      h += '</div>';
-    });
-    h += '<p class="say-note">Speech recognition is done by your iPhone and needs internet. If it will not start (iOS often blocks it in Home Screen apps), you can type your answers instead, or open this address in Safari.</p>';
+    h += '<div class="chips" role="group" aria-label="Chat room">' + CHAT_ROOMS.map(function (r) {
+      return '<button data-act="chroom" data-v="' + r[0] + '" aria-pressed="' + (CH.room === r[0]) + '">' + r[1] + '</button>';
+    }).join('') + '</div>';
+    h += '<p class="say-note" style="margin:2px 0 8px">You are <b>' + esc(CH.nick) + '</b> in room ' + esc(CH.room.toUpperCase()) + '. Be kind. Never share private data.</p>';
+    h += '<div id="chatlist" class="chatlist" aria-live="polite">' + chatListHtml() + '</div>';
+    h += '<p id="chatinfo" class="say-note" role="status">' + esc(CH.info || CH.err) + '</p>';
+    h += '<div class="tform"><input id="chmsg" class="field fs" type="text" maxlength="500" autocomplete="off" enterkeyhint="send" placeholder="Schreib etwas..." aria-label="Your message" value="' + esc(CH.draft) + '">' +
+      '<button id="chsend" class="btn" data-act="chsend">Send</button></div>';
+    h += '<p class="say-note"><button class="linkbtn" data-act="chunblock">Unblock everyone I blocked</button></p>';
     return h;
-  }
-  function viewTalk() {
-    var sc = T.sc, n = sc.turns.length;
-    if (T.finished) {
-      var pct = n ? Math.round(100 * T.passed / n) : 0;
-      var h0 = '<section class="summary"><h2>' + (pct >= 80 ? 'Sehr gut!' : (pct >= 50 ? 'Gut gemacht!' : 'Weiter üben!')) + '</h2><p class="big">' + T.passed + ' / ' + n + '</p><p class="muted">answers understood</p>';
-      h0 += '<div class="chat done">' + T.log.map(bubble).join('') + '</div>';
-      h0 += '<div class="stack"><button class="btn" data-act="tstart" data-v="' + esc(sc.id) + '">Talk again</button><button class="btn ghost" data-act="close">Back to Talk</button></div></section>';
-      return h0;
-    }
-    var turn = sc.turns[T.i];
-    var h = '<header class="sbar"><button class="icon-btn" data-act="close" aria-label="Close and go back">' + icon('close') + '</button>' +
-      '<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + T.i + '"><i style="width:' + Math.round(100 * T.i / n) + '%"></i></div>' +
-      '<span class="count">' + Math.min(T.i + 1, n) + '/' + n + '</span></header>';
-    h += '<p class="setting">' + sc.emo + ' ' + esc(sc.setting) + '</p>';
-    h += '<div class="chat">' + T.log.map(bubble).join('');
-    h += '<div class="bub them"><b>' + esc(sc.who) + '</b><p>' + esc(turn[0]) + '</p>' + (T.showTr ? '<p class="tr">' + esc(turn[1]) + '</p>' : '') + '</div></div>';
-    h += '<div class="btns"><button class="btn ghost" data-act="thear">' + icon('speaker') + '&nbsp;Hear again</button>' +
-      '<button class="btn ghost" data-act="ttr" aria-pressed="' + T.showTr + '">' + (T.showTr ? 'Hide English' : 'Show English') + '</button></div>';
-    h += '<p class="hintline"><b>Your turn:</b> ' + esc(turn[2]) + '</p>';
-    if (T.status === 'idle' || T.status === 'listening') {
-      var live = T.status === 'listening';
-      h += '<button class="mic' + (live ? ' live' : '') + '" data-act="tmic" aria-label="' + (live ? 'Stop listening' : 'Start speaking') + '">' + icon('mic') + '</button>' +
-        '<p class="miclabel">' + (live ? 'Listening... tap to stop' : 'Tap the microphone and answer') + '</p>';
-    }
-    if (T.status === 'error') {
-      h += '<section class="fb bad" role="status"><h3>Could not listen</h3><p class="line">' + esc(T.msg) + '</p>' +
-        '<div class="btns"><button class="btn ghost" data-act="tmic">Try the microphone</button></div></section>';
-    }
-    if (T.status !== 'result') {
-      if (T.typing) {
-        h += '<div class="tform"><input id="tans" class="field" type="text" autocapitalize="sentences" autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="send" placeholder="Type your answer in German" aria-label="Your answer" value="' + esc(T.typed) + '">' +
-          '<button class="btn" data-act="tsend">Send</button></div>';
-      } else {
-        h += '<div class="btns"><button class="btn ghost" data-act="ttype">Type instead</button><button class="btn ghost" data-act="thint">' + (T.showHint ? 'Hide example' : 'Show example') + '</button></div>';
-      }
-      if (T.showHint) h += '<p class="exlist">' + turn[3].map(function (m) { return '<span>' + slotHtml(m) + '</span>'; }).join('') + '</p><p class="say-note">Coloured words in an example are your own words, for example your name or city. They are not checked.</p>';
-      h += '<div class="btns"><button class="btn ghost" data-act="tnext">Skip this turn</button></div>';
-    } else {
-      var r = T.result, last = T.i >= n - 1;
-      h += '<section class="fb ' + (r.pass ? 'good' : 'bad') + '" role="status"><h3>' + (r.pass ? 'Verstanden!' : 'Nicht ganz.') + '</h3>' +
-        '<p class="line muted">I heard: ' + (r.heard ? esc(r.heard) : '(nothing)') + '</p>' +
-        '<p class="line sentence-s">' + r.marks.map(function (m) { return m.slot ? '<span class="slot">' + esc(m.w) + '</span>' : '<span class="w ' + m.st + '">' + esc(m.w) + '</span>'; }).join(' ') + '</p>';
-      if (!r.pass) h += '<p class="line small">Red words were missing. Listen to the model, then try again.</p>';
-      h += '<div class="btns"><button class="btn ghost" data-act="tmodel" data-say="' + esc(slotPlain(turn[3][r.model])) + '">Hear a model answer</button><button class="btn ghost" data-act="tretry">Try again</button></div>' +
-        '<button class="btn" data-act="tnext">' + (last ? 'Finish' : (r.pass ? 'Next' : 'Continue anyway')) + '</button></section>';
-    }
-    return h;
-  }
-  function bubble(b) {
-    return b.me ? '<div class="bub me' + (b.ok ? '' : ' off') + '"><p>' + esc(b.text) + '</p></div>'
-                : '<div class="bub them"><p>' + esc(b.text) + '</p>' + (b.tr ? '<p class="tr">' + esc(b.tr) + '</p>' : '') + '</div>';
   }
 
   /* =====================================================
      RENDER
      ===================================================== */
   function renderNav() {
-    var items = [['practise','Practise'], ['verbs','Verbs'], ['words','Words'], ['talk','Talk'], ['progress','Progress']];
+    var items = [['practise','Practise'], ['verbs','Verbs'], ['words','Words'], ['chat','Chat'], ['progress','Progress'], ['account','Account']];
     $('#nav').innerHTML = items.map(function (it) {
       return '<button data-act="tab" data-v="' + it[0] + '"' + (tab === it[0] ? ' aria-current="page"' : '') + '><span class="pill">' + icon(it[0]) + '</span>' + it[1] + '</button>';
     }).join('');
   }
   function render(toTop) {
     var app = $('#app'), html;
-    if (T) {
-      document.body.classList.add('in-session');
-      html = viewTalk();
-    } else if (P) {
+    if (P) {
       document.body.classList.add('in-session');
       html = viewPic();
     } else if (S) {
@@ -1824,13 +1731,14 @@ details.all[open] summary::after{content:"Hide"}
       else html = S.mode === 'cards' ? viewCards() : (S.mode === 'speak' ? viewSpeak() : viewQuestion());
     } else {
       document.body.classList.remove('in-session');
-      html = tab === 'verbs' ? viewVerbs() : (tab === 'progress' ? viewProgress() : (tab === 'account' ? viewAccount() : (tab === 'words' ? viewWords() : (tab === 'talk' ? viewTalkList() : viewPractise()))));
+      html = tab === 'verbs' ? viewVerbs() : (tab === 'progress' ? viewProgress() : (tab === 'account' ? viewAccount() : (tab === 'chat' ? viewChat() : (tab === 'words' ? viewWords() : viewPractise()))));
       renderNav();
     }
     app.innerHTML = html;
     if (!S && tab === 'verbs' && vsearch) applySearch();
     hydratePhotos();
     if (toTop) window.scrollTo(0, 0);
+    if (tab === 'chat' && !S && !P) { var cl = $('#chatlist'); if (cl) cl.scrollTop = cl.scrollHeight; }
   }
   function scrollToFeedback() {
     var fb = $('.fb');
@@ -1862,21 +1770,19 @@ details.all[open] summary::after{content:"Hide"}
     var q = currentQ();
 
     switch (act) {
-      case 'tab': tab = v; render(true); break;
+      case 'tab': tab = v; if (v !== 'chat') chatStop(); render(true); if (v === 'chat') chatOpen(); break;
+      case 'chretry': chatReset(); chatOpen(); break;
+      case 'chjoin': chatJoin(); break;
+      case 'chroom': CH.room = v; CH.msgs = []; CH.err = ''; render(); chatFetch(true); break;
+      case 'chsend': chatSend(); break;
+      case 'chrep': chatCall('chat_report', { p_id:Number(el.getAttribute('data-id')), p_reason:'reported by member' }, 'Thank you. The message was reported.', 'Report this message to the app owner?'); break;
+      case 'chblock': chatCall('chat_block', { p_id:Number(el.getAttribute('data-id')) }, 'Blocked. You will no longer see this person.', 'Block this person? You will no longer see their messages.'); break;
+      case 'chdel': chatDelete(el.getAttribute('data-id')); break;
+      case 'chunblock': chatCall('chat_unblock_all', {}, 'Everyone is unblocked.', 'Unblock everyone you blocked?'); break;
       case 'toggleEn': state.englishFirst = !state.englishFirst; save(); render(); break;
       case 'hideInstall': state.hideInstall = true; save(); render(); break;
       case 'start': if (el.getAttribute('data-mode') === 'speak') startSpeak(null); else startSession(el.getAttribute('data-mode')); break;
-      case 'close': stopListening(true); try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {} S = null; P = null; T = null; render(true); break;
-      case 'tstart': startTalk(v); break;
-      case 'thear': talkSay(); break;
-      case 'ttr': if (T) { T.showTr = !T.showTr; render(); } break;
-      case 'thint': if (T) { T.showHint = !T.showHint; render(); } break;
-      case 'ttype': if (T) { stopListening(true); T.typing = true; T.status = 'idle'; render(); var ti = $('#tans'); if (ti) { try { ti.focus(); } catch (err) {} } } break;
-      case 'tsend': talkTypeSend(); break;
-      case 'tmic': if (T) { if (REC) { stopListening(false); } else talkListen(); } break;
-      case 'tmodel': speak(el.getAttribute('data-say')); break;
-      case 'tretry': if (T) { T.status = 'idle'; T.msg = ''; T.result = null; T.typed = ''; render(); } break;
-      case 'tnext': stopListening(true); talkNext(); break;
+      case 'close': stopListening(true); S = null; P = null; render(true); break;
       case 'speakOne': if (!account.premium) { openUpgrade(); break; } startSpeak([el.getAttribute('data-id')]); break;
       case 'speakagain': startSpeak(S.single ? S.ids : null); break;
       case 'speakTarget':
@@ -1985,12 +1891,14 @@ details.all[open] summary::after{content:"Hide"}
   document.addEventListener('input', function (e) {
     if (e.target && e.target.id === 'vsearch') { vsearch = e.target.value; applySearch(); }
     if (e.target && e.target.id === 'acEmail') account.email = e.target.value;
+    if (e.target && e.target.id === 'chmsg') CH.draft = e.target.value;
+    if (e.target && e.target.id === 'chnick') CH.nickDraft = e.target.value;
   });
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && e.target && e.target.id === 'ans') { e.preventDefault(); doCheck(); }
-    if (e.key === 'Enter' && e.target && e.target.id === 'tans') { e.preventDefault(); talkTypeSend(); }
     if (e.key === 'Enter' && e.target && e.target.id === 'wans') { e.preventDefault(); doWCheck(); }
+    if (e.key === 'Enter' && e.target && e.target.id === 'chmsg') { e.preventDefault(); chatSend(); }
     if (e.key === 'Enter' && e.target && e.target.id === 'acEmail') { e.preventDefault(); sendCode(); }
     if (e.key === 'Enter' && e.target && e.target.id === 'acCode') { e.preventDefault(); verifyCode(); }
     if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.getAttribute && e.target.getAttribute('role') === 'button' && S && S.mode === 'cards') {

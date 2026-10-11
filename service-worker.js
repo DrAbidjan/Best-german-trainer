@@ -1,9 +1,10 @@
 /* Verbtrainer service worker: caches the app so it works offline.
    If you ever change a file of the app, bump the version number below.
    Only files of this website are cached. Calls to the account server are never cached. */
-const CACHE = 'verbtrainer-free-v2';
+const CACHE = 'verbtrainer-v6';
 const ASSETS = [
-  './', './index.html', './manifest.json',
+  './', './index.html', './config.js', './manifest.json',
+  './impressum.html', './datenschutz.html', './terms.html',
   './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './favicon.png'
 ];
 
