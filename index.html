@@ -359,6 +359,12 @@ details.all[open] summary::after{content:"Hide"}
   var GRAMMAR = FREE_GRAMMAR.slice();
   var GRAM_LOCKED = { B1:6, B2:6, C1:5 };
   var G = { level:'A1', topic:'', quiz:null };
+
+  /* Exam preparation tracks (Fachsprachprüfung). One free sample per track is inside this file; the rest comes from the account (Premium). */
+  var FREE_FSP = [{"id":"zm-v1","track":"zm","type":"vocab","title":"Zähne und Mundhöhle","en":"Teeth and oral cavity","items":[["der Zahn","tooth"],["die Zahnkrone","crown (of the tooth)"],["die Zahnwurzel","root"],["der Zahnschmelz","enamel"],["das Zahnbein (Dentin)","dentin"],["die Pulpa (das Zahnmark)","pulp"],["das Zahnfleisch","gums"],["die Zunge","tongue"],["der Gaumen","palate"],["der Oberkiefer","upper jaw"],["der Unterkiefer","lower jaw"],["die Lippe","lip"],["der Schneidezahn","incisor"],["der Eckzahn","canine"],["der Backenzahn","molar / premolar"],["der Weisheitszahn","wisdom tooth"],["das Milchgebiss","primary dentition"],["das Kiefergelenk","temporomandibular joint"],["der Speichel","saliva"],["die Speicheldrüse","salivary gland"]]},{"id":"med-v1","track":"med","type":"vocab","title":"Körper und Organe","en":"Body and organs","items":[["das Herz","heart"],["die Lunge","lung"],["die Leber","liver"],["die Niere","kidney"],["der Magen","stomach"],["der Darm","intestine"],["die Bauchspeicheldrüse","pancreas"],["die Milz","spleen"],["die Schilddrüse","thyroid gland"],["die Harnblase","bladder"],["das Gehirn","brain"],["die Wirbelsäule","spine"],["der Brustkorb","chest / thorax"],["die Rippe","rib"],["das Gelenk","joint"],["der Muskel","muscle"],["der Knochen","bone"],["die Haut","skin"],["das Blutgefäß","blood vessel"],["das Blut","blood"]]},{"id":"zm-p1","track":"zm","type":"phrases","title":"Anamnese beim Zahnarzt","en":"History taking at the dentist","items":[["Was führt Sie zu uns?","What brings you to us?"],["Wo genau haben Sie Schmerzen?","Where exactly do you have pain?"],["Seit wann haben Sie die Beschwerden?","Since when have you had the symptoms?"],["Sind die Schmerzen dauerhaft oder nur beim Kauen?","Is the pain constant or only when chewing?"],["Reagiert der Zahn auf Kälte oder Wärme?","Does the tooth react to cold or heat?"],["Haben Sie Allergien, zum Beispiel gegen Medikamente oder Betäubungsmittel?","Do you have allergies, for example to medication or anaesthetics?"],["Nehmen Sie regelmäßig Medikamente ein?","Do you take medication regularly?"],["Nehmen Sie blutverdünnende Medikamente?","Do you take blood thinners?"],["Haben Sie Vorerkrankungen wie Diabetes oder Herzprobleme?","Do you have pre-existing conditions such as diabetes or heart problems?"],["Rauchen Sie?","Do you smoke?"],["Wie oft putzen Sie Ihre Zähne?","How often do you brush your teeth?"],["Wann waren Sie zuletzt beim Zahnarzt?","When were you last at the dentist?"]]},{"id":"med-p1","track":"med","type":"phrases","title":"Anamnese: allgemeine Fragen","en":"History taking: general questions","items":[["Was führt Sie zu mir?","What brings you to me?"],["Seit wann bestehen die Beschwerden?","Since when have you had the symptoms?"],["Wie würden Sie den Schmerz beschreiben: stechend, drückend oder brennend?","How would you describe the pain: stabbing, pressing or burning?"],["Strahlt der Schmerz aus?","Does the pain radiate?"],["Haben Sie Fieber, Husten oder Atemnot?","Do you have a fever, cough or shortness of breath?"],["Haben Sie Vorerkrankungen?","Do you have pre-existing conditions?"],["Wurden Sie schon einmal operiert?","Have you ever had surgery?"],["Gibt es Erkrankungen in der Familie, zum Beispiel Herzinfarkt oder Krebs?","Are there illnesses in the family, for example heart attack or cancer?"],["Trinken Sie Alkohol?","Do you drink alcohol?"],["Wie viele Zigaretten rauchen Sie pro Tag?","How many cigarettes do you smoke per day?"],["Nehmen Sie Medikamente?","Do you take medication?"],["Haben Sie Allergien?","Do you have allergies?"]]},{"id":"zm-d1","track":"zm","type":"dialogue","title":"Zahnschmerzen","en":"Toothache","roles":{"A":"Zahnärztin / Zahnarzt","P":"Patient"},"turns":[["A","Guten Tag, was führt Sie zu uns?","Good day, what brings you to us?"],["P","Ich habe seit drei Tagen starke Zahnschmerzen unten rechts.","I have had severe toothache for three days at the bottom right."],["A","Sind die Schmerzen dauerhaft, oder treten sie nur beim Essen auf?","Is the pain constant or does it only occur when eating?"],["P","Sie sind fast immer da, besonders nachts. Kaltes Wasser macht es schlimmer.","It is almost always there, especially at night. Cold water makes it worse."],["A","Haben Sie Allergien oder nehmen Sie Medikamente ein?","Do you have allergies or do you take any medication?"],["P","Ich bin allergisch gegen Penicillin. Sonst nehme ich nichts.","I am allergic to penicillin. Otherwise I do not take anything."],["A","Gut, das notiere ich. Bitte öffnen Sie jetzt den Mund weit. Ich schaue mir den Zahn an.","Good, I will note that. Please open your mouth wide now. I will look at the tooth."],["A","Der Zahn hat eine tiefe Karies, und die Pulpa ist entzündet. Ich röntge den Zahn noch.","The tooth has deep caries and the pulp is inflamed. I will also X-ray the tooth."],["P","Muss der Zahn gezogen werden?","Does the tooth have to be extracted?"],["A","Nein, ich möchte ihn erhalten. Wir machen eine Wurzelbehandlung. Zuerst betäube ich den Zahn.","No, I would like to save it. We will do a root canal treatment. First I will anaesthetise the tooth."]]},{"id":"med-d1","track":"med","type":"dialogue","title":"Brustschmerzen: Anamnese","en":"Chest pain: history taking","roles":{"A":"Ärztin / Arzt","P":"Patient"},"turns":[["A","Guten Tag, was führt Sie zu mir?","Good day, what brings you to me?"],["P","Ich habe seit einer Stunde Schmerzen in der Brust.","I have had pain in my chest for an hour."],["A","Wie würden Sie den Schmerz beschreiben: stechend, drückend oder brennend?","How would you describe the pain: stabbing, pressing or burning?"],["P","Er ist drückend, wie ein Gewicht auf der Brust. Er strahlt in den linken Arm aus.","It is pressing, like a weight on my chest. It radiates into my left arm."],["A","Haben Sie Atemnot, Schwindel oder Übelkeit?","Do you have shortness of breath, dizziness or nausea?"],["P","Mir ist ein bisschen übel, und ich schwitze stark.","I feel a bit sick and I am sweating a lot."],["A","Haben Sie Vorerkrankungen, zum Beispiel Bluthochdruck oder Diabetes?","Do you have pre-existing conditions, for example high blood pressure or diabetes?"],["P","Ich habe Bluthochdruck und nehme Tabletten dafür. Mein Vater hatte mit 55 einen Herzinfarkt.","I have high blood pressure and take tablets for it. My father had a heart attack at 55."],["A","Rauchen Sie?","Do you smoke?"],["P","Ja, etwa zwanzig Zigaretten am Tag.","Yes, about twenty cigarettes a day."],["A","Ich schreibe jetzt sofort ein EKG und nehme Blut ab. Es besteht der Verdacht auf einen Herzinfarkt.","I will do an ECG right away and take blood. There is a suspicion of a heart attack."]]}];
+  var FSP = FREE_FSP.slice();
+  var FSP_LOCKED = {"zm": {"vocab": 3, "phrases": 3, "dialogue": 3}, "med": {"vocab": 3, "phrases": 3, "dialogue": 3}};
+  var F = { id:'', mode:'', c:null, z:null, d:null };
   var PW = {};
   var PW_LIST = [];
   function buildWords() {
@@ -405,6 +411,9 @@ details.all[open] summary::after{content:"Hide"}
       account:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
       chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-5.4A8 8 0 1 1 21 12z"/>',
       grammar:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
+      fvocab:'<path d="M5 3h11a3 3 0 0 1 3 3v15H8a3 3 0 0 1-3-3z"/><path d="M9 8h6M9 12h6"/>',
+      fphrase:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
+      fdialog:'<path d="M3 5h11v8H8l-3 3v-3H3z"/><path d="M17 9h4v8h-2v3l-3-3h-5v-2"/>',
       lock:'<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>'
     }[name];
     return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">' + p + '</svg>';
@@ -452,7 +461,7 @@ details.all[open] summary::after{content:"Hide"}
     return {
       stats: { correct:0, wrong:0, score:0, streak:0, bestStreak:0, dayStreak:0, lastDay:'', sessions:0 },
       verbs: {}, scope:'all', englishFirst:false, hideInstall:false,
-      speak:{ tries:0, good:0 }, speakTarget:'word', savedAt:0, owner:'', pics:{}, gram:{}
+      speak:{ tries:0, good:0 }, speakTarget:'word', savedAt:0, owner:'', pics:{}, gram:{}, track:'allg', fsp:{}
     };
   }
   function num(x) { return (typeof x === 'number' && isFinite(x) && x >= 0 && x < 1e9) ? Math.floor(x) : 0; }
@@ -475,6 +484,11 @@ details.all[open] summary::after{content:"Hide"}
       var x = p.gram[id];
       if (/^[a-z0-9-]{1,40}$/.test(id) && typeof x === 'number' && x >= 0 && x <= 5) d.gram[id] = Math.floor(x);
     });
+    if (p.fsp && typeof p.fsp === 'object') Object.keys(p.fsp).slice(0, 100).forEach(function (id) {
+      var x = p.fsp[id];
+      if (/^[a-z0-9-]{1,40}$/.test(id) && typeof x === 'number' && x >= 0 && x <= 100) d.fsp[id] = Math.floor(x);
+    });
+    if (p.track === 'zm' || p.track === 'med') d.track = p.track;
     if (validScope(p.scope)) d.scope = p.scope;
     d.englishFirst = !!p.englishFirst;
     d.hideInstall = !!p.hideInstall;
@@ -794,6 +808,21 @@ details.all[open] summary::after{content:"Hide"}
 
   /* ---- Premium content: only ever comes from the server ---- */
   function strs(a, n) { return (Array.isArray(a) ? a : []).filter(function (x) { return typeof x === 'string'; }).slice(0, n); }
+  function pairs(a, n) { return (Array.isArray(a) ? a : []).filter(function (e) { return Array.isArray(e) && e.length >= 2 && typeof e[0] === 'string' && typeof e[1] === 'string'; }).slice(0, n).map(function (e) { return [e[0].slice(0, 300), e[1].slice(0, 300)]; }); }
+  function cleanSet(t) {
+    if (!t || typeof t !== 'object' || !/^[a-z0-9-]{1,40}$/.test(String(t.id)) || !/^(zm|med|both)$/.test(String(t.track)) || !/^(vocab|phrases|dialogue)$/.test(String(t.type))) return null;
+    var o = { id:String(t.id), track:String(t.track), type:String(t.type), title:String(t.title || '').slice(0, 80), en:String(t.en || '').slice(0, 120) };
+    if (o.type === 'dialogue') {
+      var roles = {}; if (t.roles && typeof t.roles === 'object') Object.keys(t.roles).slice(0, 3).forEach(function (k) { if (/^[A-Z]$/.test(k) && typeof t.roles[k] === 'string') roles[k] = t.roles[k].slice(0, 40); });
+      o.roles = roles;
+      o.turns = (Array.isArray(t.turns) ? t.turns : []).filter(function (e) { return Array.isArray(e) && roles[e[0]] && typeof e[1] === 'string' && typeof e[2] === 'string'; }).slice(0, 40).map(function (e) { return [e[0], e[1].slice(0, 400), e[2].slice(0, 400)]; });
+      if (Object.keys(roles).length !== 2 || o.turns.length < 2) return null;
+    } else {
+      o.items = pairs(t.items, 60);
+      if (o.items.length < (o.type === 'vocab' ? 4 : 1)) return null;
+    }
+    return o;
+  }
   function cleanTopic(t) {
     if (!t || typeof t !== 'object' || !/^[a-z0-9-]{1,40}$/.test(String(t.id)) || !/^(A1|A2|B1|B2|C1)$/.test(String(t.level))) return null;
     var qs = (Array.isArray(t.q) ? t.q : []).filter(function (q) {
@@ -806,7 +835,7 @@ details.all[open] summary::after{content:"Hide"}
              ex:(Array.isArray(t.ex) ? t.ex : []).filter(function (e) { return Array.isArray(e) && typeof e[0] === 'string' && typeof e[1] === 'string'; }).slice(0, 8), q:qs };
   }
   function setPremiumContent(rows) {
-    var days = [], sim = [], wc = [], gr = [];
+    var days = [], sim = [], wc = [], gr = [], fs = [];
     (rows || []).forEach(function (r) {
       var p = r && r.payload;
       if (!p) return;
@@ -815,6 +844,8 @@ details.all[open] summary::after{content:"Hide"}
                     verbs:p.verbs.filter(function (v) { return Array.isArray(v) && v.length >= 4 && v.slice(0, 4).every(function (x) { return typeof x === 'string'; }); }) });
       } else if (r.kind === 'similar' && Array.isArray(p.groups)) {
         sim = p.groups.filter(Array.isArray);
+      } else if (r.kind === 'fsp' && Array.isArray(p.sets)) {
+        p.sets.forEach(function (t) { var g = cleanSet(t); if (g) fs.push(g); });
       } else if (r.kind === 'grammar' && Array.isArray(p.topics)) {
         p.topics.forEach(function (t) { var g = cleanTopic(t); if (g) gr.push(g); });
       } else if (r.kind === 'words' && Array.isArray(p.items)) {
@@ -831,8 +862,9 @@ details.all[open] summary::after{content:"Hide"}
     buildWords();
     gr.sort(function (a, b) { return a.level === b.level ? (a.id < b.id ? -1 : 1) : (a.level < b.level ? -1 : 1); });
     GRAMMAR = FREE_GRAMMAR.concat(gr);
+    FSP = FREE_FSP.concat(fs);
   }
-  function clearPremiumContent() { DAYS = FREE_DAYS.slice(); SIMILAR = FREE_SIMILAR.slice(); buildVerbs(); WORD_CATS = FREE_WORDS.slice(); buildWords(); GRAMMAR = FREE_GRAMMAR.slice(); if (G.quiz && /^(B1|B2|C1)$/.test(G.level)) { G.quiz = null; G.topic = ''; } }
+  function clearPremiumContent() { DAYS = FREE_DAYS.slice(); SIMILAR = FREE_SIMILAR.slice(); buildVerbs(); WORD_CATS = FREE_WORDS.slice(); buildWords(); GRAMMAR = FREE_GRAMMAR.slice(); FSP = FREE_FSP.slice(); F = { id:'', mode:'', c:null, z:null, d:null }; if (G.quiz && /^(B1|B2|C1)$/.test(G.level)) { G.quiz = null; G.topic = ''; } }
   function readCache() { var c = lsGet(PCACHE_KEY); return (c && typeof c.uid === 'string' && Array.isArray(c.rows) && typeof c.at === 'number') ? c : null; }
   function applyPremium(rows, offline) { setPremiumContent(rows); account.premium = true; account.offline = !!offline; }
   function applyFree(wipeCache) {
@@ -1024,6 +1056,7 @@ details.all[open] summary::after{content:"Hide"}
       if (!x || (o.c + o.w) > (x.c + x.w)) out.pics[id] = o;
     });
     Object.keys(other.gram).forEach(function (id) { if (!(id in out.gram) || other.gram[id] > out.gram[id]) out.gram[id] = other.gram[id]; });
+    Object.keys(other.fsp).forEach(function (id) { if (!(id in out.fsp) || other.fsp[id] > out.fsp[id]) out.fsp[id] = other.fsp[id]; });
     if (other.speak.tries > out.speak.tries) out.speak = other.speak;
     return out;
   }
@@ -1056,7 +1089,7 @@ details.all[open] summary::after{content:"Hide"}
   function wordExtra() { return Number(CFG.PREMIUM_WORD_COUNT) || 132; }
   function extraCount() { return Number(CFG.PREMIUM_VERB_COUNT) || 140; }
   function perks() {
-    return '<ul class="perks"><li><b>' + extraCount() + ' more verbs</b> (B2 and important B1)</li><li>Picture words: 11 more categories (about ' + wordExtra() + ' words) and picture typing</li><li>Grammar lessons and quizzes B1 to C1 (A1 and A2 are free)</li><li>Typing test</li><li>Speaking practice</li><li>Chat with other learners (rooms A1 to B2)</li><li>Progress saved to your account</li></ul>';
+    return '<ul class="perks"><li><b>' + extraCount() + ' more verbs</b> (B2 and important B1)</li><li>Picture words: 11 more categories (about ' + wordExtra() + ' words) and picture typing</li><li>Grammar lessons and quizzes B1 to C1 (A1 and A2 are free)</li><li>Fachsprachprüfung preparation: dental and medical vocabulary, phrases and practice dialogues</li><li>Typing test</li><li>Speaking practice</li><li>Chat with other learners (rooms A1 to B2)</li><li>Progress saved to your account</li></ul>';
   }
   function legalLinks() {
     return '<p class="foot"><a href="impressum.html">Impressum</a> &middot; <a href="datenschutz.html">Datenschutz / Privacy</a> &middot; <a href="terms.html">Terms &amp; refunds</a></p>';
@@ -1683,6 +1716,164 @@ details.all[open] summary::after{content:"Hide"}
     return h;
   }
 
+
+  /* =====================================================
+     EXAM PREPARATION (Fachsprachprüfung)
+     ===================================================== */
+  var TRACKS = [['allg', 'General German'], ['zm', 'Zahnmedizin FSP'], ['med', 'Medizin FSP']];
+  function trackBar() {
+    return '<div class="chips trackbar" role="group" aria-label="Choose your course">' + TRACKS.map(function (t) {
+      return '<button data-act="xtrack" data-v="' + t[0] + '" aria-pressed="' + (state.track === t[0] ? 'true' : 'false') + '">' + t[1] + '</button>';
+    }).join('') + '</div>';
+  }
+  function fspSet(id) { for (var i = 0; i < FSP.length; i++) if (FSP[i].id === id) return FSP[i]; return null; }
+  function fspType() { return tab === 'fphrase' ? 'phrases' : (tab === 'fdialog' ? 'dialogue' : 'vocab'); }
+  function fspMode(m) {
+    var t = fspSet(F.id); if (!t) return;
+    F.mode = m; F.c = F.z = F.d = null;
+    if (m === 'cards') F.c = { q:shuffle(t.items.map(function (x, k) { return k; })), flipped:false, total:t.items.length, done:0 };
+    if (m === 'quiz') {
+      var idx = shuffle(t.items.map(function (x, k) { return k; })).slice(0, 10);
+      F.z = { i:0, score:0, picked:-1, done:false, finished:false, qs:idx.map(function (k) {
+        var others = shuffle(t.items.map(function (x, j) { return j; }).filter(function (j) { return j !== k && t.items[j][1] !== t.items[k][1]; })).slice(0, 3);
+        return { k:k, opts:shuffle([k].concat(others)) };
+      }) };
+    }
+    if (m === 'dlg') F.d = { role:'', i:0, rev:false };
+    render(true);
+  }
+  function fspCard(known) {
+    var c = F.c; if (!c) return;
+    var k = c.q.shift();
+    if (known) c.done++; else c.q.push(k);
+    c.flipped = false;
+    render(true);
+  }
+  function fspPick(k) {
+    var t = fspSet(F.id), z = F.z; if (!t || !z || z.done) return;
+    var q = z.qs[z.i]; if (!q || q.opts.indexOf(k) < 0) return;
+    z.picked = k; z.done = true; if (k === q.k) z.score++;
+    render(); scrollToFeedback();
+  }
+  function fspNext() {
+    var t = fspSet(F.id), z = F.z; if (!t || !z || !z.done) return;
+    if (z.i + 1 >= z.qs.length) {
+      z.finished = true;
+      var pct = Math.round(100 * z.score / z.qs.length);
+      if (!(t.id in state.fsp) || pct > state.fsp[t.id]) { state.fsp[t.id] = pct; save(); }
+    } else { z.i++; z.picked = -1; z.done = false; }
+    render(true);
+  }
+  function fspRole(r) {
+    var t = fspSet(F.id); if (!t || !t.roles[r]) return;
+    if (!F.d) F.d = { role:'', i:0, rev:false };
+    F.mode = 'dlg'; F.d.role = r; F.d.i = 0; F.d.rev = false; render(true);
+  }
+  function fspVisible(t) { return FSP.filter(function (s) { return s.type === t && (s.track === state.track || s.track === 'both'); }); }
+  var FSP_KIND = { vocab:['Vocabulary', 'Learn the words with flashcards, then test yourself.', 'vocabulary sets'], phrases:['Phrases', 'Sentences you need with patients and colleagues. Tap the speaker to listen.', 'phrase sets'], dialogue:['Dialogues', 'Practise a conversation: choose your role and say your lines aloud.', 'dialogues'] };
+  function viewFsp() {
+    var ty = fspType(), t = F.id ? fspSet(F.id) : null;
+    if (t && (t.type !== ty || (t.track !== state.track && t.track !== 'both'))) { F.id = ''; t = null; }
+    if (!t) return viewFspList(ty);
+    if (t.type === 'vocab') return F.mode === 'cards' ? viewFspCards(t) : (F.mode === 'quiz' ? viewFspQuiz(t) : viewFspVocab(t));
+    if (t.type === 'phrases') return viewFspPhrases(t);
+    return F.mode === 'dlg' ? viewFspDialogue(t) : viewFspDialogueStart(t);
+  }
+  function viewFspList(ty) {
+    var kd = FSP_KIND[ty], list = fspVisible(ty);
+    var h = '<h1 class="page-title">' + kd[0] + '</h1><p class="glead muted">' + kd[1] + '</p>';
+    if (!list.length) h += '<div class="notice">Nothing here yet.</div>';
+    h += '<ul class="catlist">' + list.map(function (s) {
+      var best = state.fsp[s.id], badge = (s.type === 'vocab' && typeof best === 'number') ? '<span class="gbadge' + (best === 100 ? ' full' : '') + '">' + best + '%</span>' : '';
+      var sub = esc(s.en) + (s.type === 'dialogue' ? ' &middot; ' + s.turns.length + ' lines' : ' &middot; ' + s.items.length + (s.type === 'vocab' ? ' words' : ' phrases'));
+      return '<li><button class="row" data-act="xopen" data-v="' + esc(s.id) + '"><span class="t"><strong>' + esc(s.title) + '</strong><small>' + sub + '</small></span>' + badge + '<span class="chev">' + icon('chev') + '</span></button></li>';
+    }).join('') + '</ul>';
+    var more = (FSP_LOCKED[state.track] || {})[ty] || 0;
+    if (!account.premium && SB_OK && more) h += '<div class="upsell"><b>Free: a sample.</b> Premium adds ' + more + ' more ' + kd[2] + ' for this course from ' + priceFrom() + ', cancel anytime.<button class="btn" data-act="upgrade">See Premium</button></div>';
+    h += '<p class="foot">Written for learning. Always check medical details against your course material and the official exam guidelines.</p>';
+    return h;
+  }
+  function fspHead(t) {
+    return '<div class="btns" style="margin:0 0 6px"><button class="btn ghost" data-act="xback" style="min-height:44px;width:auto;padding:0 16px">&larr; Back</button></div><h1 class="page-title">' + esc(t.title) + '</h1><p class="muted">' + esc(t.en) + '</p>';
+  }
+  function viewFspVocab(t) {
+    var h = fspHead(t);
+    h += '<div class="btns"><button class="btn" data-act="xmode" data-v="cards">Flashcards</button><button class="btn ghost" data-act="xmode" data-v="quiz">Quiz</button></div>';
+    h += '<ul class="gex" style="margin-top:18px">' + t.items.map(function (e) { return '<li><div style="flex:1;min-width:0"><span class="de">' + esc(e[0]) + '</span><small>' + esc(e[1]) + '</small></div>' + sayBtn(e[0].replace(/\s*\(.*?\)/g, ''), e[0]) + '</li>'; }).join('') + '</ul>';
+    return h;
+  }
+  function viewFspPhrases(t) {
+    return fspHead(t) + '<ul class="gex" style="margin-top:14px">' + t.items.map(function (e) { return '<li><div style="flex:1;min-width:0"><span class="de">' + esc(e[0]) + '</span><small>' + esc(e[1]) + '</small></div>' + sayBtn(e[0].replace(/^[^:]+:\s*/, ''), e[0]) + '</li>'; }).join('') + '</ul>';
+  }
+  function viewFspCards(t) {
+    var c = F.c, h = '<div class="btns" style="margin:0 0 6px"><button class="btn ghost" data-act="xback" style="min-height:44px;width:auto;padding:0 16px">&larr; Leave</button></div>';
+    if (!c.q.length) {
+      return h + '<h1 class="page-title">All done</h1><p class="glead">You went through all ' + c.total + ' cards. Sehr gut!</p><div class="btns"><button class="btn ghost" data-act="xmode" data-v="cards">Again</button><button class="btn" data-act="xmode" data-v="quiz">Take the quiz</button></div>';
+    }
+    var e = t.items[c.q[0]];
+    h += '<p class="qlabel">' + c.done + ' of ' + c.total + ' known</p>';
+    var front = '<p class="word">' + esc(e[0]) + '</p><p class="tap">Tap to turn.</p>';
+    var back = '<p class="word" style="margin-bottom:6px">' + esc(e[0]) + '</p><p class="en-line">' + esc(e[1]) + '</p><div class="say-row">' + sayBtn(e[0].replace(/\s*\(.*?\)/g, ''), e[0]) + '</div>';
+    h += '<div class="flash" role="button" tabindex="0" data-act="xflip" aria-label="Flashcard. Tap to turn over.">' + (c.flipped ? back : front) + '</div>';
+    h += c.flipped ? '<div class="btns"><button class="btn ghost" data-act="xagain">Again</button><button class="btn" data-act="xgot">Got it</button></div>' : '<div class="btns"><button class="btn" data-act="xflip">Show answer</button></div>';
+    return h;
+  }
+  function viewFspQuiz(t) {
+    var z = F.z, n = z.qs.length;
+    if (z.finished) {
+      var best = state.fsp[t.id];
+      return '<h1 class="page-title">' + esc(t.title) + '</h1><section class="hero"><div><p class="hero-n">' + z.score + '<span>/' + n + '</span></p><p class="l">correct' + (typeof best === 'number' ? ' &middot; your best: ' + best + '%' : '') + '</p></div></section>' +
+        '<div class="btns"><button class="btn ghost" data-act="xback">All sets</button><button class="btn" data-act="xmode" data-v="quiz">Try again</button></div>';
+    }
+    var q = z.qs[z.i], e = t.items[q.k];
+    var h = '<div class="btns" style="margin:0 0 6px"><button class="btn ghost" data-act="xback" style="min-height:44px;width:auto;padding:0 16px">&larr; Leave quiz</button></div>';
+    h += '<p class="qlabel">What does this mean? &middot; ' + (z.i + 1) + ' of ' + n + '</p><p class="word">' + esc(e[0]) + '</p>';
+    h += '<div class="opts">' + q.opts.map(function (k) {
+      var cls = 'opt';
+      if (z.done) cls += k === q.k ? ' correct' : (k === z.picked ? ' wrong' : ' dim');
+      return '<button class="' + cls + '" data-act="xpick" data-i="' + k + '"' + (z.done ? ' disabled' : '') + '><span>' + esc(t.items[k][1]) + '</span></button>';
+    }).join('') + '</div>';
+    if (z.done) {
+      var ok = z.picked === q.k;
+      h += '<section class="fb ' + (ok ? 'good' : 'bad') + '" role="status"><h3>' + (ok ? 'Richtig!' : 'Nicht ganz.') + '</h3><p class="line"><span class="de">' + esc(e[0]) + '</span> means ' + esc(e[1]) + '.</p>' +
+           '<button class="btn" data-act="xnext">' + (z.i + 1 >= n ? 'See result' : 'Next') + '</button></section>';
+    }
+    return h;
+  }
+  function viewFspDialogueStart(t) {
+    var h = fspHead(t) + '<p class="glead">Choose your role. The other person\'s lines are shown. For your own lines you see the English cue first: say the German sentence aloud, then check the model answer.</p>';
+    h += '<div class="modes">' + Object.keys(t.roles).map(function (r) {
+      return '<button class="row" data-act="xrole" data-v="' + r + '"><span class="t"><strong>I am the ' + esc(t.roles[r]) + '</strong></span><span class="chev">' + icon('chev') + '</span></button>';
+    }).join('') + '</div>';
+    h += '<h2 class="sec">Read the whole dialogue</h2><ul class="gex">' + t.turns.map(function (e) {
+      return '<li><div style="flex:1;min-width:0"><small><b>' + esc(t.roles[e[0]]) + '</b></small><span class="de">' + esc(e[1]) + '</span><small>' + esc(e[2]) + '</small></div>' + sayBtn(e[1], e[1]) + '</li>';
+    }).join('') + '</ul>';
+    return h;
+  }
+  function viewFspDialogue(t) {
+    var d = F.d;
+    if (!d.role) { F.mode = ''; return viewFspDialogueStart(t); }
+    var n = t.turns.length;
+    var h = '<div class="btns" style="margin:0 0 6px"><button class="btn ghost" data-act="xback" style="min-height:44px;width:auto;padding:0 16px">&larr; Leave</button></div><p class="qlabel">' + esc(t.title) + ' &middot; you are the ' + esc(t.roles[d.role]) + '</p>';
+    h += '<ul class="gex">';
+    for (var i = 0; i <= d.i && i < n; i++) {
+      var e = t.turns[i], mine = e[0] === d.role, cur = i === d.i;
+      var show = !mine || !cur || d.rev;
+      h += '<li><div style="flex:1;min-width:0"><small><b>' + (mine ? 'You' : esc(t.roles[e[0]])) + '</b></small>' +
+        (show ? '<span class="de">' + esc(e[1]) + '</span><small>' + esc(e[2]) + '</small>' : '<span class="de" style="color:var(--muted)">Your turn. Say this in German:</span><small style="font-size:16px;color:var(--ink)">' + esc(e[2]) + '</small>') + '</div>' + (show ? sayBtn(e[1], e[1]) : '') + '</li>';
+    }
+    h += '</ul>';
+    var cur = t.turns[d.i];
+    if (d.i >= n) {
+      h += '<div class="notice">Dialogue finished. Gut gemacht!</div><div class="btns"><button class="btn ghost" data-act="xmode" data-v="dlg">Again</button><button class="btn" data-act="xback">All dialogues</button></div>';
+    } else if (cur[0] === d.role && !d.rev) {
+      h += '<div class="btns"><button class="btn" data-act="xrev">Show model answer</button></div>';
+    } else {
+      h += '<div class="btns"><button class="btn" data-act="xcont">' + (d.i + 1 >= n ? 'Finish' : 'Continue') + '</button></div>';
+    }
+    return h;
+  }
+
   function viewPCards() {
     var id = P.queue[0], w = PW[id];
     var h = sessionBar(P.resolved, P.initial, true);
@@ -1911,7 +2102,9 @@ details.all[open] summary::after{content:"Hide"}
      RENDER
      ===================================================== */
   function renderNav() {
-    var items = [['practise','Practise'], ['verbs','Verbs'], ['words','Words'], ['grammar','Grammar'], ['chat','Chat'], ['progress','Progress'], ['account','Account']];
+    var items = state.track === 'allg'
+      ? [['practise','Practise'], ['verbs','Verbs'], ['words','Words'], ['grammar','Grammar'], ['chat','Chat'], ['progress','Progress'], ['account','Account']]
+      : [['fvocab','Vocabulary'], ['fphrase','Phrases'], ['fdialog','Dialogues'], ['chat','Chat'], ['account','Account']];
     $('#nav').innerHTML = items.map(function (it) {
       return '<button data-act="tab" data-v="' + it[0] + '"' + (tab === it[0] ? ' aria-current="page"' : '') + '><span class="pill">' + icon(it[0]) + '</span>' + it[1] + '</button>';
     }).join('');
@@ -1927,8 +2120,12 @@ details.all[open] summary::after{content:"Hide"}
       else html = S.mode === 'cards' ? viewCards() : (S.mode === 'speak' ? viewSpeak() : viewQuestion());
     } else {
       document.body.classList.remove('in-session');
-      html = tab === 'verbs' ? viewVerbs() : (tab === 'progress' ? viewProgress() : (tab === 'account' ? viewAccount() : (tab === 'chat' ? viewChat() : (tab === 'words' ? viewWords() : (tab === 'grammar' ? viewGrammar() : viewPractise())))));
+      var isF = /^f(vocab|phrase|dialog)$/.test(tab);
+      if (state.track !== 'allg' && !isF && tab !== 'chat' && tab !== 'account') tab = 'fvocab';
+      if (state.track === 'allg' && isF) tab = 'practise';
+      html = tab === 'verbs' ? viewVerbs() : (tab === 'progress' ? viewProgress() : (tab === 'account' ? viewAccount() : (tab === 'chat' ? viewChat() : (tab === 'words' ? viewWords() : (tab === 'grammar' ? viewGrammar() : (/^f(vocab|phrase|dialog)$/.test(tab) ? viewFsp() : viewPractise()))))));
       renderNav();
+      html = trackBar() + html;
     }
     app.innerHTML = html;
     if (!S && tab === 'verbs' && vsearch) applySearch();
@@ -1967,6 +2164,20 @@ details.all[open] summary::after{content:"Hide"}
 
     switch (act) {
       case 'tab': tab = v; if (v !== 'chat') chatStop(); render(true); if (v === 'chat') chatOpen(); break;
+      case 'xtrack':
+        if (v === 'allg' || v === 'zm' || v === 'med') { state.track = v; F = { id:'', mode:'', c:null, z:null, d:null }; tab = v === 'allg' ? 'practise' : 'fvocab'; chatStop(); save(); render(true); }
+        break;
+      case 'xopen': F = { id:v, mode:'', c:null, z:null, d:null }; render(true); break;
+      case 'xback': if (F.mode) { F.mode = ''; F.c = F.z = F.d = null; } else { F.id = ''; } render(true); break;
+      case 'xmode': fspMode(v); break;
+      case 'xflip': if (F.c) { F.c.flipped = !F.c.flipped; render(); } break;
+      case 'xgot': fspCard(true); break;
+      case 'xagain': fspCard(false); break;
+      case 'xpick': fspPick(Number(el.getAttribute('data-i'))); break;
+      case 'xnext': fspNext(); break;
+      case 'xrole': fspRole(v); break;
+      case 'xcont': if (F.d) { F.d.i++; F.d.rev = false; render(); window.scrollTo(0, document.body.scrollHeight); } break;
+      case 'xrev': if (F.d) { F.d.rev = true; render(); } break;
       case 'glevel': G.level = v; G.topic = ''; G.quiz = null; render(); break;
       case 'gopen': G.topic = v; G.quiz = null; render(true); break;
       case 'gback': if (G.quiz && !G.quiz.finished) { G.quiz = null; } else { G.quiz = null; G.topic = ''; } render(true); break;
