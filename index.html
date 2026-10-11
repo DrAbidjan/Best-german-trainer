@@ -905,7 +905,7 @@ details.all[open] summary::after{content:"Hide"}
       o.turns = (Array.isArray(t.turns) ? t.turns : []).filter(function (e) { return Array.isArray(e) && roles[e[0]] && typeof e[1] === 'string' && typeof e[2] === 'string'; }).slice(0, 40).map(function (e) { return [e[0], e[1].slice(0, 400), e[2].slice(0, 400)]; });
       if (Object.keys(roles).length !== 2 || o.turns.length < 2) return null;
     } else {
-      o.items = pairs(t.items, 60);
+      o.items = pairs(t.items, 80);
       if (o.items.length < (o.type === 'vocab' ? 4 : 1)) return null;
     }
     return o;
