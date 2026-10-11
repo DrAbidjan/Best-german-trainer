@@ -1,0 +1,2044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>B2 Verb Trainer (Free)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFD400" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1318" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Verbtrainer">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+:root{
+  --bg:#EEF0F3; --surface:#FFFFFF; --ink:#12161C; --muted:#5B6571; --line:#D8DDE4;
+  --accent:#FFD400; --accent-ink:#12161C;
+  --good:#157347; --good-bg:#DDF2E5; --bad:#B3302F; --bad-bg:#FAE1E0;
+  --serif:ui-serif,"New York",Georgia,"Times New Roman",serif;
+  --sans:-apple-system,system-ui,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0F1318; --surface:#181E26; --ink:#F1F3F6; --muted:#9BA6B3; --line:#2B343F;
+    --good:#5ED39A; --good-bg:#12301F; --bad:#FF8F8B; --bad-bg:#3A1A1A;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:17px/1.4 var(--sans);
+  -webkit-tap-highlight-color:transparent;
+  min-height:100vh; min-height:100dvh;
+}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;text-align:inherit;cursor:pointer;touch-action:manipulation}
+button:focus-visible,[role=button]:focus-visible,input:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+h1,h2,h3,p,ul{margin:0;padding:0}
+ul{list-style:none}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
+
+#app{
+  max-width:560px; margin:0 auto;
+  padding:calc(env(safe-area-inset-top,0px) + 18px) 18px calc(96px + env(safe-area-inset-bottom,0px));
+}
+body.in-session #app{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+
+/* ---------- bottom navigation ---------- */
+#nav{
+  position:fixed; left:0; right:0; bottom:0; z-index:10;
+  display:flex; background:var(--surface); border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+body.in-session #nav{display:none}
+#nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 7px;font-size:11.5px;font-weight:600;color:var(--muted);text-align:center}
+#nav .pill{padding:4px 22px;border-radius:999px;transition:background .15s}
+#nav button[aria-current=page]{color:var(--ink)}
+#nav button[aria-current=page] .pill{background:var(--accent);color:var(--accent-ink)}
+
+/* ---------- shared bits ---------- */
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.de{font-family:var(--serif)}
+mark{background:var(--accent);color:#12161C;padding:0 .18em;border-radius:4px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.blank{display:inline-block;width:3em;height:1.05em;background:var(--accent);border-radius:4px;vertical-align:-.18em;margin:0 .1em}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:54px;padding:0 20px;border-radius:16px;background:var(--accent);color:var(--accent-ink);font-weight:700;text-align:center;transition:transform .08s}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn[disabled]{opacity:.45}
+.btns{display:flex;gap:10px;margin-top:14px}
+.icon-btn{width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--ink);flex:none}
+.icon-btn:active{background:var(--line)}
+.say{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);flex:none;vertical-align:middle}
+.say:active{background:var(--line)}
+.say svg.i{width:19px;height:19px}
+.sec{font-family:var(--serif);font-size:22px;margin:30px 0 6px}
+.page-title{font-family:var(--serif);font-size:32px;line-height:1.1;margin:4px 0 16px}
+
+/* ---------- practise hub ---------- */
+.hero{background:var(--accent);color:#12161C;border-radius:24px;padding:20px 20px 18px;display:grid;grid-template-columns:1fr auto;gap:2px 16px}
+.hero-n{font-family:var(--serif);font-size:46px;font-weight:700;line-height:1}
+.hero-n span{font-size:24px;font-weight:600;opacity:.7}
+.hero-r{text-align:right}
+.hero p.l{font-size:14px;font-weight:600;margin-top:4px}
+.bar{grid-column:1/-1;height:8px;border-radius:99px;background:rgba(18,22,28,.16);margin-top:14px;overflow:hidden}
+.bar i{display:block;height:100%;background:#12161C;border-radius:99px;transition:width .3s}
+.seg{display:flex;gap:6px;margin:20px 0 4px;background:var(--surface);padding:4px;border-radius:14px;border:1px solid var(--line)}
+.seg button{flex:1;min-height:40px;border-radius:10px;font-weight:600;font-size:15px;text-align:center;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.toggle{display:flex;align-items:center;gap:10px;margin:10px 2px 0;font-size:14px;color:var(--muted);min-height:36px}
+.toggle .sw{width:40px;height:24px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background .15s}
+.toggle .sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s}
+.toggle[aria-pressed=true] .sw{background:var(--ink)}
+.toggle[aria-pressed=true] .sw::after{transform:translateX(16px);background:var(--bg)}
+.modes{margin-top:8px;border-top:1px solid var(--line)}
+.row{display:flex;align-items:center;gap:12px;width:100%;padding:16px 2px;border-bottom:1px solid var(--line)}
+.row:active{background:rgba(127,127,127,.1)}
+.row .t{flex:1;min-width:0}
+.row strong{display:block;font-size:18px;line-height:1.25}
+.row small{display:block;color:var(--muted);font-size:14px;margin-top:2px}
+.row[disabled]{opacity:.5}
+.row .chev{color:var(--muted)}
+.badge-n{min-width:26px;height:26px;padding:0 8px;border-radius:99px;background:var(--bad);color:#fff;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.mlist li{display:flex;align-items:baseline;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line)}
+.mlist .de{font-size:19px;font-weight:700}
+.mlist .en{flex:1;color:var(--muted);font-size:15px}
+.mlist .cnt{font-size:13px;color:var(--bad);font-weight:600;white-space:nowrap}
+.install{margin-top:18px;padding:14px 16px;border-radius:16px;border:1.5px dashed var(--line);font-size:14.5px;position:relative;padding-right:52px}
+.install b{font-weight:700}
+.install button{position:absolute;right:4px;top:4px}
+.foot{margin-top:26px;font-size:13px;color:var(--muted);text-align:center}
+
+/* ---------- verb entries ---------- */
+.chips{display:flex;gap:8px;margin:0 0 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.chips button{flex:none;min-height:40px;padding:0 16px;border-radius:99px;border:1.5px solid var(--line);font-weight:600;font-size:15px;color:var(--muted)}
+.chips button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.daytitle{font-family:var(--serif);font-size:22px;margin:26px 0 4px}
+.entry{padding:16px 0 18px 16px;border-bottom:1px solid var(--line);border-left:5px solid var(--accent);margin-top:14px;border-bottom:0;background:var(--surface);border-radius:4px 16px 16px 4px;padding-right:12px}
+.entry-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.entry h3{font-family:var(--serif);font-size:26px;line-height:1.15}
+.entry .en{color:var(--muted);margin-top:0}
+.entry .ex{font-family:var(--serif);font-size:19px;line-height:1.5;margin-top:10px}
+.entry .tr{color:var(--muted);font-size:15.5px;margin-top:2px;font-style:italic}
+.status{display:inline-block;margin-top:10px;font-size:13px;font-weight:600;padding:3px 10px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.status.ok{background:var(--good-bg);color:var(--good);border-color:transparent}
+.status.bad{background:var(--bad-bg);color:var(--bad);border-color:transparent}
+
+/* ---------- sessions ---------- */
+.sbar{display:flex;align-items:center;gap:10px;margin:-6px -6px 14px}
+.prog{flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ink);border-radius:99px;transition:width .25s}
+.count{font-size:14px;font-weight:700;min-width:44px;text-align:right;margin-right:6px}
+.stline{display:flex;gap:16px;font-size:14px;color:var(--muted);margin-bottom:18px}
+.stline b{color:var(--ink)}
+.qlabel{font-size:15px;color:var(--muted);margin-bottom:8px}
+.word{font-family:var(--serif);font-size:42px;line-height:1.1;font-weight:700;margin-bottom:22px;overflow-wrap:anywhere}
+.word.en{font-family:var(--sans);font-size:30px;font-weight:700;line-height:1.2}
+.sentence{font-family:var(--serif);font-size:25px;line-height:1.5;margin-bottom:6px}
+.hint-tr{color:var(--muted);font-style:italic;margin-bottom:22px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:58px;padding:12px 16px;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;font-size:18px;font-weight:600;line-height:1.25}
+.opt.de-opt{font-family:var(--serif);font-size:21px}
+.opt:active:not([disabled]){background:var(--line)}
+.opt[disabled]{color:var(--ink)}
+.opt.correct{background:var(--good-bg);border-color:var(--good);color:var(--good)}
+.opt.correct::after{content:"\2713";font-weight:800}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
+.opt.wrong::after{content:"\2717";font-weight:800}
+.opt.dim{opacity:.5}
+.field{width:100%;min-height:58px;padding:0 16px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-family:var(--serif);font-size:24px}
+.field.good{border-color:var(--good);background:var(--good-bg)}
+.field.bad{border-color:var(--bad);background:var(--bad-bg)}
+.hintline{min-height:24px;margin-top:10px;font-size:15px;color:var(--muted)}
+.fb{margin-top:18px;padding:16px;border-radius:18px;border-left:6px solid}
+.fb.good{background:var(--good-bg);border-color:var(--good)}
+.fb.bad{background:var(--bad-bg);border-color:var(--bad)}
+.fb h3{font-family:var(--serif);font-size:22px;display:flex;align-items:baseline;gap:10px}
+.fb.good h3{color:var(--good)} .fb.bad h3{color:var(--bad)}
+.fb .pts{font-family:var(--sans);font-size:14px;font-weight:700}
+.fb .line{margin-top:8px}
+.fb .line .de{font-size:22px;font-weight:700}
+.fb .ex{font-family:var(--serif);font-size:19px;line-height:1.5;margin-top:8px;color:var(--ink)}
+.fb .tr{color:var(--muted);font-size:15px;font-style:italic}
+.fb .btn{margin-top:14px}
+
+/* flashcards */
+.flash{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:340px;padding:24px 20px;background:var(--surface);border:1.5px solid var(--line);border-radius:26px;border-top:8px solid var(--accent);cursor:pointer;user-select:none;-webkit-user-select:none}
+.flash.turned{animation:turn .22s ease-out}
+@keyframes turn{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}
+.flash .word{margin-bottom:10px}
+.flash .tap{color:var(--muted);font-size:14px;margin-top:18px}
+.flash .en-line{font-size:21px;font-weight:600}
+.flash .ex{font-family:var(--serif);font-size:20px;line-height:1.5;margin-top:18px}
+.flash .tr{color:var(--muted);font-style:italic;margin-top:4px;font-size:16px}
+.flash .say-row{display:flex;gap:4px;justify-content:center;margin-top:6px}
+
+/* summary */
+.summary{text-align:center;padding-top:18px}
+.summary h2{font-family:var(--serif);font-size:34px}
+.summary .big{font-family:var(--serif);font-size:72px;font-weight:700;line-height:1.1;margin-top:10px}
+.summary .facts{display:flex;justify-content:center;gap:28px;margin:18px 0 8px}
+.summary .facts b{display:block;font-family:var(--serif);font-size:28px}
+.summary .facts span{font-size:14px;color:var(--muted)}
+.summary .missed{text-align:left;margin:26px 0 8px}
+.summary .stack{display:grid;gap:10px;margin-top:22px}
+
+/* progress */
+.stats{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+.stats div{padding:16px 4px;border-bottom:1px solid var(--line)}
+.stats div:nth-child(odd){padding-right:12px;border-right:1px solid var(--line)}
+.stats div:nth-child(even){padding-left:18px}
+.stats b{display:block;font-family:var(--serif);font-size:34px;line-height:1.1}
+.stats span{font-size:14px;color:var(--muted)}
+.dayrow{margin-top:14px}
+.dayrow .top{display:flex;justify-content:space-between;font-weight:600;margin-bottom:6px}
+.dayrow .bar{margin:0;background:var(--line)}
+.vtable li{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line)}
+.vtable .de{font-size:19px;font-weight:700;flex:1;min-width:0}
+.vtable .sc{font-size:14px;color:var(--muted);white-space:nowrap}
+.vtable .sc b{color:var(--good)} .vtable .sc i{font-style:normal;color:var(--bad);font-weight:700}
+.danger{margin-top:28px;width:100%;min-height:48px;border-radius:14px;border:1.5px solid var(--bad);color:var(--bad);font-weight:600;text-align:center}
+
+.selwrap{display:block;margin:20px 0 4px}
+.selwrap .lbl{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
+.select{width:100%;min-height:54px;padding:0 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:600 17px var(--sans)}
+.search{width:100%;min-height:50px;padding:0 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;margin:12px 0 4px}
+.nores{color:var(--muted);padding:24px 0;text-align:center}
+[hidden]{display:none!important}
+.mic{width:92px;height:92px;border-radius:50%;background:var(--accent);color:#12161C;display:flex;align-items:center;justify-content:center;margin:22px auto 8px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.mic svg.i{width:38px;height:38px}
+.mic.live{background:#12161C;color:var(--accent);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,212,0,.55)}50%{box-shadow:0 0 0 18px rgba(255,212,0,0)}}
+.miclabel{text-align:center;color:var(--muted);font-size:15px;min-height:24px}
+.spoken .w{padding:0 .12em;border-radius:4px}
+.spoken .w.ok{background:var(--good-bg);color:var(--good)}
+.spoken .w.close{background:var(--accent);color:#12161C}
+.spoken .w.miss{background:var(--bad-bg);color:var(--bad);text-decoration:underline wavy}
+.say-note{margin-top:14px;font-size:13.5px;color:var(--muted)}
+.mini-seg{display:flex;gap:6px;margin:0 0 18px}
+.mini-seg button{flex:1;min-height:40px;border-radius:12px;border:1.5px solid var(--line);font-weight:600;font-size:15px;text-align:center;color:var(--muted)}
+.mini-seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.entry-actions{display:flex;gap:2px;flex:none}
+details.all{margin-top:6px}
+details.all summary{cursor:pointer;min-height:48px;display:flex;align-items:center;font-weight:600;color:var(--ink);list-style:none}
+details.all summary::-webkit-details-marker{display:none}
+details.all summary::after{content:"Show";margin-left:auto;color:var(--muted);font-weight:500;font-size:14px}
+details.all[open] summary::after{content:"Hide"}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:14px}
+.card h2{font-family:var(--serif);font-size:22px;margin-bottom:6px}
+.card p{margin-top:6px}
+.card a.btn{text-decoration:none}
+.acct-email{font-weight:700;overflow-wrap:anywhere;margin:2px 0 8px}
+.notice{margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);font-size:15px}
+.notice.good{background:var(--good-bg);color:var(--good);border-color:transparent}
+.notice.bad{background:var(--bad-bg);color:var(--bad);border-color:transparent}
+.perks{margin:10px 0 4px}
+.perks li{padding:6px 0 6px 26px;position:relative;font-size:15.5px}
+.perks li::before{content:"\2713";position:absolute;left:4px;font-weight:800;color:var(--good)}
+.orders li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.plainfield{font-family:var(--sans);font-size:18px;margin-top:10px}
+.upsell{margin-top:18px;padding:16px;border-radius:16px;background:var(--surface);border:1.5px solid var(--accent);font-size:15px}
+.upsell .btn{margin-top:12px;min-height:48px}
+.lock{display:inline-flex;align-items:center;gap:3px;margin-left:6px;padding:1px 8px 1px 5px;border-radius:99px;background:var(--accent);color:#12161C;font-size:12px;font-weight:700;vertical-align:2px}
+.lock svg.i{width:13px;height:13px}
+.foot a{color:inherit}
+.linkbtn{text-decoration:underline;color:var(--muted);min-height:36px;padding:0 2px}
+.pic{position:relative;width:100%;aspect-ratio:4/3;border-radius:16px;background:var(--surface);border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center}
+.pic .emo{font-size:64px;line-height:1}
+.pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:var(--surface)}
+.pic.has .emo{visibility:hidden}
+.wgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.wcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px 8px 6px}
+.wcard .pic{border-radius:10px;border:0}
+.wcard .pic .emo{font-size:46px}
+.wname{margin-top:8px;font-size:19px;font-weight:700;overflow-wrap:anywhere}
+.wcard .muted{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.art{display:inline-block;font-family:var(--sans);font-size:.62em;font-weight:800;padding:1px 7px;border-radius:99px;vertical-align:.12em;letter-spacing:.02em}
+.a-der{background:#D6E6FF;color:#12326B}.a-die{background:#FFD9DE;color:#7B1527}.a-das{background:#D9F2DF;color:#0F4A22}
+@media (prefers-color-scheme:dark){.a-der{background:#1E3A66;color:#CFE0FF}.a-die{background:#5C1E2B;color:#FFD3DA}.a-das{background:#1B4A2A;color:#CDEFD6}}
+.catlist li{list-style:none}
+.catemo{font-size:30px;width:38px;text-align:center;flex:none}
+.pflash .pic{max-width:300px}
+.pflash .tap{text-align:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.emo{font-size:26px;width:34px;text-align:center}
+.tdone{font-size:13px;font-weight:700;color:var(--good)}
+.setting{color:var(--muted);font-size:14.5px;margin:2px 0 10px}
+.chat{display:flex;flex-direction:column;gap:8px;margin:6px 0 12px}
+.bub{max-width:86%;padding:10px 14px;border-radius:18px;line-height:1.4;font-size:17px}
+.bub b{display:block;font-size:12.5px;color:var(--muted);margin-bottom:2px}
+.bub.them{align-self:flex-start;background:var(--surface);border:1px solid var(--line)}
+.bub.me{align-self:flex-end;background:var(--accent);color:var(--accent-ink)}
+.bub.me.off{opacity:.65}
+.bub .tr{font-size:14px;color:var(--muted);font-style:italic;margin-top:4px}
+.hintline{margin:8px 0 0;font-size:16px}
+.slot{background:rgba(120,120,255,.18);border-radius:6px;padding:0 5px;font-style:italic}
+.exlist{display:flex;flex-direction:column;gap:6px;margin:10px 0 0;font-size:17px}
+.exlist span{padding:8px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.tform{display:flex;gap:8px;margin-top:12px}.tform .field{flex:1;min-width:0;font-size:19px}.tform .btn{width:auto;min-width:90px}
+.sentence-s{font-size:19px;line-height:1.6}
+.chat.done{margin-top:14px;text-align:left}
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"></main>
+<nav id="nav" aria-label="Main"></nav>
+<noscript><p style="padding:24px">This app needs JavaScript turned on.</p></noscript>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =====================================================
+     VOCABULARY
+     Only the free verbs (Days 1-3) are inside this file. The Premium verbs are NOT in the app:
+     the database sends them to a signed-in Premium account only.
+     Each day: a level and 5 verbs: [German, English, example, translation].
+     In the example, [square brackets] mark the verb part (it becomes the highlight or the gap).
+     ===================================================== */
+  var FREE_DAYS = [
+    {"level": "B2", "verbs": [["vermeiden", "to avoid", "Ich versuche, Fehler zu [vermeiden].", "I try to avoid mistakes."], ["ermöglichen", "to enable / make possible", "Diese Ausbildung [ermöglicht] mir neue Chancen.", "This training makes new opportunities possible for me."], ["berücksichtigen", "to take into account", "Wir müssen deine Meinung [berücksichtigen].", "We have to take your opinion into account."], ["sich bemühen", "to make an effort", "Ich [bemühe] mich, Deutsch zu sprechen.", "I'm making an effort to speak German."], ["abhängen", "to depend on", "Das [hängt] vom Wetter [ab].", "That depends on the weather."]]},
+    {"level": "B2", "verbs": [["behaupten", "to claim", "Er [behauptet], dass er die Wahrheit sagt.", "He claims that he is telling the truth."], ["zustimmen", "to agree", "Ich [stimme] dir vollkommen [zu].", "I completely agree with you."], ["widersprechen", "to contradict / disagree", "Ich möchte dir nicht [widersprechen].", "I don't want to contradict you."], ["begründen", "to justify", "Bitte [begründen] Sie Ihre Entscheidung.", "Please justify your decision."], ["überzeugen", "to convince", "Er konnte mich von seiner Idee [überzeugen].", "He was able to convince me of his idea."]]},
+    {"level": "B2", "verbs": [["übernehmen", "to take over", "Ich [übernehme] die Verantwortung für diesen Fehler.", "I take responsibility for this mistake."], ["erledigen", "to complete / take care of", "Ich muss heute noch einige wichtige Aufgaben [erledigen].", "I still have to take care of some important tasks today."], ["vereinbaren", "to arrange", "Ich möchte einen Termin beim Zahnarzt [vereinbaren].", "I'd like to arrange an appointment at the dentist."], ["voraussetzen", "to require", "Diese Stelle [setzt] gute Deutschkenntnisse [voraus].", "This position requires good German skills."], ["gewährleisten", "to ensure", "Wir müssen die Sicherheit der Patienten [gewährleisten].", "We must ensure the safety of the patients."]]},
+    {"level": "B2", "verbs": [["erörtern", "to discuss in detail", "Wir [erörtern] das Problem in der nächsten Sitzung.", "We will discuss the problem in detail at the next meeting."], ["betonen", "to emphasize", "Der Arzt [betont], wie wichtig Zahnpflege ist.", "The doctor emphasizes how important dental care is."], ["bezweifeln", "to doubt", "Ich [bezweifle], dass das Ergebnis stimmt.", "I doubt that the result is correct."], ["andeuten", "to hint at", "Sie [deutet] [an], dass sie die Stelle wechseln möchte.", "She hints that she wants to change jobs."], ["einräumen", "to concede / admit", "Er [räumt] [ein], dass er einen Fehler gemacht hat.", "He admits that he made a mistake."]]},
+    {"level": "B2", "verbs": [["bestreiten", "to deny / dispute", "Er [bestreitet], den Termin vergessen zu haben.", "He denies having forgotten the appointment."], ["befürworten", "to be in favour of / advocate", "Viele Ärzte [befürworten] diese neue Methode.", "Many doctors are in favour of this new method."], ["ablehnen", "to reject / decline", "Ich muss dein Angebot leider [ablehnen].", "Unfortunately I have to decline your offer."], ["bemängeln", "to criticize / find fault with", "Der Patient [bemängelt] die lange Wartezeit.", "The patient complains about the long waiting time."], ["anmerken", "to remark / note", "Darf ich kurz etwas [anmerken]?", "May I make a quick remark?"]]},
+    {"level": "B2", "verbs": [["sich entwickeln", "to develop", "Das Kind [entwickelt] sich sehr gut.", "The child is developing very well."], ["verändern", "to change", "Der Umzug [verändert] mein ganzes Leben.", "The move is changing my whole life."], ["verbessern", "to improve", "Ich möchte meine Aussprache [verbessern].", "I want to improve my pronunciation."], ["sich verschlechtern", "to get worse", "Sein Zustand [verschlechtert] sich langsam.", "His condition is slowly getting worse."], ["fördern", "to promote / encourage", "Die Firma [fördert] junge Talente.", "The company promotes young talent."]]},
+    {"level": "B2", "verbs": [["erweitern", "to expand / broaden", "Ich will meinen Wortschatz [erweitern].", "I want to expand my vocabulary."], ["einschränken", "to restrict / limit", "Du solltest deinen Zuckerkonsum [einschränken].", "You should limit your sugar consumption."], ["reduzieren", "to reduce", "Wir wollen die Kosten [reduzieren].", "We want to reduce the costs."], ["steigern", "to increase / boost", "Sport kann die Leistung [steigern].", "Exercise can boost performance."], ["zunehmen", "to increase / gain weight", "Die Zahl der Patienten [nimmt] stark [zu].", "The number of patients is increasing sharply."]]},
+    {"level": "B2", "verbs": [["sich bewerben", "to apply (for a job)", "Ich [bewerbe] mich um eine Stelle in Hamburg.", "I am applying for a job in Hamburg."], ["kündigen", "to quit / terminate", "Er [kündigt] seinen Mietvertrag zum Monatsende.", "He is terminating his lease at the end of the month."], ["beantragen", "to apply for / request officially", "Ich möchte ein Visum [beantragen].", "I would like to apply for a visa."], ["genehmigen", "to approve / authorize", "Der Chef [genehmigt] meinen Urlaub.", "The boss approves my vacation."], ["verlängern", "to extend", "Wir müssen den Vertrag [verlängern].", "We have to extend the contract."]]},
+    {"level": "B2", "verbs": [["leiten", "to lead / manage", "Sie [leitet] die Abteilung seit zwei Jahren.", "She has been managing the department for two years."], ["beauftragen", "to commission / assign", "Die Praxis [beauftragt] ein externes Labor.", "The practice commissions an external lab."], ["unterstützen", "to support / back up", "Meine Familie [unterstützt] mich bei der Prüfung.", "My family supports me with the exam."], ["ergänzen", "to add to / complete", "Bitte [ergänzen] Sie die fehlenden Angaben.", "Please fill in the missing details."], ["vertreten", "to represent / stand in for", "Ich [vertrete] heute meine Kollegin.", "I am standing in for my colleague today."]]},
+    {"level": "B2", "verbs": [["mitteilen", "to notify / let know", "Bitte [teilen] Sie uns Ihre neue Adresse [mit].", "Please let us know your new address."], ["erwähnen", "to mention", "Du solltest die Allergie unbedingt [erwähnen].", "You should definitely mention the allergy."], ["verweisen", "to refer / direct (to)", "Ich [verweise] auf die Informationen im Anhang.", "I refer to the information in the attachment."], ["vorschlagen", "to suggest", "Ich [schlage] einen anderen Termin [vor].", "I suggest a different appointment."], ["empfehlen", "to recommend", "Der Zahnarzt [empfiehlt] eine professionelle Zahnreinigung.", "The dentist recommends a professional teeth cleaning."]]},
+    {"level": "B2", "verbs": [["darlegen", "to set out / state", "Er [legt] seine Gründe ausführlich [dar].", "He sets out his reasons in detail."], ["schildern", "to describe / recount", "Bitte [schildern] Sie die Beschwerden genau.", "Please describe the symptoms precisely."], ["erläutern", "to explain / elaborate", "Die Ärztin [erläutert] den Ablauf der Behandlung.", "The doctor explains the course of the treatment."], ["zusammenfassen", "to summarize", "Kannst du den Text kurz [zusammenfassen]?", "Can you briefly summarize the text?"], ["hinweisen", "to point out", "Ich möchte Sie auf die Risiken [hinweisen].", "I would like to point out the risks to you."]]},
+    {"level": "B2", "verbs": [["annehmen", "to assume / accept", "Ich [nehme] [an], dass er heute kommt.", "I assume that he is coming today."], ["vermuten", "to suspect", "Die Ärztin [vermutet] eine Entzündung.", "The doctor suspects an inflammation."], ["befürchten", "to fear", "Ich [befürchte], dass wir zu spät kommen.", "I fear that we will be late."], ["feststellen", "to determine / notice", "Der Zahnarzt [stellt] Karies [fest].", "The dentist finds a cavity."], ["erkennen", "to recognize", "Ich [erkenne] das Problem sofort.", "I recognize the problem right away."]]},
+    {"level": "B2", "verbs": [["beurteilen", "to judge", "Das kann ich noch nicht [beurteilen].", "I can't judge that yet."], ["bewerten", "to rate / grade", "Die Kunden [bewerten] den Service sehr positiv.", "The customers rate the service very positively."], ["vergleichen", "to compare", "Wir [vergleichen] die Preise verschiedener Anbieter.", "We compare the prices of different providers."], ["unterscheiden", "to distinguish", "Man muss zwischen beiden Fällen [unterscheiden].", "You have to distinguish between the two cases."], ["analysieren", "to analyze", "Die Forscher [analysieren] die Daten.", "The researchers analyze the data."]]},
+    {"level": "B2", "verbs": [["sich entscheiden", "to decide", "Ich [entscheide] mich für den zweiten Termin.", "I am choosing the second appointment."], ["beschließen", "to resolve / decide formally", "Der Vorstand [beschließt] neue Regeln.", "The board decides on new rules."], ["sich verpflichten", "to commit oneself", "Ich [verpflichte] mich, pünktlich zu sein.", "I commit to being on time."], ["verzichten", "to do without / give up", "Ich [verzichte] auf Zucker.", "I am giving up sugar."], ["sich einigen", "to reach an agreement", "Wir [einigen] uns auf einen Kompromiss.", "We agree on a compromise."]]},
+    {"level": "B2", "verbs": [["bestehen", "to consist of / to pass (an exam)", "Die Prüfung [besteht] aus zwei Teilen.", "The exam consists of two parts."], ["beruhen", "to be based on", "Diese Aussage [beruht] auf einem Irrtum.", "This statement is based on a mistake."], ["betreffen", "to concern / affect", "Die neue Regel [betrifft] alle Mitarbeiter.", "The new rule affects all employees."], ["sich handeln", "to be a matter of (es handelt sich um)", "Es [handelt] sich um einen Notfall.", "It is an emergency."], ["gelten", "to apply / be valid", "Diese Regel [gilt] für alle.", "This rule applies to everyone."]]},
+    {"level": "B2", "verbs": [["beheben", "to fix / remedy", "Der Techniker [behebt] den Fehler.", "The technician fixes the fault."], ["bewältigen", "to cope with / manage", "Sie [bewältigt] die Arbeit problemlos.", "She manages the work without problems."], ["überwinden", "to overcome", "Er muss seine Angst vor dem Zahnarzt [überwinden].", "He has to overcome his fear of the dentist."], ["scheitern", "to fail", "Das Projekt [scheitert] am fehlenden Geld.", "The project fails because of a lack of money."], ["verhindern", "to prevent", "Wir wollen weitere Schäden [verhindern].", "We want to prevent further damage."]]},
+    {"level": "B2", "verbs": [["beseitigen", "to eliminate / remove", "Der Zahnarzt [beseitigt] den Zahnstein.", "The dentist removes the tartar."], ["vorbeugen", "to take precautions against", "Regelmäßiges Putzen kann Karies [vorbeugen].", "Regular brushing can help against cavities."], ["ausschließen", "to rule out / exclude", "Wir können einen Irrtum nicht [ausschließen].", "We cannot rule out a mistake."], ["riskieren", "to risk", "Du [riskierst] deine Gesundheit.", "You are risking your health."], ["gefährden", "to endanger", "Rauchen [gefährdet] die Gesundheit.", "Smoking endangers your health."]]},
+    {"level": "B2", "verbs": [["behandeln", "to treat", "Die Ärztin [behandelt] den Patienten seit Montag.", "The doctor has been treating the patient since Monday."], ["untersuchen", "to examine", "Der Zahnarzt [untersucht] die Zähne genau.", "The dentist examines the teeth carefully."], ["verschreiben", "to prescribe", "Der Arzt [verschreibt] ein Antibiotikum.", "The doctor prescribes an antibiotic."], ["lindern", "to relieve / ease", "Diese Tabletten [lindern] die Schmerzen.", "These tablets relieve the pain."], ["heilen", "to heal / cure", "Die Wunde [heilt] gut.", "The wound is healing well."]]},
+    {"level": "B2", "verbs": [["überweisen", "to refer (a patient) / transfer money", "Der Hausarzt [überweist] mich zum Facharzt.", "The family doctor refers me to a specialist."], ["betäuben", "to anesthetize / numb", "Wir müssen den Zahn vorher [betäuben].", "We have to numb the tooth beforehand."], ["aufklären", "to explain the risks / educate", "Der Arzt muss den Patienten über Risiken [aufklären].", "The doctor has to inform the patient about the risks."], ["einwilligen", "to consent", "Der Patient [willigt] in die Behandlung [ein].", "The patient consents to the treatment."], ["sich erholen", "to recover / rest", "Ich [erhole] mich gut nach der Operation.", "I am recovering well after the operation."]]},
+    {"level": "B2", "verbs": [["entstehen", "to arise / come into being", "Durch Bakterien [entsteht] Karies.", "Cavities arise from bacteria."], ["verursachen", "to cause", "Zucker [verursacht] Karies.", "Sugar causes cavities."], ["bewirken", "to bring about / achieve", "Die Behandlung [bewirkt] eine schnelle Besserung.", "The treatment brings about a quick improvement."], ["auslösen", "to trigger", "Stress kann Kopfschmerzen [auslösen].", "Stress can trigger headaches."], ["zurückführen", "to trace back (to)", "Man kann den Fehler auf einen Irrtum [zurückführen].", "The mistake can be traced back to an error."]]},
+    {"level": "B2", "verbs": [["sich ereignen", "to occur (of events)", "Solche Unfälle [ereignen] sich oft im Winter.", "Such accidents often occur in winter."], ["stattfinden", "to take place", "Die Konferenz [findet] nächste Woche [statt].", "The conference takes place next week."], ["verlaufen", "to proceed / run its course", "Die Operation [verläuft] ohne Komplikationen.", "The operation is going without complications."], ["eintreten", "to set in / come into effect", "Die Wirkung [tritt] nach etwa 30 Minuten [ein].", "The effect sets in after about 30 minutes."], ["geschehen", "to happen", "Das [geschieht] nicht zum ersten Mal.", "This isn't happening for the first time."]]},
+    {"level": "B2", "verbs": [["sich verabreden", "to arrange to meet", "Ich [verabrede] mich morgen mit einer Freundin.", "I'm arranging to meet a friend tomorrow."], ["sich beschweren", "to complain", "Er [beschwert] sich über den Lärm.", "He complains about the noise."], ["sich entschuldigen", "to apologize", "Ich [entschuldige] mich für die Verspätung.", "I apologize for being late."], ["sich beteiligen", "to take part / contribute", "Alle sollen sich an der Diskussion [beteiligen].", "Everyone should take part in the discussion."], ["sich kümmern", "to take care of / see to", "Ich [kümmere] mich um die Unterlagen.", "I will take care of the documents."]]},
+    {"level": "B2", "verbs": [["sich auseinandersetzen", "to deal with / engage with", "Wir [setzen] uns intensiv mit dem Thema [auseinander].", "We are dealing intensively with the topic."], ["sich beziehen", "to refer to", "Ich [beziehe] mich auf Ihre E-Mail vom Montag.", "I am referring to your email from Monday."], ["sich konzentrieren", "to concentrate", "Ich kann mich heute nicht [konzentrieren].", "I can't concentrate today."], ["sich gewöhnen", "to get used to", "Ich muss mich an das Wetter [gewöhnen].", "I have to get used to the weather."], ["sich anpassen", "to adapt", "Man muss sich an neue Situationen [anpassen].", "You have to adapt to new situations."]]},
+    {"level": "B1", "verbs": [["sich erinnern", "to remember", "Ich [erinnere] mich gut an meinen ersten Tag.", "I remember my first day well."], ["sich vorstellen", "to imagine / introduce oneself", "Das kann ich mir gut [vorstellen].", "I can imagine that well."], ["sich interessieren", "to be interested (in)", "Ich [interessiere] mich für Medizin.", "I am interested in medicine."], ["sich ärgern", "to be annoyed", "Ich [ärgere] mich über den Verkehr.", "I am annoyed about the traffic."], ["sich freuen", "to be happy / look forward to", "Ich [freue] mich auf das Wochenende.", "I am looking forward to the weekend."]]},
+    {"level": "B1", "verbs": [["vorhaben", "to plan / intend", "Was [hast] du morgen [vor]?", "What are you planning to do tomorrow?"], ["vorbereiten", "to prepare", "Ich muss die Präsentation [vorbereiten].", "I have to prepare the presentation."], ["besichtigen", "to visit / view (a place)", "Wir [besichtigen] morgen die Altstadt.", "Tomorrow we are visiting the old town."], ["übernachten", "to stay overnight", "Wir [übernachten] in einem kleinen Hotel.", "We are staying overnight in a small hotel."], ["verpassen", "to miss", "Beeil dich, sonst [verpasst] du den Zug.", "Hurry up, or you'll miss the train."]]},
+    {"level": "B1", "verbs": [["ausfallen", "to be cancelled / not take place", "Der Kurs [fällt] heute [aus].", "The class is cancelled today."], ["verschieben", "to postpone", "Können wir den Termin [verschieben]?", "Can we postpone the appointment?"], ["absagen", "to call off / cancel", "Ich muss den Termin leider [absagen].", "Unfortunately I have to cancel the appointment."], ["einladen", "to invite", "Ich [lade] dich zu meinem Geburtstag [ein].", "I am inviting you to my birthday."], ["teilnehmen", "to take part (in)", "Ich [nehme] an dem Kurs [teil].", "I am taking part in the course."]]},
+    {"level": "B1", "verbs": [["abholen", "to pick up", "Ich [hole] dich um acht Uhr vom Bahnhof [ab].", "I'll pick you up from the station at eight."], ["ausfüllen", "to fill out", "Bitte [füllen] Sie das Formular [aus].", "Please fill out the form."], ["anmelden", "to register / sign up", "Ich möchte mich für den Kurs [anmelden].", "I would like to register for the course."], ["abmelden", "to deregister / sign out", "Ich muss mich beim Amt [abmelden].", "I have to deregister at the office."], ["umziehen", "to move (house)", "Wir [ziehen] nächsten Monat nach München [um].", "We are moving to Munich next month."]]},
+    {"level": "B1", "verbs": [["erhalten", "to receive", "Sie [erhalten] die Unterlagen per Post.", "You will receive the documents by mail."], ["erfahren", "to find out / learn (news)", "Wann [erfährst] du das Ergebnis?", "When do you find out the result?"], ["verwenden", "to use", "Bitte [verwenden] Sie nur diese Zahnbürste.", "Please use only this toothbrush."], ["sich auskennen", "to know one's way around", "Ich [kenne] mich in Berlin gut [aus].", "I know my way around Berlin well."], ["bedeuten", "to mean", "Was [bedeutet] dieses Wort?", "What does this word mean?"]]},
+    {"level": "B1", "verbs": [["erzählen", "to tell / narrate", "Er [erzählt] eine lustige Geschichte.", "He tells a funny story."], ["sich unterhalten", "to chat / have a conversation", "Wir [unterhalten] uns oft auf Deutsch.", "We often chat in German."], ["streiten", "to argue / quarrel", "Sie [streiten] ständig über Kleinigkeiten.", "They constantly argue about little things."], ["versprechen", "to promise", "Ich [verspreche] dir, pünktlich zu sein.", "I promise you I'll be on time."], ["ausdrücken", "to express", "Ich kann mich auf Deutsch noch nicht gut [ausdrücken].", "I can't express myself well in German yet."]]},
+    {"level": "B1", "verbs": [["wiederholen", "to repeat / review", "Ich [wiederhole] jeden Abend die Vokabeln.", "I review the vocabulary every evening."], ["gelingen", "to succeed / work out well", "Diese Übung [gelingt] mir immer besser.", "I'm getting better and better at this exercise."], ["ausprobieren", "to try out", "Ich möchte das neue Rezept [ausprobieren].", "I want to try out the new recipe."], ["klappen", "to work out (informal)", "Hoffentlich [klappt] alles.", "Hopefully everything works out."], ["mitbringen", "to bring along", "Ich [bringe] Kuchen [mit].", "I'm bringing cake."]]},
+    {"level": "B1", "verbs": [["sich verlaufen", "to get lost (on foot)", "Ich [verlaufe] mich in dieser Stadt immer.", "I always get lost in this city."], ["umsteigen", "to change (trains)", "Wir müssen in Köln [umsteigen].", "We have to change trains in Cologne."], ["aussteigen", "to get off", "Ich [steige] an der nächsten Haltestelle [aus].", "I get off at the next stop."], ["abfahren", "to depart", "Der Zug [fährt] um 9 Uhr [ab].", "The train departs at 9 o'clock."], ["ankommen", "to arrive", "Wann [kommst] du in Berlin [an]?", "When do you arrive in Berlin?"]]},
+    {"level": "B1", "verbs": [["aufräumen", "to tidy up", "Ich [räume] mein Zimmer jeden Samstag [auf].", "I tidy up my room every Saturday."], ["putzen", "to clean", "Wir [putzen] heute die ganze Wohnung.", "We are cleaning the whole apartment today."], ["waschen", "to wash", "Ich [wasche] meine Hände vor dem Essen.", "I wash my hands before eating."], ["einkaufen", "to go shopping", "Am Freitag [kaufe] ich für das Wochenende [ein].", "On Friday I shop for the weekend."], ["bezahlen", "to pay", "Kann ich mit Karte [bezahlen]?", "Can I pay by card?"]]},
+    {"level": "B1", "verbs": [["anrufen", "to call (phone)", "Ich [rufe] dich heute Abend [an].", "I'll call you this evening."], ["antworten", "to answer / reply", "Bitte [antworten] Sie bis Freitag auf die E-Mail.", "Please reply to the email by Friday."], ["fragen", "to ask", "Darf ich Sie etwas [fragen]?", "May I ask you something?"], ["erklären", "to explain", "Können Sie mir das bitte noch einmal [erklären]?", "Could you please explain that to me once more?"], ["verstehen", "to understand", "Ich [verstehe] die Aufgabe leider nicht.", "Unfortunately I don't understand the task."]]},
+    {"level": "B1", "verbs": [["sich fühlen", "to feel", "Ich [fühle] mich heute viel besser.", "I feel much better today."], ["sich langweilen", "to be bored", "Im Urlaub [langweile] ich mich nie.", "I am never bored on holiday."], ["sich aufregen", "to get upset", "Du [regst] dich zu schnell über Kleinigkeiten [auf].", "You get upset too quickly about small things."], ["sich entspannen", "to relax", "Am Abend [entspanne] ich mich mit Musik.", "In the evening I relax with music."], ["sich wundern", "to be surprised", "Ich [wundere] mich, dass er noch nicht da ist.", "I'm surprised that he isn't here yet."]]},
+    {"level": "B1", "verbs": [["buchen", "to book", "Wir [haben] den Flug schon [gebucht].", "We have already booked the flight."], ["reservieren", "to reserve", "Ich möchte einen Tisch für vier Personen [reservieren].", "I would like to reserve a table for four people."], ["verreisen", "to go away on a trip", "Im Sommer [verreisen] wir oft nach Italien.", "In summer we often travel to Italy."], ["packen", "to pack", "Hast du deinen Koffer schon [gepackt]?", "Have you already packed your suitcase?"], ["mieten", "to rent", "Wir [mieten] im Urlaub ein Auto.", "We rent a car on holiday."]]},
+    {"level": "B1", "verbs": [["wehtun", "to hurt (be painful)", "Mein Rücken [tut] seit gestern [weh].", "My back has hurt since yesterday."], ["husten", "to cough", "Der Patient [hustet] schon seit einer Woche.", "The patient has been coughing for a week."], ["sich verletzen", "to injure oneself", "Er [hat] sich beim Fußball am Knie [verletzt].", "He injured his knee playing football."], ["sich ausruhen", "to rest", "Nach der Arbeit [ruhe] ich mich ein bisschen [aus].", "After work I rest a little."], ["einnehmen", "to take (medicine)", "Sie sollen die Tabletten dreimal täglich [einnehmen].", "You should take the tablets three times a day."]]},
+    {"level": "B1", "verbs": [["verdienen", "to earn", "Sie [verdient] als Ärztin gut.", "She earns a good income as a doctor."], ["einstellen", "to hire", "Die Firma [stellt] neue Mitarbeiter [ein].", "The company is hiring new employees."], ["entlassen", "to dismiss / to discharge", "Der Patient [wird] morgen aus dem Krankenhaus [entlassen].", "The patient is being discharged from hospital tomorrow."], ["sich verspäten", "to be late", "Der Zug [hat] sich wegen eines Defekts [verspätet].", "The train was delayed because of a fault."], ["arbeiten", "to work", "Ich [arbeite] von Montag bis Freitag.", "I work from Monday to Friday."]]},
+    {"level": "B1", "verbs": [["einziehen", "to move in", "Nächsten Monat [ziehen] wir in die neue Wohnung [ein].", "Next month we are moving into the new apartment."], ["ausziehen", "to move out", "Mein Bruder [ist] letztes Jahr [ausgezogen].", "My brother moved out last year."], ["vermieten", "to rent out", "Sie [vermietet] das Zimmer an einen Studenten.", "She rents the room out to a student."], ["renovieren", "to renovate", "Wir müssen die Küche dringend [renovieren].", "We urgently have to renovate the kitchen."], ["reparieren", "to repair", "Können Sie mein Fahrrad bis morgen [reparieren]?", "Can you repair my bicycle by tomorrow?"]]},
+    {"level": "B1", "verbs": [["üben", "to practise", "Ich [übe] jeden Tag zwanzig Minuten Deutsch.", "I practise German for twenty minutes every day."], ["korrigieren", "to correct", "Die Lehrerin [korrigiert] die Hausaufgaben.", "The teacher is correcting the homework."], ["nachschlagen", "to look up", "Wenn ich ein Wort nicht kenne, [schlage] ich es im Wörterbuch [nach].", "If I don't know a word, I look it up in the dictionary."], ["buchstabieren", "to spell", "Können Sie Ihren Nachnamen bitte [buchstabieren]?", "Could you please spell your surname?"], ["durchfallen", "to fail (an exam)", "Leider [ist] er bei der Prüfung [durchgefallen].", "Unfortunately he failed the exam."]]},
+    {"level": "B1", "verbs": [["einsteigen", "to get on / board", "Bitte [steigen] Sie hinten [ein].", "Please get on at the back."], ["parken", "to park", "Hier dürfen Sie nicht [parken].", "You are not allowed to park here."], ["überholen", "to overtake", "Auf dieser Straße darf man nicht [überholen].", "You must not overtake on this road."], ["abbiegen", "to turn (off)", "An der Ampel müssen Sie links [abbiegen].", "At the traffic light you have to turn left."], ["verbieten", "to forbid", "Der Arzt [hat] ihm das Rauchen [verboten].", "The doctor has forbidden him to smoke."]]},
+    {"level": "B1", "verbs": [["heiraten", "to marry", "Meine Schwester [heiratet] im Mai.", "My sister is getting married in May."], ["sich trennen", "to separate", "Sie [haben] sich nach drei Jahren [getrennt].", "They separated after three years."], ["sich verlieben", "to fall in love", "Er [hat] sich in eine Kollegin [verliebt].", "He fell in love with a colleague."], ["vermissen", "to miss", "Ich [vermisse] meine Familie sehr.", "I miss my family a lot."], ["vertrauen", "to trust", "Du kannst mir [vertrauen].", "You can trust me."]]},
+    {"level": "B1", "verbs": [["schicken", "to send", "Ich [schicke] Ihnen die Unterlagen per E-Mail.", "I'll send you the documents by email."], ["zeigen", "to show", "Können Sie mir den Weg zum Bahnhof [zeigen]?", "Can you show me the way to the station?"], ["ändern", "to change", "Wir müssen den Termin leider [ändern].", "Unfortunately we have to change the appointment."], ["bestellen", "to order", "Ich [bestelle] noch ein Glas Wasser.", "I'll order another glass of water."], ["liefern", "to deliver", "Der Händler [liefert] die Ware innerhalb von drei Tagen.", "The seller delivers the goods within three days."]]},
+    {"level": "B1", "verbs": [["dauern", "to last / take (time)", "Die Fahrt [dauert] etwa zwei Stunden.", "The journey takes about two hours."], ["beginnen", "to begin", "Der Kurs [beginnt] um neun Uhr.", "The course begins at nine o'clock."], ["enden", "to end", "Die Sprechstunde [endet] um 16 Uhr.", "Office hours end at 4 pm."], ["sich beeilen", "to hurry", "Wir müssen uns [beeilen], sonst verpassen wir den Zug.", "We have to hurry, otherwise we'll miss the train."], ["planen", "to plan", "Wir [planen] eine Reise nach Wien.", "We are planning a trip to Vienna."]]},
+    {"level": "B2", "verbs": [["kritisieren", "to criticise", "Die Opposition [kritisiert] die Entscheidung scharf.", "The opposition sharply criticises the decision."], ["einschätzen", "to assess", "Wie [schätzen] Sie die aktuelle Lage [ein]?", "How do you assess the current situation?"], ["vorwerfen", "to accuse of / reproach", "Man [wirft] ihm vor, die Zahlen manipuliert zu haben.", "He is accused of having manipulated the figures."], ["rechtfertigen", "to justify", "Diese Kosten lassen sich kaum [rechtfertigen].", "These costs can hardly be justified."], ["anerkennen", "to acknowledge / recognise", "Das Gericht [erkennt] den Anspruch [an].", "The court recognises the claim."]]},
+    {"level": "B2", "verbs": [["diskutieren", "to discuss / debate", "Wir [diskutieren] seit Stunden über dieses Thema.", "We have been debating this topic for hours."], ["argumentieren", "to argue (make a case)", "Er [argumentiert] sehr sachlich.", "He argues very objectively."], ["widerlegen", "to refute", "Die Studie [widerlegt] diese Annahme.", "The study refutes this assumption."], ["belegen", "to prove / back up", "Diese Aussage müssen Sie mit Quellen [belegen].", "You must back up this statement with sources."], ["hinterfragen", "to question critically", "Man sollte Informationen immer kritisch [hinterfragen].", "One should always question information critically."]]},
+    {"level": "B2", "verbs": [["umsetzen", "to implement", "Wir wollen den Plan so schnell wie möglich [umsetzen].", "We want to implement the plan as quickly as possible."], ["durchführen", "to carry out", "Die Untersuchung wird nächste Woche [durchgeführt].", "The examination will be carried out next week."], ["einführen", "to introduce", "Die Firma [führt] ein neues System [ein].", "The company is introducing a new system."], ["abschaffen", "to abolish", "Das Land [hat] die Todesstrafe [abgeschafft].", "The country abolished the death penalty."], ["einhalten", "to comply with / keep to", "Alle Mitarbeiter müssen die Regeln [einhalten].", "All employees must comply with the rules."]]},
+    {"level": "B2", "verbs": [["erfüllen", "to fulfil / meet", "Er [erfüllt] alle Voraussetzungen für die Stelle.", "He meets all the requirements for the position."], ["versäumen", "to miss / neglect", "Er [hat] die Frist [versäumt].", "He missed the deadline."], ["nachweisen", "to prove / provide evidence", "Sie müssen Ihr Einkommen [nachweisen].", "You have to provide proof of your income."], ["vorlegen", "to present / submit", "Bitte [legen] Sie Ihren Ausweis [vor].", "Please present your ID."], ["haften", "to be liable", "Der Hersteller [haftet] für Schäden.", "The manufacturer is liable for damages."]]},
+    {"level": "B2", "verbs": [["einreichen", "to submit / file", "Sie müssen den Antrag bis Montag [einreichen].", "You have to submit the application by Monday."], ["unterzeichnen", "to sign (formally)", "Beide Parteien [unterzeichnen] den Vertrag.", "Both parties sign the contract."], ["widerrufen", "to revoke / withdraw", "Sie können Ihre Einwilligung jederzeit [widerrufen].", "You can withdraw your consent at any time."], ["beglaubigen", "to certify", "Das Zeugnis muss [beglaubigt] werden.", "The certificate has to be certified."], ["bescheinigen", "to certify / confirm in writing", "Der Arzt [bescheinigt] die Arbeitsunfähigkeit.", "The doctor certifies the inability to work."]]},
+    {"level": "B2", "verbs": [["investieren", "to invest", "Die Firma [investiert] viel Geld in neue Maschinen.", "The company is investing a lot of money in new machines."], ["finanzieren", "to finance", "Wie wollen Sie das Projekt [finanzieren]?", "How do you want to finance the project?"], ["einsparen", "to save (costs)", "Wir können durch die neue Technik viel Energie [einsparen].", "We can save a lot of energy with the new technology."], ["kalkulieren", "to calculate", "Die Kosten wurden zu niedrig [kalkuliert].", "The costs were calculated too low."], ["erwirtschaften", "to generate (profit)", "Das Unternehmen [erwirtschaftet] hohe Gewinne.", "The company generates high profits."]]},
+    {"level": "B2", "verbs": [["berichten", "to report", "Die Zeitung [berichtet] ausführlich über den Prozess.", "The newspaper reports in detail on the trial."], ["veröffentlichen", "to publish", "Die Ergebnisse [werden] im Herbst [veröffentlicht].", "The results will be published in autumn."], ["kommentieren", "to comment on", "Der Minister wollte die Vorwürfe nicht [kommentieren].", "The minister did not want to comment on the allegations."], ["recherchieren", "to research / investigate", "Die Journalistin [recherchiert] seit Monaten zu diesem Fall.", "The journalist has been researching this case for months."], ["dokumentieren", "to document", "Alle Behandlungsschritte müssen genau [dokumentiert] werden.", "All treatment steps must be documented precisely."]]},
+    {"level": "B2", "verbs": [["schützen", "to protect", "Wir müssen die Umwelt besser [schützen].", "We have to protect the environment better."], ["verbrauchen", "to consume / use up", "Das Gerät [verbraucht] sehr wenig Strom.", "The device uses very little electricity."], ["verschmutzen", "to pollute", "Abgase [verschmutzen] die Luft in den Städten.", "Exhaust fumes pollute the air in cities."], ["recyceln", "to recycle", "Viele Materialien lassen sich problemlos [recyceln].", "Many materials can be recycled without any problem."], ["nutzen", "to use / make use of", "Man sollte die Chancen [nutzen].", "One should make use of the opportunities."]]},
+    {"level": "B2", "verbs": [["verurteilen", "to convict / condemn", "Das Gericht [verurteilte] den Täter zu zwei Jahren Haft.", "The court sentenced the offender to two years in prison."], ["beschuldigen", "to accuse", "Man [beschuldigt] ihn des Betrugs.", "He is accused of fraud."], ["bestrafen", "to punish", "Verstöße [werden] mit hohen Geldbußen [bestraft].", "Violations are punished with heavy fines."], ["gestehen", "to confess", "Der Angeklagte [hat] die Tat [gestanden].", "The defendant confessed to the crime."], ["zustehen", "to be entitled to", "Ihnen [steht] ein Anspruch auf Erholungsurlaub [zu].", "You are entitled to holiday leave."]]},
+    {"level": "B2", "verbs": [["operieren", "to operate on", "Der Chirurg [operiert] den Patienten morgen früh.", "The surgeon operates on the patient tomorrow morning."], ["diagnostizieren", "to diagnose", "Der Arzt [hat] eine Entzündung [diagnostiziert].", "The doctor diagnosed an inflammation."], ["verabreichen", "to administer", "Die Pflegerin [verabreicht] dem Patienten das Medikament.", "The nurse administers the medication to the patient."], ["genesen", "to recover", "Er [ist] nach der Operation schnell [genesen].", "He recovered quickly after the operation."], ["anordnen", "to order / prescribe (a measure)", "Der Arzt [ordnet] strenge Bettruhe [an].", "The doctor orders strict bed rest."]]},
+    {"level": "B2", "verbs": [["begreifen", "to grasp / comprehend", "Ich [begreife] nicht, warum er so reagiert hat.", "I don't understand why he reacted like that."], ["durchschauen", "to see through", "Sie [hat] seinen Plan sofort [durchschaut].", "She saw through his plan immediately."], ["ableiten", "to derive", "Aus den Daten lässt sich ein klarer Trend [ableiten].", "A clear trend can be derived from the data."], ["folgern", "to conclude / infer", "Daraus können wir [folgern], dass die Methode funktioniert.", "From this we can conclude that the method works."], ["hervorheben", "to highlight", "Der Redner [hebt] die Bedeutung der Prävention [hervor].", "The speaker highlights the importance of prevention."]]},
+    {"level": "B2", "verbs": [["bekräftigen", "to reaffirm", "Der Minister [bekräftigte] seine Position.", "The minister reaffirmed his position."], ["unterstreichen", "to underline / stress", "Die Studie [unterstreicht] diese Tendenz.", "The study underlines this trend."], ["zugeben", "to admit", "Er [gab] seinen Fehler offen [zu].", "He openly admitted his mistake."], ["ankündigen", "to announce", "Die Firma [kündigt] eine Preiserhöhung [an].", "The company announces a price increase."], ["zurückweisen", "to reject / dismiss", "Er [wies] die Vorwürfe entschieden [zurück].", "He firmly rejected the accusations."]]},
+    {"level": "B2", "verbs": [["eskalieren", "to escalate", "Der Streit [eskalierte] schnell.", "The argument escalated quickly."], ["vermitteln", "to mediate / convey", "Ein Anwalt [vermittelt] zwischen beiden Seiten.", "A lawyer mediates between both sides."], ["schlichten", "to settle (a dispute)", "Der Betriebsrat [schlichtet] den Konflikt.", "The works council settles the conflict."], ["nachgeben", "to give in", "Am Ende [gab] er [nach].", "In the end he gave in."], ["durchsetzen", "to push through / enforce", "Sie konnte ihren Vorschlag im Team [durchsetzen].", "She was able to push her proposal through in the team."]]},
+    {"level": "B2", "verbs": [["erreichen", "to achieve / reach", "Wir [haben] unser Ziel [erreicht].", "We have achieved our goal."], ["verwirklichen", "to realise", "Er [hat] seinen Traum von der Selbstständigkeit [verwirklicht].", "He realised his dream of being self-employed."], ["anstreben", "to strive for", "Sie [strebt] eine Karriere in der Forschung [an].", "She strives for a career in research."], ["vorantreiben", "to drive forward", "Der Ausschuss [treibt] das Projekt [voran].", "The committee is driving the project forward."], ["sich bewähren", "to prove oneself", "Die neue Methode [hat] sich in der Praxis [bewährt].", "The new method has proven itself in practice."]]},
+    {"level": "B2", "verbs": [["sich verhalten", "to behave", "Wie soll man sich in einer solchen Situation [verhalten]?", "How should one behave in such a situation?"], ["sich anstrengen", "to make an effort", "Du musst dich mehr [anstrengen].", "You have to make more of an effort."], ["sich verlassen", "to rely on", "Auf ihn kann man sich immer [verlassen].", "You can always rely on him."], ["sich einsetzen", "to stand up for / advocate", "Sie [setzt] sich für den Umweltschutz [ein].", "She campaigns for environmental protection."], ["sich widmen", "to devote oneself to", "Er [widmet] sich ganz seiner Forschung.", "He devotes himself entirely to his research."]]},
+    {"level": "B2", "verbs": [["erfassen", "to record / capture", "Alle Daten [werden] elektronisch [erfasst].", "All data is recorded electronically."], ["auswerten", "to evaluate / analyse", "Wir müssen die Umfrage noch [auswerten].", "We still have to evaluate the survey."], ["ermitteln", "to determine / investigate", "Die Polizei [ermittelt] in diesem Fall.", "The police are investigating this case."], ["veranschaulichen", "to illustrate", "Die Grafik [veranschaulicht] die Entwicklung.", "The graph illustrates the development."], ["auflisten", "to list", "Bitte [listen] Sie alle Kosten genau [auf].", "Please list all costs precisely."]]},
+    {"level": "B2", "verbs": [["beeinflussen", "to influence", "Die Werbung [beeinflusst] unsere Entscheidungen.", "Advertising influences our decisions."], ["beeinträchtigen", "to impair / affect negatively", "Lärm [beeinträchtigt] die Konzentration.", "Noise impairs concentration."], ["beitragen", "to contribute", "Jeder kann zum Klimaschutz [beitragen].", "Everyone can contribute to climate protection."], ["sich auswirken", "to have an effect", "Das [wirkt] sich positiv auf die Gesundheit [aus].", "That has a positive effect on health."], ["zusammenhängen", "to be connected", "Beide Probleme [hängen] eng [zusammen].", "Both problems are closely connected."]]},
+    {"level": "B2", "verbs": [["verweigern", "to refuse", "Er [verweigerte] die Aussage.", "He refused to testify."], ["untersagen", "to prohibit", "Die Behörde [untersagt] das Betreten des Geländes.", "The authority prohibits entering the site."], ["zulassen", "to allow / admit", "Die Regeln [lassen] keine Ausnahmen [zu].", "The rules do not allow exceptions."], ["einwenden", "to object", "Dagegen [wende] ich [ein], dass das zu teuer ist.", "I object to that on the grounds that it is too expensive."], ["sich beschränken", "to limit oneself", "Ich [beschränke] mich auf die wichtigsten Punkte.", "I will limit myself to the most important points."]]}
+  ];
+  var FREE_SIMILAR = [["unterstützen", "fördern", "befürworten"], ["mitteilen", "aufklären", "darlegen", "erläutern", "hinweisen", "schildern", "erwähnen", "verweisen"], ["beurteilen", "bewerten", "analysieren", "feststellen", "erkennen", "vergleichen", "unterscheiden"], ["vermuten", "annehmen", "befürchten", "bezweifeln", "behaupten"], ["vorbeugen", "verhindern", "beseitigen", "beheben", "überwinden", "bewältigen"], ["sich ereignen", "geschehen", "stattfinden", "eintreten", "entstehen", "verlaufen"], ["verursachen", "bewirken", "auslösen", "zurückführen"], ["verbessern", "steigern", "erweitern", "sich entwickeln", "verändern", "sich anpassen", "zunehmen"], ["reduzieren", "einschränken", "verzichten", "vermeiden"], ["sich entscheiden", "beschließen", "sich einigen"], ["ablehnen", "absagen", "bestreiten", "widersprechen"], ["sich kümmern", "erledigen", "übernehmen"], ["vereinbaren", "sich verabreden", "verschieben"], ["untersuchen", "behandeln", "heilen", "lindern"], ["sich auseinandersetzen", "sich beziehen", "sich handeln", "betreffen"], ["erhalten", "erfahren", "beantragen", "genehmigen"], ["anmelden", "abmelden", "sich bewerben", "sich verpflichten"], ["erzählen", "sich unterhalten", "schildern", "ausdrücken"], ["vorschlagen", "empfehlen"], ["sich erinnern", "vergessen", "wiederholen"], ["verwenden", "ausprobieren", "benutzen"], ["kritisieren", "bemängeln", "vorwerfen", "beschuldigen"], ["durchführen", "umsetzen", "verwirklichen", "einführen"], ["bescheinigen", "beglaubigen", "nachweisen", "belegen"], ["verbieten", "untersagen", "verweigern", "zurückweisen", "ablehnen"], ["begreifen", "verstehen", "durchschauen", "erkennen"], ["betonen", "hervorheben", "bekräftigen", "unterstreichen"], ["berichten", "mitteilen", "erwähnen", "schildern"], ["vermitteln", "schlichten", "sich einigen"], ["beeinflussen", "beeinträchtigen", "sich auswirken"], ["erreichen", "verwirklichen", "anstreben", "schaffen"], ["sich entspannen", "sich ausruhen", "sich erholen"], ["aufräumen", "putzen", "waschen"], ["reparieren", "renovieren"], ["investieren", "finanzieren", "einsparen"], ["recherchieren", "ermitteln", "auswerten", "erfassen"], ["sich anstrengen", "sich bemühen", "sich einsetzen"], ["beginnen", "planen", "vorhaben"], ["schützen", "verhindern", "vorbeugen"]];
+  var DAYS = FREE_DAYS.slice();
+  var SIMILAR = FREE_SIMILAR.slice();
+
+  function slug(s) {
+    return s.toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z]/g,'');
+  }
+  var VERBS = [];
+  var BY_ID = {};
+  var SIM = {};   // id -> list of ids with similar meaning
+  function buildVerbs() {
+    VERBS = []; BY_ID = {}; SIM = {};
+    DAYS.forEach(function (d, i) {
+      d.verbs.forEach(function (r) {
+        var v = { id:slug(r[0]), day:i + 1, level:d.level, de:r[0], en:r[1], ex:r[2], tr:r[3] };
+        if (BY_ID[v.id]) return;
+        VERBS.push(v); BY_ID[v.id] = v;
+      });
+    });
+    SIMILAR.forEach(function (g) {
+      var ids = g.map(slug).filter(function (id) { return BY_ID[id]; });
+      ids.forEach(function (x) {
+        SIM[x] = (SIM[x] || []).concat(ids.filter(function (y) { return y !== x; }));
+      });
+    });
+  }
+  buildVerbs();
+  function byId(id) { return BY_ID[id]; }
+
+  /* Picture words (daily-life nouns). Only the free category is inside this file; the others come from the account.
+     Each item: [article, German, English, emoji, Wikipedia page title for the photo]. */
+  var FREE_WORDS = [
+    {"cat": "Obst", "en": "Fruit", "emo": "🍎", "items": [["der", "Apfel", "apple", "🍎", "Apple"], ["die", "Banane", "banana", "🍌", "Banana"], ["die", "Orange", "orange", "🍊", "Orange (fruit)"], ["die", "Zitrone", "lemon", "🍋", "Lemon"], ["die", "Erdbeere", "strawberry", "🍓", "Strawberry"], ["die", "Traube", "grape", "🍇", "Grape"], ["die", "Birne", "pear", "🍐", "Pear"], ["die", "Kirsche", "cherry", "🍒", "Cherry"], ["die", "Ananas", "pineapple", "🍍", "Pineapple"], ["die", "Wassermelone", "watermelon", "🍉", "Watermelon"], ["der", "Pfirsich", "peach", "🍑", "Peach"], ["die", "Heidelbeere", "blueberry", "🫐", "Blueberry"]]},
+    {"cat": "Gemüse", "en": "Vegetables", "emo": "🥕", "items": [["die", "Karotte", "carrot", "🥕", "Carrot"], ["die", "Tomate", "tomato", "🍅", "Tomato"], ["die", "Kartoffel", "potato", "🥔", "Potato"], ["die", "Zwiebel", "onion", "🧅", "Onion"], ["der", "Knoblauch", "garlic", "🧄", "Garlic"], ["die", "Gurke", "cucumber", "🥒", "Cucumber"], ["die", "Paprika", "bell pepper", "🫑", "Bell pepper"], ["der", "Brokkoli", "broccoli", "🥦", "Broccoli"], ["der", "Mais", "corn", "🌽", "Maize"], ["der", "Pilz", "mushroom", "🍄", "Edible mushroom"], ["der", "Salat", "lettuce", "🥬", "Lettuce"], ["die", "Aubergine", "eggplant", "🍆", "Eggplant"]]},
+    {"cat": "Essen und Trinken", "en": "Food and drink", "emo": "🍞", "items": [["das", "Brot", "bread", "🍞", "Bread"], ["der", "Käse", "cheese", "🧀", "Cheese"], ["das", "Ei", "egg", "🥚", "Egg as food"], ["die", "Milch", "milk", "🥛", "Milk"], ["der", "Kaffee", "coffee", "☕", "Coffee"], ["der", "Tee", "tea", "🍵", "Tea"], ["der", "Reis", "rice", "🍚", "Rice"], ["die", "Nudeln", "noodles / pasta", "🍝", "Pasta"], ["das", "Fleisch", "meat", "🥩", "Meat"], ["die", "Butter", "butter", "🧈", "Butter"], ["der", "Honig", "honey", "🍯", "Honey"], ["der", "Kuchen", "cake", "🍰", "Cake"]]},
+    {"cat": "Küche", "en": "Kitchen", "emo": "🍳", "items": [["der", "Löffel", "spoon", "🥄", "Spoon"], ["die", "Gabel", "fork", "🍴", "Fork"], ["das", "Messer", "knife", "🔪", "Knife"], ["der", "Teller", "plate", "🍽️", "Plate (dishware)"], ["die", "Tasse", "mug / cup", "☕", "Mug"], ["das", "Glas", "glass", "🥛", "Drinking glass"], ["die", "Flasche", "bottle", "🍾", "Bottle"], ["der", "Topf", "pot", "🍲", "Cookware and bakeware"], ["die", "Pfanne", "frying pan", "🍳", "Frying pan"], ["der", "Kühlschrank", "fridge", "🧊", "Refrigerator"], ["der", "Herd", "stove", "🔥", "Stove"], ["der", "Ofen", "oven", "♨️", "Oven"]]},
+    {"cat": "Haus und Möbel", "en": "Home and furniture", "emo": "🏠", "items": [["das", "Haus", "house", "🏠", "House"], ["die", "Wohnung", "apartment", "🏢", "Apartment"], ["die", "Tür", "door", "🚪", "Door"], ["das", "Fenster", "window", "🪟", "Window"], ["der", "Tisch", "table", "🍽️", "Table (furniture)"], ["der", "Stuhl", "chair", "🪑", "Chair"], ["das", "Bett", "bed", "🛏️", "Bed"], ["das", "Sofa", "couch", "🛋️", "Couch"], ["die", "Lampe", "lamp", "💡", "Electric light"], ["der", "Schlüssel", "key", "🔑", "Key (lock)"], ["der", "Spiegel", "mirror", "🪞", "Mirror"], ["die", "Treppe", "stairs", "🪜", "Stairs"]]},
+    {"cat": "Kleidung", "en": "Clothes", "emo": "👕", "items": [["das", "T-Shirt", "T-shirt", "👕", "T-shirt"], ["die", "Hose", "trousers", "👖", "Trousers"], ["das", "Kleid", "dress", "👗", "Dress"], ["der", "Pullover", "sweater", "🧶", "Sweater"], ["die", "Jacke", "jacket", "🧥", "Jacket"], ["der", "Mantel", "coat", "🧥", "Coat"], ["der", "Schuh", "shoe", "👟", "Shoe"], ["die", "Socke", "sock", "🧦", "Sock"], ["die", "Mütze", "cap / hat", "🧢", "Beanie"], ["der", "Schal", "scarf", "🧣", "Scarf"], ["der", "Handschuh", "glove", "🧤", "Glove"], ["die", "Brille", "glasses", "👓", "Glasses"]]},
+    {"cat": "Körper", "en": "Body", "emo": "🧍", "items": [["der", "Kopf", "head", "🗣️", "Head"], ["das", "Auge", "eye", "👁️", "Eye"], ["das", "Ohr", "ear", "👂", "Ear"], ["die", "Nase", "nose", "👃", "Nose"], ["der", "Mund", "mouth", "👄", "Mouth"], ["der", "Zahn", "tooth", "🦷", "Tooth"], ["die", "Hand", "hand", "✋", "Hand"], ["der", "Finger", "finger", "☝️", "Finger"], ["der", "Fuß", "foot", "🦶", "Foot"], ["das", "Bein", "leg", "🦵", "Human leg"], ["der", "Arm", "arm", "💪", "Arm"], ["das", "Herz", "heart", "🫀", "Heart"]]},
+    {"cat": "Tiere", "en": "Animals", "emo": "🐶", "items": [["der", "Hund", "dog", "🐶", "Dog"], ["die", "Katze", "cat", "🐱", "Cat"], ["das", "Pferd", "horse", "🐴", "Horse"], ["die", "Kuh", "cow", "🐮", "Cattle"], ["das", "Schwein", "pig", "🐷", "Pig"], ["das", "Schaf", "sheep", "🐑", "Sheep"], ["der", "Vogel", "bird", "🐦", "Bird"], ["der", "Fisch", "fish", "🐟", "Fish"], ["die", "Maus", "mouse", "🐭", "Mouse"], ["der", "Hase", "rabbit", "🐰", "Rabbit"], ["der", "Löwe", "lion", "🦁", "Lion"], ["die", "Biene", "bee", "🐝", "Bee"]]},
+    {"cat": "Verkehr", "en": "Transport", "emo": "🚗", "items": [["das", "Auto", "car", "🚗", "Car"], ["der", "Bus", "bus", "🚌", "Bus"], ["der", "Zug", "train", "🚆", "Train"], ["das", "Fahrrad", "bicycle", "🚲", "Bicycle"], ["das", "Flugzeug", "airplane", "✈️", "Airplane"], ["das", "Schiff", "ship", "🚢", "Ship"], ["die", "Straßenbahn", "tram", "🚋", "Tram"], ["die", "U-Bahn", "underground", "🚇", "Rapid transit"], ["der", "Bahnhof", "train station", "🚉", "Train station"], ["die", "Ampel", "traffic light", "🚦", "Traffic light"], ["die", "Brücke", "bridge", "🌉", "Bridge"], ["der", "Flughafen", "airport", "🛫", "Airport"]]},
+    {"cat": "Stadt und Orte", "en": "Town and places", "emo": "🏙️", "items": [["die", "Apotheke", "pharmacy", "💊", "Pharmacy"], ["das", "Krankenhaus", "hospital", "🏥", "Hospital"], ["die", "Schule", "school", "🏫", "School"], ["die", "Bäckerei", "bakery", "🥖", "Bakery"], ["der", "Supermarkt", "supermarket", "🛒", "Supermarket"], ["die", "Bank", "bank", "🏦", "Bank"], ["die", "Post", "post office", "📮", "Post office"], ["die", "Kirche", "church", "⛪", "Church (building)"], ["der", "Park", "park", "🌳", "Park"], ["das", "Restaurant", "restaurant", "🍴", "Restaurant"], ["die", "Bibliothek", "library", "📚", "Library"], ["das", "Rathaus", "town hall", "🏛️", "Town hall"]]},
+    {"cat": "Schule und Büro", "en": "School and office", "emo": "✏️", "items": [["das", "Buch", "book", "📖", "Book"], ["der", "Stift", "pen", "🖊️", "Pen"], ["der", "Bleistift", "pencil", "✏️", "Pencil"], ["das", "Heft", "notebook", "📓", "Notebook"], ["der", "Computer", "computer", "💻", "Computer"], ["das", "Handy", "mobile phone", "📱", "Mobile phone"], ["die", "Uhr", "clock", "🕐", "Clock"], ["der", "Rucksack", "backpack", "🎒", "Backpack"], ["die", "Schere", "scissors", "✂️", "Scissors"], ["das", "Papier", "paper", "📄", "Paper"], ["die", "Tafel", "blackboard", "🧑‍🏫", "Blackboard"], ["der", "Kalender", "calendar", "📅", "Calendar"]]},
+    {"cat": "Natur und Wetter", "en": "Nature and weather", "emo": "🌤️", "items": [["die", "Sonne", "sun", "☀️", "Sun"], ["der", "Mond", "moon", "🌙", "Moon"], ["der", "Regen", "rain", "🌧️", "Rain"], ["der", "Schnee", "snow", "❄️", "Snow"], ["die", "Wolke", "cloud", "☁️", "Cloud"], ["der", "Wind", "wind", "💨", "Wind"], ["der", "Baum", "tree", "🌳", "Tree"], ["die", "Blume", "flower", "🌸", "Flower"], ["der", "Berg", "mountain", "⛰️", "Mountain"], ["der", "See", "lake", "🏞️", "Lake"], ["der", "Fluss", "river", "🌊", "River"], ["das", "Meer", "sea", "🌊", "Sea"]]}
+  ];
+  var WORD_CATS = FREE_WORDS.slice();
+  var PW = {};
+  var PW_LIST = [];
+  function buildWords() {
+    PW = {}; PW_LIST = [];
+    WORD_CATS.forEach(function (c, ci) {
+      c.items.forEach(function (r) {
+        var w = { id:slug(r[1]), art:r[0], de:r[1], en:r[2], emo:r[3], title:r[4], cat:ci };
+        if (!w.id || PW[w.id]) return;
+        PW[w.id] = w; PW_LIST.push(w);
+      });
+    });
+  }
+  buildWords();
+
+  /* =====================================================
+     SMALL HELPERS
+     ===================================================== */
+  function $(sel) { return document.querySelector(sel); }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+  function plain(ex) { return ex.replace(/[\[\]]/g, ''); }
+  function hl(ex)    { return esc(ex).replace(/\[([^\]]+)\]/g, '<mark>$1</mark>'); }
+  function blank(ex) { return esc(ex).replace(/\[([^\]]+)\]/g, '<span class="blank" role="img" aria-label="blank"></span>'); }
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function icon(name) {
+    var p = {
+      practise:'<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>',
+      verbs:'<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/>',
+      progress:'<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+      speaker:'<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/>',
+      close:'<path d="M18 6 6 18M6 6l12 12"/>',
+      mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/>',
+      chev:'<path d="m9 6 6 6-6 6"/>',
+      words:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',
+      account:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+      talk:'<path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-5.4A8 8 0 1 1 21 12z"/>',
+      lock:'<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>'
+    }[name];
+    return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">' + p + '</svg>';
+  }
+  function sayBtn(text, label) {
+    return '<button class="say" data-act="say" data-say="' + esc(text) + '" aria-label="Listen: ' + esc(label || text) + '">' + icon('speaker') + '</button>';
+  }
+  function speak(text) {
+    try {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'de-DE'; u.rate = 0.9;
+      var voices = window.speechSynthesis.getVoices().filter(function (v) { return v.lang && v.lang.indexOf('de') === 0; });
+      if (voices.length) u.voice = voices[0];
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* speech is optional */ }
+  }
+
+  /* =====================================================
+     SAVED PROGRESS  (localStorage, stays after closing the app)
+     ===================================================== */
+  var KEY = 'verbtrainer.free.v1';
+  function validScope(s) {
+    return s === 'all' || s === 'B1' || s === 'B2' || (typeof s === 'number' && isFinite(s) && s >= 1 && s <= 60);
+  }
+  function parseScope(v) { return (v === 'all' || v === 'B1' || v === 'B2') ? v : Number(v); }
+  function inScope(v, scope) {
+    return scope === 'all' || scope === v.level || scope === v.day;
+  }
+  function scopeSelect(id, current, label) {
+    function opt(val, text) { return '<option value="' + val + '"' + (String(current) === String(val) ? ' selected' : '') + '>' + text + '</option>'; }
+    var nB2 = VERBS.filter(function (v) { return v.level === 'B2'; }).length, nB1 = VERBS.length - nB2;
+    var h = '<label class="selwrap"><span class="lbl">' + label + '</span><select class="select" id="' + id + '" data-sel="' + id + '">' +
+      opt('all', 'All verbs (' + VERBS.length + ')') + (nB2 ? opt('B2', 'All B2 verbs (' + nB2 + ')') : '') + (nB1 ? opt('B1', 'All B1 verbs (' + nB1 + ')') : '');
+    ['B2', 'B1'].forEach(function (lv) {
+      if (!DAYS.some(function (d) { return d.level === lv; })) return;
+      h += '<optgroup label="' + lv + ' days">';
+      DAYS.forEach(function (d, i) { if (d.level === lv) h += opt(i + 1, 'Day ' + (i + 1) + ' (' + d.verbs.map(function (r) { return r[0]; }).slice(0, 2).join(', ') + '...)'); });
+      h += '</optgroup>';
+    });
+    return h + '</select></label>';
+  }
+  function defaults() {
+    return {
+      stats: { correct:0, wrong:0, score:0, streak:0, bestStreak:0, dayStreak:0, lastDay:'', sessions:0 },
+      verbs: {}, scope:'all', englishFirst:false, hideInstall:false,
+      speak:{ tries:0, good:0 }, speakTarget:'word', savedAt:0, owner:'', pics:{}, talk:{ done:{}, tries:0, good:0 }
+    };
+  }
+  function num(x) { return (typeof x === 'number' && isFinite(x) && x >= 0 && x < 1e9) ? Math.floor(x) : 0; }
+  /* Turns anything read from storage or from the account into a safe, complete progress object. */
+  function normalize(p) {
+    var d = defaults();
+    if (!p || typeof p !== 'object') return d;
+    if (p.stats && typeof p.stats === 'object') Object.keys(d.stats).forEach(function (k) {
+      if (typeof p.stats[k] === typeof d.stats[k]) d.stats[k] = (typeof d.stats[k] === 'number') ? num(p.stats[k]) : String(p.stats[k]).slice(0, 10);
+    });
+    if (p.verbs && typeof p.verbs === 'object') Object.keys(p.verbs).slice(0, 400).forEach(function (id) {
+      var x = p.verbs[id];
+      if (/^[a-z]{1,40}$/.test(id) && x && typeof x === 'object') d.verbs[id] = { c:num(x.c), w:num(x.w), run:num(x.run), needs:num(x.needs) };
+    });
+    if (p.pics && typeof p.pics === 'object') Object.keys(p.pics).slice(0, 400).forEach(function (id) {
+      var x = p.pics[id];
+      if (/^[a-z]{1,40}$/.test(id) && x && typeof x === 'object') d.pics[id] = { c:num(x.c), w:num(x.w), run:num(x.run) };
+    });
+    if (validScope(p.scope)) d.scope = p.scope;
+    d.englishFirst = !!p.englishFirst;
+    d.hideInstall = !!p.hideInstall;
+    if (p.speak && typeof p.speak.tries === 'number' && typeof p.speak.good === 'number') d.speak = { tries:num(p.speak.tries), good:num(p.speak.good) };
+    if (p.speakTarget === 'word' || p.speakTarget === 'sentence') d.speakTarget = p.speakTarget;
+    if (p.talk && typeof p.talk === 'object') {
+      d.talk.tries = num(p.talk.tries); d.talk.good = num(p.talk.good);
+      if (p.talk.done && typeof p.talk.done === 'object') Object.keys(p.talk.done).slice(0, 100).forEach(function (id) {
+        if (/^[a-z0-9]{1,30}$/.test(id)) d.talk.done[id] = num(p.talk.done[id]);
+      });
+    }
+    d.savedAt = num(p.savedAt);
+    d.owner = (typeof p.owner === 'string' && /^[0-9a-f-]{36}$/i.test(p.owner)) ? p.owner : '';
+    return d;
+  }
+  function load() {
+    try {
+      var raw = window.localStorage.getItem(KEY);
+      if (raw) return normalize(JSON.parse(raw));
+    } catch (e) { /* start fresh if storage is unavailable or damaged */ }
+    return defaults();
+  }
+  var state = load();
+  function persistLocal() { try { window.localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function save() { state.savedAt = Date.now(); persistLocal(); if (typeof schedulePush === 'function') schedulePush(); }
+  function vstat(id) { return state.verbs[id] || { c:0, w:0, run:0, needs:0 }; }
+  function vwrite(id) { if (!state.verbs[id]) state.verbs[id] = { c:0, w:0, run:0, needs:0 }; return state.verbs[id]; }
+
+  function dayKey(d) {
+    function z(n) { return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate());
+  }
+  function today()     { return dayKey(new Date()); }
+  function yesterday() { var d = new Date(); d.setDate(d.getDate() - 1); return dayKey(d); }
+  function touchDay() {
+    var s = state.stats, t = today();
+    if (s.lastDay === t) return;
+    s.dayStreak = (s.lastDay === yesterday()) ? s.dayStreak + 1 : 1;
+    s.lastDay = t;
+  }
+  function dayStreakNow() {
+    var s = state.stats;
+    return (s.lastDay === today() || s.lastDay === yesterday()) ? s.dayStreak : 0;
+  }
+
+  /* Records one answer. Returns the points earned. */
+  function record(id, ok) {
+    var s = state.stats, v = vwrite(id), pts = 0;
+    touchDay();
+    if (ok) {
+      s.correct++; s.streak++;
+      if (s.streak > s.bestStreak) s.bestStreak = s.streak;
+      pts = 10 + (s.streak >= 5 ? 5 : 0);
+      s.score += pts;
+      v.c++; v.run++; v.needs = Math.max(0, v.needs - 1);
+    } else {
+      s.wrong++; s.streak = 0;
+      v.w++; v.run = 0; v.needs = 2;
+    }
+    save();
+    return pts;
+  }
+  function isMastered(id) { return vstat(id).run >= 3; }
+  function masteredCount() { return VERBS.filter(function (v) { return isMastered(v.id); }).length; }
+  function mistakes() { return VERBS.filter(function (v) { return vstat(v.id).needs > 0; }); }
+  function pool() {
+    var l = VERBS.filter(function (v) { return inScope(v, state.scope); });
+    return l.length ? l : VERBS.slice();   // a saved choice (for example Day 12) may not exist without Premium
+  }
+  /* Picks n verbs from a list: verbs that need practice first, then not-yet-mastered, then mastered. */
+  function pick(list, n) {
+    function rank(v) { var x = vstat(v.id); return x.needs > 0 ? 0 : (x.run >= 3 ? 2 : 1); }
+    return shuffle(list.slice()).sort(function (a, b) { return rank(a) - rank(b); }).slice(0, n);
+  }
+  function statusOf(id) {
+    var v = vstat(id);
+    if (v.needs > 0) return { cls:'bad', text:'Needs practice' };
+    if (v.run >= 3)  return { cls:'ok',  text:'Mastered' };
+    if (v.c + v.w > 0) return { cls:'', text:'Practising' };
+    return { cls:'', text:'New' };
+  }
+
+  /* =====================================================
+     QUESTIONS
+     ===================================================== */
+  var MC_KINDS = ['de-en', 'en-de', 'gap'];
+  var TYPE_KINDS = ['type-en', 'type-gap'];
+
+  function makeQ(v, kind) {
+    var q = { id:v.id, kind:kind, done:false, correct:false, retried:false, picked:null, typed:'', hint:false, note:'', pts:0 };
+    if (kind.indexOf('type') !== 0) {
+      var banned = SIM[v.id] || [];
+      var others = shuffle(VERBS.filter(function (x) { return x.id !== v.id && banned.indexOf(x.id) < 0; })).slice(0, 3);
+      q.opts = shuffle([v].concat(others)).map(function (x) { return x.id; });
+    }
+    return q;
+  }
+
+  function buildQuestions(mode) {
+    var src, n, i, out = [], order = [];
+    if (mode === 'review') {
+      src = mistakes();
+      n = Math.min(10, Math.max(2, src.length * 2));
+    } else {
+      src = pool();
+      n = 10;
+    }
+    order = pick(src, n);
+    while (order.length < n) order = order.concat(shuffle(src.slice()));
+    order = order.slice(0, n);
+    for (i = 0; i < n; i++) {
+      var kind;
+      if (mode === 'quiz') kind = rand(MC_KINDS);
+      else if (mode === 'type') kind = rand(TYPE_KINDS);
+      else kind = (i % 2 === 0) ? rand(MC_KINDS) : rand(TYPE_KINDS);
+      out.push(makeQ(byId(order[i].id), kind));
+    }
+    return out;
+  }
+
+  function core(v) { return v.de.replace(/^sich /, ''); }
+  function norm(s) { return s.trim().toLowerCase().replace(/\s+/g, ' '); }
+  function ascii(s) { return s.replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss'); }
+  function checkTyped(v, input) {
+    var u = norm(input);
+    var accepted = [v.de.toLowerCase(), core(v).toLowerCase()];
+    if (accepted.indexOf(u) >= 0) return { ok:true, note:'' };
+    var a = accepted.map(ascii), ua = ascii(u);
+    if (a.indexOf(ua) >= 0) return { ok:true, note:'Accepted. In German you would write it as ' + v.de + '.' };
+    return { ok:false, note:'' };
+  }
+
+  /* =====================================================
+     SPEAKING PRACTICE (uses the phone's own speech recognition)
+     ===================================================== */
+  var MSG_UNSUPPORTED = "This browser can't do speech recognition. Open the app in Safari on your iPhone.";
+  var MSG_UNAVAILABLE = "Speech recognition did not start. iPhones often block it in Home Screen apps. Open the same web address in Safari to use speaking practice.";
+  var MSG_BLOCKED = "Speech recognition is blocked. On your iPhone turn on Dictation (Settings, General, Keyboard) and allow the microphone when asked. If you opened this from the Home Screen, try the same address in Safari.";
+
+  function fold(s) {
+    return s.toLowerCase().replace(/ä/g,'a').replace(/ö/g,'o').replace(/ü/g,'u').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();
+  }
+  /* Edit distance where swapping two neighbouring letters (ei / ie) counts as one mistake. */
+  function lev(a, b) {
+    var m = a.length, n = b.length, i, j, d = [];
+    for (i = 0; i <= m; i++) { d[i] = [i]; }
+    for (j = 0; j <= n; j++) { d[0][j] = j; }
+    for (i = 1; i <= m; i++) {
+      for (j = 1; j <= n; j++) {
+        var cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+        d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+        if (i > 1 && j > 1 && a.charAt(i - 1) === b.charAt(j - 2) && a.charAt(i - 2) === b.charAt(j - 1)) {
+          d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+        }
+      }
+    }
+    return d[m][n];
+  }
+  /* Compares one target word with what was heard. Returns 'ok', 'close', 'miss' or 'skip'. */
+  function matchWord(wf, heard, joined) {
+    if (!wf || /^[0-9 ]+$/.test(wf)) return 'skip';
+    if (wf.indexOf(' ') >= 0) {
+      if (joined.indexOf(wf.replace(/ /g, '')) >= 0) return 'ok';
+      return wf.split(' ').every(function (p) { return heard.indexOf(p) >= 0; }) ? 'ok' : 'miss';
+    }
+    if (heard.indexOf(wf) >= 0) return 'ok';
+    if (wf.length >= 4 && joined.indexOf(wf) >= 0) return 'ok';
+    var near = heard.some(function (t) {
+      var d = lev(t, wf);
+      return (wf.length >= 7 && d <= 1) || (wf.length >= 11 && d <= 2);
+    });
+    return near ? 'close' : 'miss';
+  }
+  function evalSpeech(v, mode, alts) {
+    var words = mode === 'sentence' ? plain(v.ex).split(/\s+/) : [core(v)];
+    var best = null;
+    alts.forEach(function (alt) {
+      var ht = fold(alt).split(' ').filter(Boolean), joined = ht.join('');
+      var marks = words.map(function (w) { return { w:w, st:matchWord(fold(w), ht, joined) }; });
+      var scored = marks.filter(function (m) { return m.st !== 'skip'; });
+      var pts = scored.reduce(function (s, m) { return s + (m.st === 'ok' ? 1 : (m.st === 'close' ? 0.7 : 0)); }, 0);
+      var ratio = scored.length ? pts / scored.length : 1;
+      if (!best || ratio > best.ratio) best = { heard:alt, marks:marks, ratio:ratio };
+    });
+    if (!best) best = { heard:'', marks:words.map(function (w) { return { w:w, st:'miss' }; }), ratio:0 };
+    var allOk = best.marks.every(function (m) { return m.st === 'ok' || m.st === 'skip'; });
+    best.pass = mode === 'sentence' ? best.ratio >= 0.8 : best.marks[0].st !== 'miss';
+    best.perfect = best.pass && allOk;
+    return best;
+  }
+
+  var REC = null, recTimer = null;
+  function speechCtor() { return window.SpeechRecognition || window.webkitSpeechRecognition || null; }
+  function stopListening(abort) {
+    clearTimeout(recTimer);
+    var r = REC; REC = null;
+    if (r) { try { if (abort) r.abort(); else r.stop(); } catch (e) {} }
+  }
+  function speechError(code) {
+    switch (code) {
+      case 'not-allowed': case 'service-not-allowed': return MSG_BLOCKED;
+      case 'no-speech': return "I didn't hear anything. Tap the microphone and say it again.";
+      case 'network': return 'Speech recognition needs an internet connection.';
+      case 'audio-capture': return "I can't reach the microphone.";
+      case 'language-not-supported': return "German speech recognition isn't available on this device.";
+      default: return 'Something went wrong with speech recognition (' + code + '). Please try again.';
+    }
+  }
+  function startListening() {
+    var q = S && S.qs ? S.qs[S.i] : null; if (!q) return;
+    var Ctor = speechCtor();
+    if (!Ctor) { q.status = 'error'; q.msg = MSG_UNSUPPORTED; render(); return; }
+    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+    stopListening(true);
+    var rec;
+    try { rec = new Ctor(); } catch (e) { q.status = 'error'; q.msg = MSG_UNAVAILABLE; render(); return; }
+    REC = rec;
+    rec.lang = 'de-DE'; rec.interimResults = false; rec.maxAlternatives = 5; rec.continuous = false;
+    var finished = false, started = false;
+    rec.onstart = function () { started = true; clearTimeout(recTimer); };
+    rec.onresult = function (e) {
+      if (REC !== rec || finished) return;
+      finished = true; clearTimeout(recTimer);
+      var res = e.results[e.results.length - 1], alts = [];
+      for (var i = 0; i < res.length; i++) alts.push(res[i].transcript);
+      handleSpeech(q, alts);
+    };
+    rec.onerror = function (e) {
+      if (REC !== rec || finished) return;
+      finished = true; clearTimeout(recTimer); REC = null;
+      if (e.error === 'aborted') { q.status = 'idle'; q.msg = ''; }
+      else { q.status = 'error'; q.msg = speechError(e.error); }
+      render();
+    };
+    rec.onend = function () {
+      if (REC !== rec) return;
+      clearTimeout(recTimer); REC = null;
+      if (!finished) { q.status = 'error'; q.msg = "I didn't hear anything. Tap the microphone and say it again."; render(); }
+    };
+    q.status = 'listening'; q.msg = '';
+    render();
+    recTimer = setTimeout(function () {
+      if (!started && REC === rec) { stopListening(true); q.status = 'error'; q.msg = MSG_UNAVAILABLE; render(); }
+    }, 20000);
+    try { rec.start(); } catch (e) { stopListening(true); q.status = 'error'; q.msg = MSG_UNAVAILABLE; render(); }
+  }
+  function handleSpeech(q, alts) {
+    var r = evalSpeech(byId(q.id), S.target, alts);
+    REC = null;
+    q.status = 'result'; q.result = r; q.attempts++;
+    if (r.pass) q.passed = true;
+    state.speak.tries++; if (r.pass) state.speak.good++;
+    save();
+    render(); scrollToFeedback();
+  }
+
+  /* =====================================================
+     ACCOUNT, PREMIUM AND CLOUD SAVE
+     Premium is decided ONLY by the server. The paid verbs are sent by the database
+     only to a signed-in user whose server-side entitlement says Premium. Nothing stored
+     on this phone (a flag, a cache entry) can unlock them on its own.
+     ===================================================== */
+  var CFG = window.VT_CONFIG || {};
+  var SB_OK = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && /^https:\/\/[^\s]+$/.test(String(CFG.SUPABASE_URL)) &&
+                 String(CFG.SUPABASE_URL).indexOf('YOUR-') < 0 && String(CFG.SUPABASE_ANON_KEY).indexOf('YOUR-') < 0);
+  var SESSION_KEY = 'verbtrainer.session.v1', PCACHE_KEY = 'verbtrainer.premium.v1';
+  var CACHE_DAYS = 30;                       // how long checked Premium content may be used without internet
+  var PREMIUM_MODES = ['type', 'speak'];
+  var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  var account = { session:null, premium:true, offline:false, checked:false, step:'email', email:'', busy:'', msg:'', kind:'',
+                  waiting:false, cooldownUntil:0, sync:'', orders:[], lastRefresh:0 };
+
+  function lsGet(k) { try { return JSON.parse(window.localStorage.getItem(k)); } catch (e) { return null; } }
+  function lsSet(k, v) { try { window.localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function lsDel(k) { try { window.localStorage.removeItem(k); } catch (e) {} }
+  function setMsg(text, kind) { account.msg = text || ''; account.kind = kind || ''; }
+
+  function api(path, opts, token) {
+    opts = opts || {};
+    var headers = { apikey: CFG.SUPABASE_ANON_KEY };
+    if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
+    if (token) headers.Authorization = 'Bearer ' + token;
+    Object.keys(opts.headers || {}).forEach(function (k) { headers[k] = opts.headers[k]; });
+    return fetch(String(CFG.SUPABASE_URL).replace(/\/+$/, '') + path, {
+      method: opts.method || 'GET', headers: headers,
+      body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined
+    }).then(function (res) {
+      return res.text().then(function (t) {
+        var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) {}
+        return { ok: res.ok, status: res.status, data: j };
+      });
+    });
+  }
+
+  /* ---- login session (kept on this phone so you stay signed in) ---- */
+  function storeSession(d) {
+    if (!d || !d.access_token || !d.refresh_token || !d.user || !UUID_RE.test(String(d.user.id))) return false;
+    var s = { access_token:d.access_token, refresh_token:d.refresh_token,
+              expires_at: d.expires_at || (Math.floor(Date.now() / 1000) + (d.expires_in || 3600)),
+              user: { id:d.user.id, email:String(d.user.email || '') } };
+    account.session = s; lsSet(SESSION_KEY, s);
+    return true;
+  }
+  function loadStoredSession() {
+    var s = lsGet(SESSION_KEY);
+    if (s && s.access_token && s.refresh_token && s.user && UUID_RE.test(String(s.user.id))) return s;
+    return null;
+  }
+  function dropSession() {
+    account.session = null; lsDel(SESSION_KEY);
+    applyFree(true);
+  }
+  function getToken() {
+    var s = account.session;
+    if (!s) return Promise.resolve(null);
+    if (s.expires_at * 1000 - Date.now() > 60000) return Promise.resolve(s.access_token);
+    return api('/auth/v1/token?grant_type=refresh_token', { method:'POST', body:{ refresh_token:s.refresh_token } }).then(function (r) {
+      if (r.ok && storeSession(r.data)) return account.session.access_token;
+      if (r.status >= 400 && r.status < 500) { dropSession(); return null; }     // the login is no longer valid
+      throw new Error('offline');                                               // server trouble: behave like offline
+    });
+  }
+
+  /* ---- Premium content: only ever comes from the server ---- */
+  function setPremiumContent(rows) {
+    var days = [], sim = [], wc = [];
+    (rows || []).forEach(function (r) {
+      var p = r && r.payload;
+      if (!p) return;
+      if (r.kind === 'day' && Array.isArray(p.verbs) && typeof p.day === 'number') {
+        days.push({ day:p.day, level:p.level === 'B1' ? 'B1' : 'B2',
+                    verbs:p.verbs.filter(function (v) { return Array.isArray(v) && v.length >= 4 && v.slice(0, 4).every(function (x) { return typeof x === 'string'; }); }) });
+      } else if (r.kind === 'similar' && Array.isArray(p.groups)) {
+        sim = p.groups.filter(Array.isArray);
+      } else if (r.kind === 'words' && Array.isArray(p.items)) {
+        wc.push({ key:String(r.key), cat:String(p.cat || ''), en:String(p.en || ''), emo:String(p.emo || ''),
+                  items:p.items.filter(function (v) { return Array.isArray(v) && v.length >= 5 && v.slice(0, 5).every(function (x) { return typeof x === 'string'; }) && /^(der|die|das)$/.test(v[0]); }) });
+      }
+    });
+    days.sort(function (a, b) { return a.day - b.day; });
+    DAYS = FREE_DAYS.concat(days.map(function (d) { return { level:d.level, verbs:d.verbs }; }));
+    SIMILAR = FREE_SIMILAR.concat(sim);
+    buildVerbs();
+    wc.sort(function (a, b) { return a.key < b.key ? -1 : 1; });
+    WORD_CATS = FREE_WORDS.concat(wc);
+    buildWords();
+  }
+  function clearPremiumContent() { DAYS = FREE_DAYS.slice(); SIMILAR = FREE_SIMILAR.slice(); buildVerbs(); WORD_CATS = FREE_WORDS.slice(); buildWords(); }
+  function readCache() { var c = lsGet(PCACHE_KEY); return (c && typeof c.uid === 'string' && Array.isArray(c.rows) && typeof c.at === 'number') ? c : null; }
+  function applyPremium(rows, offline) { setPremiumContent(rows); account.premium = true; account.offline = !!offline; }
+  function applyFree(wipeCache) {
+    var was = account.premium;
+    account.premium = false; account.offline = false; clearPremiumContent();
+    if (wipeCache) lsDel(PCACHE_KEY);
+    if (was && S) { stopListening(true); S = null; }
+    if (was && P) P = null;
+  }
+  function loadContent(token, uid) {
+    return api('/rest/v1/premium_content?select=key,kind,payload', {}, token).then(function (r) {
+      if (!r.ok || !Array.isArray(r.data)) throw new Error('offline');
+      lsSet(PCACHE_KEY, { uid:uid, at:Date.now(), rows:r.data });
+      applyPremium(r.data, false);
+      if (!r.data.length) setMsg('Premium is active, but the paid verbs are not on the server yet. Please contact support.', 'bad');
+    });
+  }
+  function loadOrders(token) {
+    return api('/rest/v1/rpc/my_purchases', { method:'POST', body:{} }, token).then(function (r) {
+      account.orders = (r.ok && Array.isArray(r.data)) ? r.data.slice(0, 20) : [];
+    }).catch(function () { /* optional information */ });
+  }
+
+  /* Ask the server who we are and whether we have Premium. Only a successful server answer can switch Premium OFF;
+     only a successful server answer (or recently verified content on this phone, offline) keeps it ON. */
+  function refreshAccount() {
+    account.lastRefresh = Date.now();
+    if (!SB_OK) { account.checked = true; render(); return Promise.resolve(); }
+    if (!account.session) { applyFree(true); account.checked = true; render(); return Promise.resolve(); }
+    var uid = account.session.user.id;
+    return getToken().then(function (token) {
+      if (!token) { applyFree(true); return; }
+      return api('/rest/v1/entitlements?select=premium&user_id=eq.' + uid, {}, token).then(function (r) {
+        if (r.status === 401) { dropSession(); return; }
+        if (!r.ok || !Array.isArray(r.data)) throw new Error('offline');
+        if (r.data.length && r.data[0].premium === true) return loadContent(token, uid).then(function () { return loadOrders(token); });
+        applyFree(true);
+        return loadOrders(token);
+      });
+    }).catch(function () {
+      var c = readCache();
+      if (account.session && c && c.uid === account.session.user.id && Date.now() - c.at < CACHE_DAYS * 86400000) applyPremium(c.rows, true);
+      else applyFree(false);
+    }).then(function () { account.checked = true; render(); });
+  }
+
+  /* ---- sign in with an emailed code ---- */
+  function emailOk(e) { return e.length <= 254 && /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/.test(e); }
+  function sendCode() {
+    if (account.busy) return;
+    var inp = $('#acEmail');
+    var email = ((inp ? inp.value : account.email) || '').trim().toLowerCase();
+    if (!inp && !email) { account.step = 'email'; render(); return; }
+    account.email = email;
+    if (!emailOk(email)) { setMsg('Please enter a valid email address.', 'bad'); render(); return; }
+    account.busy = 'send'; setMsg(''); render();
+    api('/auth/v1/otp', { method:'POST', body:{ email:email, create_user:true } }).then(function (r) {
+      account.busy = '';
+      if (r.ok) { account.step = 'code'; account.cooldownUntil = Date.now() + 60000; setMsg('We sent a code to ' + email + '. Enter it below.', 'good'); }
+      else if (r.status === 429) setMsg('Please wait a minute before asking for another code.', 'bad');
+      else setMsg('The code could not be sent. Check the address and try again.', 'bad');
+      render();
+    }).catch(function () { account.busy = ''; setMsg('No internet connection. Connect and try again.', 'bad'); render(); });
+  }
+  function verifyCode() {
+    if (account.busy) return;
+    var inp = $('#acCode');
+    var code = ((inp ? inp.value : '') || '').replace(/\s+/g, '');
+    if (!/^\d{6,10}$/.test(code)) { setMsg('Enter the number code from the email.', 'bad'); render(); return; }
+    account.busy = 'verify'; setMsg(''); render();
+    api('/auth/v1/verify', { method:'POST', body:{ type:'email', email:account.email, token:code } }).then(function (r) {
+      account.busy = '';
+      if (r.ok && storeSession(r.data)) {
+        account.step = 'email'; setMsg('Signed in.', 'good');
+        return refreshAccount().then(pullProgress).then(function () { render(); });
+      }
+      setMsg('That code did not work. It may have expired. Ask for a new one.', 'bad'); render();
+    }).catch(function () { account.busy = ''; setMsg('No internet connection. Connect and try again.', 'bad'); render(); });
+  }
+  function signOut() {
+    pushNow().then(function (ok) {
+      if (!ok && account.session && state.owner === account.session.user.id &&
+          !window.confirm('Your latest progress could not be saved to your account (are you offline?). If you sign out now, it will be lost on this device. Sign out anyway?')) return;
+      var token = account.session && account.session.access_token;
+      if (token) api('/auth/v1/logout?scope=local', { method:'POST' }, token).catch(function () {});
+      account.session = null; lsDel(SESSION_KEY);
+      applyFree(true);
+      P = null; state = defaults(); persistLocal();     // the progress is safe in the account; this phone starts clean
+      account.step = 'email'; account.email = ''; account.orders = []; account.sync = '';
+      setMsg('You are signed out.', '');
+      render(true);
+    });
+  }
+
+  /* ---- buying and restoring ---- */
+  function callFn(name) {
+    return getToken().then(function (token) {
+      if (!token) throw new Error('signedout');
+      return api('/functions/v1/' + name, { method:'POST', body:{} }, token);
+    });
+  }
+  function startCheckout() {
+    if (account.busy) return;
+    account.busy = 'buy'; setMsg(''); render();
+    callFn('create-checkout').then(function (r) {
+      account.busy = '';
+      if (r.ok && r.data && r.data.alreadyPremium) { setMsg('You already have Premium.', 'good'); return refreshAccount(); }
+      if (r.ok && r.data && typeof r.data.url === 'string' && /^https:\/\/([a-z0-9-]+\.)*lemonsqueezy\.com\//i.test(r.data.url)) { window.location.href = r.data.url; return; }
+      setMsg(r.status === 429 ? 'Too many attempts. Please try again in an hour.' : 'Could not open the checkout. Please try again.', 'bad'); render();
+    }).catch(function (e) {
+      account.busy = '';
+      setMsg(e && e.message === 'signedout' ? 'Please sign in first.' : 'You need an internet connection to buy.', 'bad'); render();
+    });
+  }
+  function checkPurchase() {
+    if (account.busy) return;
+    account.busy = 'check'; setMsg(''); render();
+    callFn('sync-purchases').then(function (r) {
+      account.busy = '';
+      if (r.status === 429) { setMsg('Please wait a few seconds and try again.', 'bad'); render(); return; }
+      if (!r.ok) { setMsg('Your purchase could not be checked right now. Please try again in a minute.', 'bad'); render(); return; }
+      return refreshAccount().then(function () {
+        if (account.premium) { account.waiting = false; setMsg('Premium is active. Thank you!', 'good'); }
+        else setMsg('No paid order was found for ' + (account.session ? account.session.user.email : 'this email') + '. If you paid with a different email address, contact support and include your order number.', 'bad');
+        render();
+      });
+    }).catch(function () { account.busy = ''; setMsg('You need an internet connection to check your purchase.', 'bad'); render(); });
+  }
+  function pollAfterCheckout() {
+    account.waiting = true; render();
+    var tries = 0;
+    (function tick() {
+      refreshAccount().then(function () {
+        if (account.premium) { account.waiting = false; setMsg('Payment confirmed. Premium is unlocked. Thank you!', 'good'); render(); return; }
+        if (++tries >= 12) { account.waiting = false; setMsg('The payment confirmation has not arrived yet. Wait a minute, then tap "Check my purchase". If it still does not work, contact support.', 'bad'); render(); return; }
+        setTimeout(tick, 3000);
+      });
+    })();
+  }
+  function openUpgrade() {
+    stopListening(true); S = null; P = null; tab = 'account';
+    if (!account.session) setMsg('Create a free account to buy Premium.', ''); 
+    render(true);
+  }
+
+  /* ---- progress saved to the account ---- */
+  var pushTimer = null;
+  function canSync() { return SB_OK && account.session && state.owner === account.session.user.id; }
+  function schedulePush() {
+    clearTimeout(pushTimer);
+    if (canSync()) pushTimer = setTimeout(pushNow, 4000);
+  }
+  function pushNow() {
+    clearTimeout(pushTimer);
+    if (!canSync()) return Promise.resolve(false);
+    var uid = account.session.user.id;
+    return getToken().then(function (token) {
+      if (!token) return false;
+      return api('/rest/v1/progress?on_conflict=user_id', {
+        method:'POST', headers:{ Prefer:'resolution=merge-duplicates,return=minimal' }, body:{ user_id:uid, data:state }
+      }, token).then(function (r) { account.sync = r.ok ? 'Progress saved to your account.' : 'Progress could not be saved to your account.'; return r.ok; });
+    }).catch(function () { account.sync = 'Offline: progress will be saved when you are back online.'; return false; });
+  }
+  function answered(s) { return s.stats.correct + s.stats.wrong; }
+  /* First time an account meets this phone: keep the more practised side, and the best record per verb. */
+  function mergeFirstLink(a, b) {
+    var base = answered(a) >= answered(b) ? a : b, other = base === a ? b : a;
+    var out = normalize(JSON.parse(JSON.stringify(base)));
+    Object.keys(other.verbs).forEach(function (id) {
+      var o = other.verbs[id], x = out.verbs[id];
+      if (!x || (o.c + o.w) > (x.c + x.w)) out.verbs[id] = o;
+    });
+    Object.keys(other.pics).forEach(function (id) {
+      var o = other.pics[id], x = out.pics[id];
+      if (!x || (o.c + o.w) > (x.c + x.w)) out.pics[id] = o;
+    });
+    if (other.speak.tries > out.speak.tries) out.speak = other.speak;
+    return out;
+  }
+  function pullProgress() {
+    if (!SB_OK || !account.session) return Promise.resolve();
+    var uid = account.session.user.id;
+    return getToken().then(function (token) {
+      if (!token) return;
+      return api('/rest/v1/progress?select=data&user_id=eq.' + uid, {}, token).then(function (r) {
+        if (!r.ok || !Array.isArray(r.data)) throw new Error('offline');
+        var cloud = r.data.length ? normalize(r.data[0].data) : null;
+        if (state.owner && state.owner !== uid) state = defaults();            // never mix two people's progress
+        if (!cloud) { state.owner = uid; persistLocal(); return pushNow(); }
+        if (state.owner !== uid) {                                              // first meeting of this phone and this account
+          state = mergeFirstLink(state, cloud); state.owner = uid; state.savedAt = Date.now(); persistLocal(); render();
+          return pushNow();
+        }
+        if (cloud.savedAt > state.savedAt) { cloud.owner = uid; state = cloud; persistLocal(); account.sync = 'Progress loaded from your account.'; render(); }
+        else if (state.savedAt > cloud.savedAt) return pushNow();
+        else account.sync = 'Progress is up to date.';
+      });
+    }).catch(function () { account.sync = 'Offline: progress will sync later.'; });
+  }
+
+  /* ---- account screen ---- */
+  function priceLabel() { return esc(CFG.PRICE_LABEL || '€2.99'); }
+  function wordExtra() { return Number(CFG.PREMIUM_WORD_COUNT) || 132; }
+  function extraCount() { return Number(CFG.PREMIUM_VERB_COUNT) || 140; }
+  function perks() {
+    return '<ul class="perks"><li><b>' + extraCount() + ' more verbs</b> (B2 and important B1)</li><li>Picture words: 11 more categories (about ' + wordExtra() + ' words) and picture typing</li><li>Typing test</li><li>Speaking practice</li><li>Progress saved to your account</li></ul>';
+  }
+  function legalLinks() {
+    return '<p class="foot"><a href="impressum.html">Impressum</a> &middot; <a href="datenschutz.html">Datenschutz / Privacy</a> &middot; <a href="terms.html">Terms &amp; refunds</a></p>';
+  }
+  function supportHref(extra) {
+    var to = String(CFG.SUPPORT_EMAIL || '');
+    var body = 'Hello,\n\nMy account email: ' + (account.session ? account.session.user.email : '(not signed in)') + '\n' + (extra || '') + '\nMy question:\n';
+    return 'mailto:' + encodeURIComponent(to).replace('%40', '@') + '?subject=' + encodeURIComponent('Verbtrainer support') + '&body=' + encodeURIComponent(body);
+  }
+  function viewAccount() {
+    var h = '<h1 class="page-title">Account</h1>';
+    if (!SB_OK) {
+      return h + '<div class="card"><p>Accounts are not switched on in this copy of the app yet.</p><p class="muted small">The Supabase address and key must be added to <b>config.js</b>.</p></div>' + legalLinks();
+    }
+    if (account.waiting) h += '<div class="notice good" role="status">Waiting for the payment confirmation... this usually takes a few seconds.</div>';
+    if (account.msg) h += '<div class="notice ' + esc(account.kind) + '" role="status">' + esc(account.msg) + '</div>';
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) h += '<div class="notice">You are offline. Sign-in, buying and syncing need internet.</div>';
+
+    if (!account.session) {
+      h += '<div class="card"><h2>Sign in or create an account</h2>' +
+        '<p class="muted small">We email you a code, so you do not need a password. Premium and your progress belong to this email address.</p>';
+      if (account.step === 'code') {
+        h += '<p class="small">Code sent to <b>' + esc(account.email) + '</b></p>' +
+          '<input id="acCode" class="field plainfield" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" placeholder="Code from the email" aria-label="Code from the email">' +
+          '<div class="btns"><button class="btn" data-act="verify"' + (account.busy ? ' disabled' : '') + '>' + (account.busy === 'verify' ? 'Checking...' : 'Sign in') + '</button></div>' +
+          '<div class="btns"><button class="btn ghost" data-act="sendcode"' + (account.busy ? ' disabled' : '') + '>Send a new code</button><button class="btn ghost" data-act="changeemail">Other email</button></div>';
+      } else {
+        h += '<input id="acEmail" class="field plainfield" type="email" inputmode="email" autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="you@example.com" aria-label="Email address" value="' + esc(account.email) + '">' +
+          '<div class="btns"><button class="btn" data-act="sendcode"' + (account.busy ? ' disabled' : '') + '>' + (account.busy === 'send' ? 'Sending...' : 'Send me a code') + '</button></div>'
+        h += '<p class="small" style="margin-top:12px"><button class="linkbtn" data-act="havecode">I already have a code</button></p>';
+      }
+      h += '</div><div class="card"><h2>Premium &middot; ' + priceLabel() + ' once</h2><p class="muted small">One payment, no subscription.</p>' + perks() +
+        '<p class="muted small">Free: the first 15 verbs, flashcards, multiple choice and review.</p></div>';
+    } else {
+      var email = account.session.user.email;
+      h += '<div class="card"><p class="muted small">Signed in as</p><p class="acct-email">' + esc(email) + '</p>' +
+        '<span class="status ' + (account.premium ? 'ok' : '') + '">' + (account.premium ? 'Premium' : 'Free plan') + '</span>' +
+        (account.offline ? '<p class="muted small">Premium was verified earlier. Connect to the internet to refresh it.</p>' : '') + '</div>';
+      if (!account.premium) {
+        h += '<div class="card"><h2>Premium &middot; ' + priceLabel() + ' once</h2><p class="muted small">One payment, no subscription. Payment is handled by Lemon Squeezy.</p>' + perks() +
+          '<div class="btns"><button class="btn" data-act="buy"' + (account.busy ? ' disabled' : '') + '>' + (account.busy === 'buy' ? 'Opening checkout...' : 'Buy Premium') + '</button></div>' +
+          '<p class="muted small">After paying, come back to this app. If Premium does not appear, tap the button below.</p>' +
+          '<div class="btns"><button class="btn ghost" data-act="checkbuy"' + (account.busy ? ' disabled' : '') + '>' + (account.busy === 'check' ? 'Checking...' : 'Check my purchase') + '</button></div></div>';
+      } else {
+        h += '<div class="card"><h2>Thank you!</h2><p class="muted small">Everything is unlocked.</p></div>';
+      }
+      if (account.orders.length) {
+        h += '<div class="card"><h2>Your orders</h2><ul class="orders">' + account.orders.map(function (o) {
+          return '<li><span>Order ' + esc(o.order_id) + (o.test_mode ? ' (test)' : '') + '</span><span class="muted">' + esc(o.status) + '</span></li>';
+        }).join('') + '</ul></div>';
+      }
+      if (account.sync) h += '<p class="muted small">' + esc(account.sync) + '</p>';
+      var orderLine = account.orders.length ? 'Order number: ' + account.orders[0].order_id + '\n' : '';
+      h += '<div class="card"><h2>Help</h2><p class="muted small">Lost access, paid with another email, or any question? Write to us and include your order number.</p>' +
+        '<div class="btns"><a class="btn ghost" href="' + esc(supportHref(orderLine)) + '">Contact support</a></div>' +
+        '<div class="btns"><a class="btn ghost" href="' + esc(supportHref('Request: please delete my account and data.\n')) + '">Delete my account</a></div></div>' +
+        '<button class="danger" data-act="signout">Sign out</button>';
+    }
+    return h + legalLinks();
+  }
+
+  /* =====================================================
+     SESSION STATE
+     ===================================================== */
+  var S = null;               // current session or null
+  var tab = 'practise';
+  var offlineReady = false;
+
+  function newSession(mode) {
+    return { mode:mode, i:0, correct:0, total:0, points:0, run:0, bestRun:0, missed:[], finished:false };
+  }
+  function startSession(mode) {
+    if (mode === 'review' && !mistakes().length) return;
+    if (PREMIUM_MODES.indexOf(mode) >= 0 && !account.premium) { openUpgrade(); return; }
+    S = newSession(mode);
+    if (mode === 'cards') {
+      S.queue = shuffle(pick(pool(), 15).map(function (v) { return v.id; }));
+      S.initial = S.queue.length; S.resolved = 0; S.retries = {}; S.flipped = false; S.justFlipped = false;
+    } else {
+      S.qs = buildQuestions(mode);
+    }
+    render(true);
+  }
+  function startSpeak(ids) {
+    if (!account.premium) { openUpgrade(); return; }
+    var list = (ids ? ids.map(byId) : pick(pool(), 10)).filter(Boolean);
+    if (!list.length) return;
+    stopListening(true);
+    S = newSession('speak');
+    S.qs = list.map(function (v) { return { id:v.id, status:'idle', msg:'', attempts:0, passed:false, result:null }; });
+    S.single = !!ids; S.ids = ids || null; S.target = state.speakTarget;
+    render(true);
+  }
+  function nextSpeak() {
+    var q = S.qs[S.i];
+    stopListening(true);
+    S.total++;
+    if (q.passed) S.correct++; else if (S.missed.indexOf(q.id) < 0) S.missed.push(q.id);
+    if (S.i < S.qs.length - 1) { S.i++; render(true); } else { finishSession(); render(true); }
+  }
+  function finishSession() {
+    S.finished = true;
+    state.stats.sessions++;
+    save();
+  }
+  function noteResult(id, ok, pts) {
+    S.total++;
+    if (ok) { S.correct++; S.points += pts; S.run++; if (S.run > S.bestRun) S.bestRun = S.run; }
+    else { S.run = 0; if (S.missed.indexOf(id) < 0) S.missed.push(id); }
+  }
+  function answerQuestion(q, ok) {
+    q.done = true; q.correct = ok;
+    q.pts = record(q.id, ok);
+    noteResult(q.id, ok, q.pts);
+    if (!ok && S.mode === 'review' && !q.retried) {
+      var again = makeQ(byId(q.id), rand(TYPE_KINDS.concat(MC_KINDS)));
+      again.retried = true;
+      S.qs.push(again);
+    }
+  }
+
+  /* =====================================================
+     VIEWS
+     ===================================================== */
+  function viewPractise() {
+    var m = masteredCount(), total = VERBS.length, mis = mistakes();
+    var h = '<h1 class="page-title">Verbtrainer B2</h1>';
+    h += '<section class="hero" aria-label="Your progress">' +
+      '<div><p class="hero-n">' + m + '<span>/' + total + '</span></p><p class="l">verbs mastered</p></div>' +
+      '<div class="hero-r"><p class="hero-n">' + dayStreakNow() + '</p><p class="l">day streak</p></div>' +
+      '<div class="bar"><i style="width:' + (total ? Math.round(100 * m / total) : 0) + '%"></i></div></section>';
+
+    h += scopeSelect('scopeSel', state.scope, 'What do you want to practise?');
+    h += '<button class="toggle" data-act="toggleEn" aria-pressed="' + state.englishFirst + '"><span class="sw"></span>Flashcards show English first</button>';
+
+    h += '<div class="modes">';
+    h += modeRow('cards', 'Flashcards', 'Up to 15 cards per round');
+    h += modeRow('quiz', 'Multiple choice', '10 questions per round');
+    h += modeRow('type', 'Typing test', '10 questions per round', true);
+    h += modeRow('speak', 'Speaking practice', 'Say it out loud and get checked', true);
+    h += '<button class="row" data-act="start" data-mode="review"' + (mis.length ? '' : ' disabled') + '><span class="t"><strong>Review mistakes</strong><small>' +
+      (mis.length ? 'Practise the verbs you got wrong' : 'Nothing to review yet') + '</small></span>' +
+      (mis.length ? '<span class="badge-n">' + mis.length + '</span>' : '') + '<span class="chev">' + icon('chev') + '</span></button>';
+    h += '</div>';
+
+    h += '<p class="say-note">Speaking practice uses your iPhone\'s speech recognition. It needs internet, and iOS may block it in Home Screen apps. If so, open the same address in Safari.</p>';
+    h += '<h2 class="sec">Needs practice</h2>';
+    if (mis.length) {
+      h += '<p class="muted small">Answer each one correctly twice to clear it.</p><ul class="mlist">' + mis.map(function (v) {
+        return '<li><span class="de">' + esc(v.de) + '</span><span class="en">' + esc(v.en) + '</span><span class="cnt">' + vstat(v.id).w + ' wrong</span></li>';
+      }).join('') + '</ul>';
+    } else {
+      h += '<p class="muted">Verbs you answer incorrectly will collect here so you can practise them.</p>';
+    }
+
+    if (!account.premium && SB_OK) {
+      h += '<div class="upsell"><b>Free plan: 15 verbs.</b> Premium adds ' + extraCount() + ' more verbs, the typing test and speaking practice for ' + priceLabel() + ', paid once.' +
+        '<button class="btn" data-act="upgrade">See Premium</button></div>';
+    }
+    if (!isStandalone() && !state.hideInstall) {
+      h += '<div class="install"><b>Install on your iPhone.</b> In Safari tap Share, then Add to Home Screen. Practise from the new icon so your progress stays in one place.' +
+        '<button class="icon-btn" data-act="hideInstall" aria-label="Dismiss">' + icon('close') + '</button></div>';
+    }
+    h += '<p class="foot">' + (offlineReady ? 'Ready for offline use. Progress is saved on this device.' : 'Offline use is set up after the first full load.') + '</p>';
+    return h;
+  }
+  function modeRow(mode, title, sub, premium) {
+    var locked = premium && !account.premium;
+    return '<button class="row" data-act="start" data-mode="' + mode + '"><span class="t"><strong>' + title + (locked ? ' <span class="lock">' + icon('lock') + 'Premium</span>' : '') + '</strong><small>' + sub + '</small></span><span class="chev">' + icon('chev') + '</span></button>';
+  }
+  function isStandalone() {
+    try { return window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches; } catch (e) { return false; }
+  }
+
+  function entryHtml(v) {
+    var st = statusOf(v.id);
+    return '<article class="entry" data-s="' + esc(ascii((v.de + ' ' + v.en + ' ' + plain(v.ex) + ' ' + v.tr).toLowerCase())) + '"><div class="entry-head"><h3>' + esc(v.de) + '</h3><span class="entry-actions">' + sayBtn(plain(v.de), v.de) + '<button class="say" data-act="speakOne" data-id="' + v.id + '" aria-label="Practise saying ' + esc(v.de) + '">' + icon('mic') + '</button></span></div>' +
+      '<p class="en">' + esc(v.en) + '</p>' +
+      '<p class="ex">' + hl(v.ex) + ' ' + sayBtn(plain(v.ex), 'example sentence') + '</p>' +
+      '<p class="tr">' + esc(v.tr) + '</p>' +
+      '<span class="status ' + st.cls + '">' + st.text + '</span></article>';
+  }
+  var verbsScope = 'all';
+  var vsearch = '';
+  function viewVerbs() {
+    var h = '<h1 class="page-title">Verbs</h1>';
+    h += scopeSelect('verbsSel', verbsScope, 'Show');
+    h += '<input id="vsearch" class="search" type="search" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Search German or English" aria-label="Search verbs" value="' + esc(vsearch) + '">';
+    DAYS.forEach(function (d, i) {
+      var list = VERBS.filter(function (v) { return v.day === i + 1 && inScope(v, verbsScope); });
+      if (!list.length) return;
+      h += '<h2 class="daytitle" data-daytitle>Day ' + (i + 1) + ' (' + d.level + ')</h2>';
+      h += list.map(entryHtml).join('');
+    });
+    h += '<p class="nores" id="nores" hidden>No verbs found.</p>';
+    if (!account.premium && SB_OK) h += '<div class="upsell"><b>More verbs with Premium.</b> ' + extraCount() + ' more B2 and B1 verbs for ' + priceLabel() + ', paid once.<button class="btn" data-act="upgrade">See Premium</button></div>';
+    return h;
+  }
+  function applySearch() {
+    var t = ascii(norm(vsearch)), shown = 0;
+    var entries = document.querySelectorAll('.entry');
+    for (var i = 0; i < entries.length; i++) {
+      var ok = !t || entries[i].getAttribute('data-s').indexOf(t) >= 0;
+      entries[i].hidden = !ok; if (ok) shown++;
+    }
+    var titles = document.querySelectorAll('[data-daytitle]');
+    for (var j = 0; j < titles.length; j++) titles[j].hidden = !!t;
+    var nr = $('#nores'); if (nr) nr.hidden = shown > 0;
+  }
+
+  function viewProgress() {
+    var s = state.stats, tot = s.correct + s.wrong;
+    var acc = tot ? Math.round(100 * s.correct / tot) + '%' : '-';
+    var h = '<h1 class="page-title">Progress</h1><div class="stats">' +
+      stat(s.score, 'points') + stat(acc, 'accuracy') +
+      stat(s.correct, 'correct answers') + stat(s.wrong, 'incorrect answers') +
+      stat(s.streak, 'current streak (best ' + s.bestStreak + ')') + stat(dayStreakNow(), 'day streak') + '</div>';
+    if (state.speak.tries) h += '<p class="muted small" style="margin-top:12px">Speaking practice: ' + state.speak.good + ' of ' + state.speak.tries + ' attempts were good.</p>';
+    if (state.talk && state.talk.tries) h += '<p class="muted small" style="margin-top:8px">Talk: ' + state.talk.good + ' of ' + state.talk.tries + ' answers were understood.</p>';
+    h += '<h2 class="sec">Completed verbs</h2><p class="muted small">A verb counts as mastered after 3 correct answers in a row.</p>';
+    ['B2', 'B1'].forEach(function (lv) {
+      var list = VERBS.filter(function (v) { return v.level === lv; });
+      if (!list.length) return;
+      var m = list.filter(function (v) { return isMastered(v.id); }).length;
+      h += '<div class="dayrow"><div class="top"><span>' + lv + ' verbs</span><span>' + m + ' of ' + list.length + '</span></div><div class="bar"><i style="width:' + Math.round(100 * m / list.length) + '%"></i></div></div>';
+    });
+    h += '<details class="all"><summary>All verbs (' + VERBS.length + ')</summary><ul class="vtable">' + VERBS.map(function (v) {
+      var x = vstat(v.id), st = statusOf(v.id);
+      return '<li><span class="de">' + esc(v.de) + '</span><span class="sc"><b>' + x.c + '</b> / <i>' + x.w + '</i></span><span class="status ' + st.cls + '" style="margin-top:0">' + st.text + '</span></li>';
+    }).join('') + '</ul><p class="muted small" style="margin-top:8px">Green is correct, red is incorrect.</p></details>';
+    h += '<button class="danger" data-act="reset">Reset all progress</button>';
+    return h;
+  }
+  function stat(n, label) { return '<div><b>' + esc(n) + '</b><span>' + esc(label) + '</span></div>'; }
+
+  /* ---- session views ---- */
+  function sessionBar(done, total, noStats) {
+    var pct = total ? Math.round(100 * done / total) : 0;
+    return '<header class="sbar"><button class="icon-btn" data-act="close" aria-label="Close and go back">' + icon('close') + '</button>' +
+      '<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="' + total + '" aria-valuenow="' + done + '"><i style="width:' + pct + '%"></i></div>' +
+      '<span class="count">' + Math.min(done + 1, total) + '/' + total + '</span></header>' +
+      (noStats ? '' : '<div class="stline"><span>Streak <b>' + state.stats.streak + '</b></span><span>Points <b>' + state.stats.score + '</b></span></div>');
+  }
+  function gapBlock(v) {
+    return '<p class="sentence">' + blank(v.ex) + '</p><p class="hint-tr">' + esc(v.tr) + '</p>';
+  }
+
+  function viewQuestion() {
+    var q = S.qs[S.i], v = byId(q.id), isType = q.kind.indexOf('type') === 0;
+    var label = '', prompt = '';
+    switch (q.kind) {
+      case 'de-en':    label = 'What does this verb mean?';            prompt = '<p class="word">' + esc(v.de) + '</p>'; break;
+      case 'en-de':    label = 'Which German verb means this?';        prompt = '<p class="word en">' + esc(v.en) + '</p>'; break;
+      case 'gap':      label = 'Which verb fits the gap?';             prompt = gapBlock(v); break;
+      case 'type-en':  label = 'Type the German verb.';                prompt = '<p class="word en">' + esc(v.en) + '</p>'; break;
+      case 'type-gap': label = 'Type the missing verb in its basic form (infinitive).'; prompt = gapBlock(v); break;
+    }
+    var h = sessionBar(S.i, S.qs.length) + '<p class="qlabel">' + label + '</p>' + prompt;
+
+    if (!isType) {
+      h += '<div class="opts">' + q.opts.map(function (id) {
+        var o = byId(id), text = q.kind === 'de-en' ? o.en : o.de, cls = 'opt' + (q.kind === 'de-en' ? '' : ' de-opt');
+        if (q.done) cls += id === q.id ? ' correct' : (id === q.picked ? ' wrong' : ' dim');
+        return '<button class="' + cls + '" data-act="pick" data-id="' + id + '"' + (q.done ? ' disabled' : '') + '><span>' + esc(text) + '</span></button>';
+      }).join('') + '</div>';
+    } else {
+      var fcls = q.done ? (q.correct ? ' good' : ' bad') : '';
+      h += '<input id="ans" class="field' + fcls + '" type="text" inputmode="text" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="go" placeholder="Type here" aria-label="Your answer" value="' + esc(q.typed) + '"' + (q.done ? ' disabled' : '') + '>';
+      if (!q.done) {
+        var c = core(v);
+        h += '<p class="hintline">' + (q.hint ? 'Starts with "' + esc(c.charAt(0)) + '", ' + c.length + ' letters.' + (v.de !== c ? ' ("sich" is optional.)' : '') : '') + '</p>';
+        h += '<div class="btns"><button class="btn ghost" data-act="hint">Hint</button><button class="btn" data-act="check">Check</button></div>';
+      }
+    }
+
+    if (q.done) {
+      var last = S.i >= S.qs.length - 1;
+      h += '<section class="fb ' + (q.correct ? 'good' : 'bad') + '" role="status"><h3>' + (q.correct ? 'Richtig!' : 'Nicht ganz.') +
+        (q.correct ? '<span class="pts">+' + q.pts + ' points</span>' : '') + '</h3>';
+      if (isType && !q.correct && q.typed.trim()) h += '<p class="line muted">You typed: ' + esc(q.typed.trim()) + '</p>';
+      if (q.note) h += '<p class="line small">' + esc(q.note) + '</p>';
+      h += '<p class="line"><span class="de">' + esc(v.de) + '</span> means ' + esc(v.en) + '.</p>' +
+        '<p class="ex">' + hl(v.ex) + ' ' + sayBtn(plain(v.ex), 'example sentence') + '</p><p class="tr">' + esc(v.tr) + '</p>' +
+        '<button class="btn" data-act="next">' + (last ? 'See results' : 'Next question') + '</button></section>';
+    }
+    return h;
+  }
+
+  function viewSpeak() {
+    var q = S.qs[S.i], v = byId(q.id), sentence = S.target === 'sentence';
+    var h = sessionBar(S.i, S.qs.length, true);
+    h += '<div class="mini-seg" role="group" aria-label="What to say">' +
+      '<button data-act="speakTarget" data-v="word" aria-pressed="' + !sentence + '">Say the word</button>' +
+      '<button data-act="speakTarget" data-v="sentence" aria-pressed="' + sentence + '">Say the sentence</button></div>';
+    h += '<p class="qlabel">' + esc(v.en) + '</p>';
+
+    var res = q.status === 'result' ? q.result : null;
+    function coloured(marks) {
+      return marks.map(function (m) { return '<span class="w ' + m.st + '">' + esc(m.w) + '</span>'; }).join(' ');
+    }
+    if (sentence) {
+      h += '<p class="sentence spoken">' + (res ? coloured(res.marks) : hl(v.ex)) + '</p><p class="hint-tr">' + esc(v.tr) + '</p>';
+    } else {
+      h += '<p class="word spoken">' + (res ? coloured([{ w:v.de, st:res.marks[0].st }]) : esc(v.de)) + '</p>';
+    }
+    var say = sentence ? plain(v.ex) : plain(v.de);
+
+    if (q.status === 'idle' || q.status === 'listening') {
+      var live = q.status === 'listening';
+      h += '<button class="mic' + (live ? ' live' : '') + '" data-act="mic" aria-label="' + (live ? 'Stop listening' : 'Start speaking') + '">' + icon('mic') + '</button>' +
+        '<p class="miclabel">' + (live ? 'Listening... tap to stop' : 'Tap the microphone and say it') + '</p>' +
+        '<div class="btns"><button class="btn ghost" data-act="say" data-say="' + esc(say) + '">Hear it first</button></div>';
+      h += '<p class="say-note">Speech recognition is done by your iPhone and needs an internet connection.</p>';
+    } else if (q.status === 'error') {
+      h += '<section class="fb bad" role="status"><h3>Could not listen</h3><p class="line">' + esc(q.msg) + '</p>' +
+        '<div class="btns"><button class="btn ghost" data-act="again">Try again</button><button class="btn" data-act="speaknext">' + (S.i >= S.qs.length - 1 ? 'Finish' : 'Skip') + '</button></div></section>';
+    } else {
+      var r = q.result, last = S.i >= S.qs.length - 1;
+      var title = r.perfect ? 'Sehr gut!' : (r.pass ? 'Fast richtig.' : 'Nicht ganz.');
+      h += '<section class="fb ' + (r.pass ? 'good' : 'bad') + '" role="status"><h3>' + title + '</h3>' +
+        '<p class="line muted">I heard: ' + (r.heard ? esc(r.heard) : '(nothing)') + '</p>';
+      if (!r.pass) h += '<p class="line small">Red words were not recognised. Listen to the example, then try again.</p>';
+      else if (!r.perfect) h += '<p class="line small">Yellow means close. Check the ending or the stress.</p>';
+      h += '<div class="btns"><button class="btn ghost" data-act="say" data-say="' + esc(say) + '">Hear it</button><button class="btn ghost" data-act="again">Try again</button></div>' +
+        '<button class="btn" data-act="speaknext">' + (last ? 'See results' : 'Next') + '</button></section>';
+    }
+    return h;
+  }
+
+  function viewCards() {
+    var id = S.queue[0], v = byId(id);
+    var h = sessionBar(S.resolved, S.initial);
+    var front = state.englishFirst
+      ? '<p class="word en">' + esc(v.en) + '</p><p class="tap">Tap to see the German verb</p>'
+      : '<p class="word">' + esc(v.de) + '</p><p class="tap">Tap to see the meaning</p>';
+    var back = '<p class="word">' + esc(v.de) + '</p><p class="en-line">' + esc(v.en) + '</p>' +
+      '<p class="ex">' + hl(v.ex) + '</p><p class="tr">' + esc(v.tr) + '</p>' +
+      '<div class="say-row">' + sayBtn(plain(v.de), v.de) + sayBtn(plain(v.ex), 'example sentence') + '</div>';
+    h += '<div class="flash' + (S.justFlipped ? ' turned' : '') + '" role="button" tabindex="0" data-act="flip" aria-label="Flashcard. Tap to turn over.">' + (S.flipped ? back : front) + '</div>';
+    if (!S.flipped) {
+      h += '<div class="btns"><button class="btn" data-act="flip">Show answer</button></div>';
+    } else {
+      h += '<div class="btns"><button class="btn ghost" data-act="again">Again</button><button class="btn" data-act="known">Got it</button></div>';
+    }
+    S.justFlipped = false;
+    return h;
+  }
+
+  function viewSummary() {
+    var pct = S.total ? Math.round(100 * S.correct / S.total) : 0;
+    var title = pct >= 90 ? 'Sehr gut!' : (pct >= 60 ? 'Gut gemacht!' : 'Weiter üben!');
+    var speaking = S.mode === 'speak';
+    var h = '<section class="summary"><h2>' + title + '</h2><p class="big">' + S.correct + ' / ' + S.total + '</p><p class="muted">' + (speaking ? 'said well enough' : 'correct answers') + '</p>';
+    if (!speaking) h += '<div class="facts"><div><b>+' + S.points + '</b><span>points</span></div><div><b>' + S.bestRun + '</b><span>best streak</span></div></div>';
+    if (S.missed.length) {
+      h += '<div class="missed"><h2 class="sec" style="margin-top:12px">To practise again</h2><ul class="mlist">' + S.missed.map(function (id) {
+        var v = byId(id); return '<li><span class="de">' + esc(v.de) + '</span><span class="en">' + esc(v.en) + '</span></li>';
+      }).join('') + '</ul></div>';
+    }
+    h += '<div class="stack">';
+    if (speaking) {
+      h += '<button class="btn" data-act="speakagain">' + (S.single ? 'Try again' : 'Play again') + '</button>';
+    } else {
+      if (S.missed.length && S.mode !== 'review' && mistakes().length) h += '<button class="btn" data-act="start" data-mode="review">Review mistakes</button>';
+      var canAgain = S.mode !== 'review' || mistakes().length;
+      if (canAgain) h += '<button class="btn' + (S.missed.length && S.mode !== 'review' ? ' ghost' : '') + '" data-act="start" data-mode="' + S.mode + '">Play again</button>';
+    }
+    h += '<button class="btn ghost" data-act="close">Back to Practise</button></div></section>';
+    return h;
+  }
+
+  /* =====================================================
+     PICTURE WORDS  (photos come from Wikipedia when you are online; emoji are shown offline)
+     ===================================================== */
+  var PHOTO = {};          // Wikipedia page title -> photo address, or false when there is none
+  var P = null;            // current picture session or null
+  var wscope = 'all';
+  function photoUrl(title) {
+    if (Object.prototype.hasOwnProperty.call(PHOTO, title)) return Promise.resolve(PHOTO[title]);
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return Promise.resolve(null);
+    return fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title.replace(/ /g, '_')), { headers:{ Accept:'application/json' } })
+      .then(function (r) { if (!r.ok) { if (r.status === 404) PHOTO[title] = false; return null; } return r.json(); })
+      .then(function (j) {
+        if (!j) return PHOTO[title] === false ? false : null;
+        var u = j.thumbnail && j.thumbnail.source;
+        u = (typeof u === 'string' && /^https:\/\/upload\.wikimedia\.org\//.test(u)) ? u : false;
+        PHOTO[title] = u; return u;
+      }).catch(function () { return null; });
+  }
+  function hydratePhotos() {
+    var els = document.querySelectorAll('.pic[data-title]');
+    Array.prototype.forEach.call(els, function (el) {
+      var t = el.getAttribute('data-title');
+      photoUrl(t).then(function (u) {
+        if (!u || !el.isConnected || el.getAttribute('data-title') !== t || el.querySelector('img')) return;
+        var im = new Image();
+        im.alt = ''; im.decoding = 'async'; im.referrerPolicy = 'no-referrer';
+        im.onload = function () { if (el.isConnected && !el.querySelector('img')) { el.appendChild(im); el.classList.add('has'); } };
+        im.src = u;
+      });
+    });
+  }
+  function picHtml(w) {
+    return '<div class="pic" data-title="' + esc(w.title) + '" role="img" aria-label="Picture"><span class="emo" aria-hidden="true">' + esc(w.emo) + '</span></div>';
+  }
+  function artHtml(w) { return '<span class="art a-' + esc(w.art) + '">' + esc(w.art) + '</span> '; }
+  function wfull(w) { return w.art + ' ' + w.de; }
+  function pstat(id) { return state.pics[id] || { c:0, w:0, run:0 }; }
+  function precord(id, ok) {
+    touchDay();
+    var x = state.pics[id] || (state.pics[id] = { c:0, w:0, run:0 });
+    if (ok) { x.c++; x.run++; } else { x.w++; x.run = 0; }
+    save();
+  }
+  function wLearned(id) { return pstat(id).run >= 3; }
+  function wordPool() {
+    var l = PW_LIST;
+    if (wscope !== 'all') { var f = l.filter(function (w) { return w.cat === wscope; }); if (f.length) return f; }
+    return l.slice();
+  }
+  function wpick(list, n) {
+    function rank(w) { var x = pstat(w.id); return (x.w > 0 && x.run < 2) ? 0 : (x.run >= 3 ? 2 : 1); }
+    return shuffle(list.slice()).sort(function (a, b) { return rank(a) - rank(b); }).slice(0, n);
+  }
+  function makeWQ(w, kind) {
+    var q = { id:w.id, kind:kind, done:false, correct:false, picked:null, typed:'', note:'' };
+    if (kind !== 'type') {
+      var same = shuffle(PW_LIST.filter(function (x) { return x.id !== w.id && x.cat === w.cat; }));
+      var rest = shuffle(PW_LIST.filter(function (x) { return x.id !== w.id && x.cat !== w.cat; }));
+      q.opts = shuffle([w].concat(same.concat(rest).slice(0, 3))).map(function (x) { return x.id; });
+    }
+    return q;
+  }
+  function startPics(mode) {
+    if (mode === 'ptype' && !account.premium) { openUpgrade(); return; }
+    var pool = wordPool();
+    if (pool.length < 4) return;
+    P = { mode:mode, i:0, correct:0, total:0, missed:[], finished:false };
+    if (mode === 'pcards') {
+      P.queue = shuffle(wpick(pool, 12).map(function (w) { return w.id; }));
+      P.initial = P.queue.length; P.resolved = 0; P.retries = {}; P.flipped = false;
+    } else {
+      var order = wpick(pool, 10);
+      while (order.length < 10) order = order.concat(shuffle(pool.slice()));
+      order = order.slice(0, 10);
+      P.qs = order.map(function (w, i) { return makeWQ(w, mode === 'ptype' ? 'type' : (i % 3 === 2 ? 'en' : 'pic')); });
+    }
+    render(true);
+  }
+  function pNoteResult(id, ok) {
+    P.total++;
+    if (ok) P.correct++; else if (P.missed.indexOf(id) < 0) P.missed.push(id);
+  }
+  function pAnswer(q, ok) { q.done = true; q.correct = ok; precord(q.id, ok); pNoteResult(q.id, ok); }
+  function pFinish() { P.finished = true; state.stats.sessions++; save(); }
+  function checkWord(w, input) {
+    var u = ascii(norm(input)), full = ascii(norm(wfull(w))), bare = ascii(norm(w.de));
+    if (u === full) return { ok:true, note:'' };
+    if (u === bare) return { ok:false, note:'Nearly. German nouns need their article: ' + wfull(w) + '.' };
+    return { ok:false, note:'' };
+  }
+
+  function viewWords() {
+    if (wscope !== 'all' && (typeof wscope !== 'number' || !WORD_CATS[wscope])) wscope = 'all';
+    var total = PW_LIST.length, learned = PW_LIST.filter(function (w) { return wLearned(w.id); }).length;
+    var h = '<h1 class="page-title">Picture words</h1>';
+    h += '<section class="hero" aria-label="Your picture-word progress"><div><p class="hero-n">' + learned + '<span>/' + total + '</span></p><p class="l">words learned</p></div>' +
+      '<div class="bar"><i style="width:' + (total ? Math.round(100 * learned / total) : 0) + '%"></i></div></section>';
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) h += '<div class="notice">You are offline: emoji are shown instead of photos. Photos appear when you are online.</div>';
+    var sel = '<label class="selwrap"><span class="lbl">Category</span><select class="select" id="wordsSel" data-sel="wordsSel"><option value="all"' + (wscope === 'all' ? ' selected' : '') + '>All categories (' + total + ' words)</option>';
+    WORD_CATS.forEach(function (c, i) { sel += '<option value="' + i + '"' + (wscope === i ? ' selected' : '') + '>' + esc(c.cat) + ' (' + c.items.length + ')</option>'; });
+    h += sel + '</select></label>';
+    h += '<div class="modes">';
+    h += '<button class="row" data-act="wstart" data-mode="pcards"><span class="t"><strong>Picture flashcards</strong><small>See the picture, then turn the card</small></span><span class="chev">' + icon('chev') + '</span></button>';
+    h += '<button class="row" data-act="wstart" data-mode="pquiz"><span class="t"><strong>Picture quiz</strong><small>10 questions: which word is it?</small></span><span class="chev">' + icon('chev') + '</span></button>';
+    h += '<button class="row" data-act="wstart" data-mode="ptype"><span class="t"><strong>Picture typing' + (account.premium ? '' : ' <span class="lock">' + icon('lock') + 'Premium</span>') + '</strong><small>Type the word with der, die or das</small></span><span class="chev">' + icon('chev') + '</span></button>';
+    h += '</div>';
+    if (wscope === 'all') {
+      h += '<h2 class="sec">Categories</h2><ul class="catlist">' + WORD_CATS.map(function (c, i) {
+        var n = c.items.filter(function (r) { return PW[slug(r[1])] && wLearned(slug(r[1])); }).length;
+        return '<li><button class="row" data-act="wopen" data-i="' + i + '"><span class="catemo" aria-hidden="true">' + esc(c.emo) + '</span><span class="t"><strong>' + esc(c.cat) + '</strong><small>' + esc(c.en) + ' &middot; ' + n + ' of ' + c.items.length + ' learned</small></span><span class="chev">' + icon('chev') + '</span></button></li>';
+      }).join('') + '</ul>';
+    } else {
+      var c = WORD_CATS[wscope];
+      h += '<h2 class="sec">' + esc(c.cat) + ' <span class="muted small">' + esc(c.en) + '</span></h2><div class="wgrid">' + PW_LIST.filter(function (w) { return w.cat === wscope; }).map(function (w) {
+        return '<article class="wcard">' + picHtml(w) + '<p class="wname">' + artHtml(w) + '<span class="de">' + esc(w.de) + '</span></p><p class="muted small">' + esc(w.en) + ' ' + sayBtn(wfull(w), wfull(w)) + '</p></article>';
+      }).join('') + '</div>';
+    }
+    if (!account.premium && SB_OK) h += '<div class="upsell"><b>Free: the Fruit category.</b> Premium adds ' + (WORD_CATS.length > 1 ? '' : '11 more categories with about ') + wordExtra() + ' more words and picture typing for ' + priceLabel() + ', paid once.<button class="btn" data-act="upgrade">See Premium</button></div>';
+    h += '<p class="foot">Photos: Wikipedia and Wikimedia Commons (various licences), loaded when you are online. Your device connects to Wikipedia to load them.</p>';
+    return h;
+  }
+  function viewPCards() {
+    var id = P.queue[0], w = PW[id];
+    var h = sessionBar(P.resolved, P.initial, true);
+    var front = picHtml(w) + '<p class="tap">What is this in German? Tap to turn.</p>';
+    var back = picHtml(w) + '<p class="word" style="margin-top:14px">' + artHtml(w) + esc(w.de) + '</p><p class="en-line">' + esc(w.en) + '</p><div class="say-row">' + sayBtn(wfull(w), wfull(w)) + '</div>';
+    h += '<div class="flash pflash" role="button" tabindex="0" data-act="wflip" aria-label="Picture flashcard. Tap to turn over.">' + (P.flipped ? back : front) + '</div>';
+    if (!P.flipped) h += '<div class="btns"><button class="btn" data-act="wflip">Show answer</button></div>';
+    else h += '<div class="btns"><button class="btn ghost" data-act="wagain">Again</button><button class="btn" data-act="wknown">Got it</button></div>';
+    return h;
+  }
+  function viewPQ() {
+    var q = P.qs[P.i], w = PW[q.id], isType = q.kind === 'type';
+    var h = sessionBar(P.i, P.qs.length, true);
+    h += '<p class="qlabel">' + (q.kind === 'en' ? 'Which German word means this?' : (isType ? 'Type the German word with its article (der, die or das).' : 'What is this called in German?')) + '</p>';
+    h += q.kind === 'en' ? '<p class="word en">' + esc(w.en) + '</p>' : picHtml(w);
+    if (!isType) {
+      h += '<div class="opts" style="margin-top:16px">' + q.opts.map(function (id) {
+        var o = PW[id], cls = 'opt de-opt';
+        if (q.done) cls += id === q.id ? ' correct' : (id === q.picked ? ' wrong' : ' dim');
+        return '<button class="' + cls + '" data-act="wpickans" data-id="' + id + '"' + (q.done ? ' disabled' : '') + '><span>' + esc(wfull(o)) + '</span></button>';
+      }).join('') + '</div>';
+    } else {
+      h += '<div style="margin-top:16px"><input id="wans" class="field' + (q.done ? (q.correct ? ' good' : ' bad') : '') + '" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" placeholder="for example: der Apfel" aria-label="Your answer" value="' + esc(q.typed) + '"' + (q.done ? ' disabled' : '') + '>' +
+        (q.done ? '' : '<div class="btns"><button class="btn" data-act="wcheck">Check</button></div>') + '</div>';
+    }
+    if (q.done) {
+      h += '<div class="fb ' + (q.correct ? 'good' : 'bad') + '"><h3>' + (q.correct ? 'Richtig!' : 'Not quite') + '</h3>' +
+        '<p class="line"><span class="de">' + artHtml(w) + esc(w.de) + '</span> ' + sayBtn(wfull(w), wfull(w)) + '</p><p class="tr" style="font-style:normal">' + esc(w.en) + '</p>' +
+        (q.note ? '<p class="tr">' + esc(q.note) + '</p>' : '') +
+        '<button class="btn" data-act="wnext">' + (P.i < P.qs.length - 1 ? 'Next' : 'See result') + '</button></div>';
+    }
+    return h;
+  }
+  function viewPSummary() {
+    var pct = P.total ? Math.round(100 * P.correct / P.total) : 0;
+    var h = '<section class="summary"><h2>' + (pct >= 90 ? 'Sehr gut!' : (pct >= 60 ? 'Gut gemacht!' : 'Weiter üben!')) + '</h2><p class="big">' + P.correct + ' / ' + P.total + '</p><p class="muted">correct</p>';
+    if (P.missed.length) {
+      h += '<div class="missed"><h2 class="sec" style="margin-top:12px">To practise again</h2><ul class="mlist">' + P.missed.map(function (id) {
+        var w = PW[id]; return w ? '<li><span class="de">' + esc(wfull(w)) + '</span><span class="en">' + esc(w.en) + '</span></li>' : '';
+      }).join('') + '</ul></div>';
+    }
+    return h + '<div class="stack"><button class="btn" data-act="wstart" data-mode="' + P.mode + '">Play again</button><button class="btn ghost" data-act="close">Back to Picture words</button></div></section>';
+  }
+  function viewPic() { return P.finished ? viewPSummary() : (P.mode === 'pcards' ? viewPCards() : viewPQ()); }
+  function doWCheck() {
+    var q = P && P.qs && P.qs[P.i]; if (!q || q.done || q.kind !== 'type') return;
+    var input = $('#wans'); if (!input) return;
+    if (!input.value.trim()) { input.focus(); return; }
+    q.typed = input.value;
+    var r = checkWord(PW[q.id], input.value); q.note = r.note;
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    pAnswer(q, r.ok); render(); scrollToFeedback();
+  }
+
+  /* =====================================================
+     TALK  (scripted conversations: the partner speaks, you answer out loud)
+     ===================================================== */
+  var TALK = [{"id": "kennenlernen", "level": "A1", "title": "Sich vorstellen", "en": "Introduce yourself", "emo": "👋", "who": "Anna", "setting": "You meet Anna at a language course.", "turns": [["Hallo! Ich bin Anna. Wie heißt du?", "Hello! I'm Anna. What's your name?", "Say your name.", ["Ich heiße {Abid}.", "Mein Name ist {Abid}.", "Hallo Anna, ich bin {Abid}."]], ["Freut mich! Woher kommst du?", "Nice to meet you! Where are you from?", "Say which country you come from.", ["Ich komme aus {Indien}.", "Ich komme aus {Pakistan}."]], ["Und wo wohnst du jetzt?", "And where do you live now?", "Say which city you live in.", ["Ich wohne in {Berlin}.", "Ich wohne jetzt in {Berlin}."]], ["Was machst du beruflich?", "What do you do for a living?", "Say what your job is or that you study.", ["Ich bin {Student}.", "Ich arbeite als {Zahnarzt}.", "Ich studiere {Medizin}."]], ["Sehr interessant! Sprichst du schon gut Deutsch?", "Very interesting! Do you already speak German well?", "Say you speak a little German and are learning.", ["Ich spreche ein bisschen Deutsch.", "Ich lerne Deutsch.", "Ja, ich lerne jeden Tag Deutsch."]], ["Das klingt gut. Ich muss jetzt leider gehen. Tschüss!", "That sounds good. Unfortunately I have to go now. Bye!", "Say goodbye.", ["Tschüss!", "Auf Wiedersehen!", "Tschüss, bis bald!"]]]}, {"id": "cafe", "level": "A1", "title": "Im Café", "en": "Ordering in a café", "emo": "☕", "who": "Herr Weber", "setting": "You are in a café. Herr Weber is the waiter.", "turns": [["Guten Tag! Was möchten Sie trinken?", "Hello! What would you like to drink?", "Order a coffee.", ["Ich möchte einen Kaffee, bitte.", "Einen Kaffee, bitte.", "Ich hätte gern einen Kaffee."]], ["Gern. Mit Milch und Zucker?", "Gladly. With milk and sugar?", "Say with milk, without sugar.", ["Mit Milch, bitte.", "Mit Milch, aber ohne Zucker.", "Ohne Zucker, bitte."]], ["Möchten Sie auch etwas essen? Wir haben frischen Kuchen.", "Would you like something to eat too? We have fresh cake.", "Order a piece of cake, or say no thanks.", ["Ja, ein Stück Kuchen, bitte.", "Ja, gern. Ein Stück Apfelkuchen, bitte.", "Nein, danke."]], ["Das macht dann vier Euro fünfzig.", "That comes to four euros fifty.", "Say you want to pay by card, or hand over the money.", ["Kann ich mit Karte bezahlen?", "Hier, bitte.", "Stimmt so."]], ["Mit Karte geht natürlich auch. Vielen Dank und einen schönen Tag!", "Paying by card is fine too. Thank you and have a nice day!", "Say thanks, same to you.", ["Danke, gleichfalls!", "Danke, Ihnen auch!", "Vielen Dank, tschüss!"]]]}, {"id": "weg", "level": "A1", "title": "Nach dem Weg fragen", "en": "Asking for directions", "emo": "🧭", "who": "Eine Passantin", "setting": "You are lost in the city and ask a passer-by.", "turns": [["Hallo! Brauchen Sie Hilfe?", "Hello! Do you need help?", "Ask where the station is.", ["Ja, wo ist der Bahnhof, bitte?", "Entschuldigung, wo ist der Bahnhof?", "Wo ist der Bahnhof, bitte?"]], ["Gehen Sie geradeaus bis zur Ampel und dann links.", "Go straight to the traffic light, then left.", "Repeat the directions to check.", ["Geradeaus bis zur Ampel und dann links.", "Bis zur Ampel und dann links, richtig?", "Okay, danke!"]], ["Genau! Danach sehen Sie schon den Bahnhof auf der rechten Seite.", "Exactly! After that you'll already see the station on the right.", "Ask if it is far.", ["Ist es weit von hier?", "Wie weit ist es?", "Ist das weit?"]], ["Nein, nur fünf Minuten zu Fuß.", "No, only five minutes on foot.", "Thank them for their help.", ["Vielen Dank für Ihre Hilfe!", "Danke schön!", "Danke, das ist nett."]], ["Gern geschehen! Schönen Tag noch!", "You're welcome! Have a nice day!", "Say goodbye.", ["Danke, Ihnen auch!", "Auf Wiedersehen!", "Tschüss!"]]]}, {"id": "baeckerei", "level": "A2", "title": "In der Bäckerei", "en": "At the bakery", "emo": "🥖", "who": "Die Verkäuferin", "setting": "You buy bread rolls in a bakery.", "turns": [["Guten Morgen! Was darf es sein?", "Good morning! What can I get you?", "Ask for four bread rolls.", ["Ich hätte gern vier Brötchen, bitte.", "Vier Brötchen, bitte.", "Ich möchte vier Brötchen."]], ["Sonst noch etwas?", "Anything else?", "Ask for a loaf of bread, or say that's all.", ["Ja, ein Brot, bitte.", "Ja, ein Vollkornbrot, bitte.", "Nein danke, das ist alles."]], ["Möchten Sie das Brot geschnitten haben?", "Would you like the bread sliced?", "Say yes or no.", ["Ja, bitte.", "Ja, geschnitten, bitte.", "Nein, ungeschnitten, bitte."]], ["Das macht zusammen sechs Euro zwanzig.", "That comes to six euros twenty together.", "Pay with ten euros, or ask to pay by card.", ["Hier sind zehn Euro.", "Bitte, hier sind zehn Euro.", "Kann ich mit Karte bezahlen?"]], ["Und vier Euro achtzig zurück. Danke und einen schönen Tag!", "And four euros eighty back. Thanks and have a nice day!", "Say thanks, same to you.", ["Danke, Ihnen auch!", "Danke, tschüss!"]]]}, {"id": "freunde", "level": "A2", "title": "Sich verabreden", "en": "Making plans with a friend", "emo": "🎬", "who": "Lena", "setting": "Your friend Lena calls you.", "turns": [["Hallo! Hast du am Samstag Zeit? Wir wollen ins Kino gehen.", "Hi! Do you have time on Saturday? We want to go to the cinema.", "Say yes and ask which film.", ["Ja, gern. Welchen Film wollt ihr sehen?", "Ja, ich habe Zeit.", "Am Samstag habe ich leider keine Zeit."]], ["Wir wollen die neue Komödie sehen. Der Film beginnt um acht.", "We want to see the new comedy. The film starts at eight.", "Say that sounds good and ask where to meet.", ["Das klingt gut. Wo treffen wir uns?", "Um acht passt gut. Wo treffen wir uns?", "Treffen wir uns vor dem Kino?"]], ["Wir treffen uns um halb acht vor dem Kino. Passt das?", "We meet at half past seven in front of the cinema. Does that suit you?", "Say that suits you.", ["Ja, das passt gut.", "Ja, bis dann!", "Perfekt, ich freue mich!"]], ["Super! Bis Samstag.", "Great! See you Saturday.", "Say goodbye.", ["Bis Samstag, tschüss!", "Tschüss, bis dann!"]]]}, {"id": "arzttermin", "level": "A2", "title": "Arzttermin am Telefon", "en": "Booking a doctor appointment by phone", "emo": "📞", "who": "Praxis Dr. Schmidt", "setting": "You call a doctor's practice.", "turns": [["Praxis Dr. Schmidt, guten Tag. Wie kann ich Ihnen helfen?", "Dr. Schmidt's practice, hello. How can I help you?", "Say you would like an appointment.", ["Guten Tag, ich möchte einen Termin vereinbaren.", "Ich hätte gern einen Termin.", "Ich brauche einen Termin, bitte."]], ["Worum geht es denn?", "What is it about?", "Say you have had toothache for two days.", ["Ich habe seit zwei Tagen Zahnschmerzen.", "Ich habe seit gestern Kopfschmerzen.", "Ich habe starke Schmerzen."]], ["Das klingt unangenehm. Können Sie morgen um zehn Uhr kommen?", "That sounds unpleasant. Can you come tomorrow at ten?", "Say that suits you.", ["Ja, das passt gut.", "Morgen um zehn Uhr passt.", "Leider kann ich morgen nicht."]], ["Gut. Wie ist Ihr Name, bitte?", "Good. What is your name, please?", "Say your name.", ["Mein Name ist {Abid}.", "Ich heiße {Abid}."]], ["Danke. Bitte bringen Sie Ihre Versichertenkarte mit.", "Thanks. Please bring your insurance card.", "Say you will.", ["Ja, mache ich.", "Alles klar, danke.", "Okay, vielen Dank."]], ["Dann bis morgen. Auf Wiederhören!", "See you tomorrow then. Goodbye (on the phone)!", "Say goodbye on the phone.", ["Auf Wiederhören!", "Bis morgen, auf Wiederhören!"]]]}, {"id": "arzt", "level": "B1", "title": "Beim Arzt", "en": "At the doctor", "emo": "🩺", "who": "Dr. Keller", "setting": "You visit Dr. Keller because you feel ill.", "turns": [["Guten Tag. Was führt Sie zu mir?", "Hello. What brings you to me?", "Say you have had fever and a cough for three days.", ["Ich habe seit drei Tagen Fieber und Husten.", "Seit drei Tagen habe ich Husten und Fieber.", "Ich fühle mich seit Tagen krank."]], ["Haben Sie auch Schmerzen?", "Do you also have pain?", "Say your throat hurts.", ["Ja, mein Hals tut weh.", "Ja, ich habe Halsschmerzen.", "Ja, mir tut der Hals weh."]], ["Nehmen Sie regelmäßig Medikamente?", "Do you take medication regularly?", "Say no, or that you take tablets.", ["Nein, ich nehme keine Medikamente.", "Nur Vitamintabletten.", "Ja, ich nehme Tabletten gegen Bluthochdruck."]], ["Das ist eine Erkältung. Ich verschreibe Ihnen ein Medikament.", "It's a cold. I'll prescribe you a medicine.", "Ask how often to take it.", ["Wie oft muss ich es nehmen?", "Wie soll ich das Medikament einnehmen?", "Muss ich zu Hause bleiben?"]], ["Dreimal täglich nach dem Essen. Und bleiben Sie bitte drei Tage zu Hause.", "Three times a day after meals. And please stay at home for three days.", "Say okay, and ask for a sick note.", ["Alles klar, vielen Dank.", "Okay, ich bleibe zu Hause.", "Bekomme ich eine Krankschreibung?"]], ["Natürlich. Gute Besserung!", "Of course. Get well soon!", "Thank them and say goodbye.", ["Danke, auf Wiedersehen!", "Vielen Dank, auf Wiedersehen!"]]]}, {"id": "restaurant", "level": "B1", "title": "Im Restaurant reklamieren", "en": "Complaining politely in a restaurant", "emo": "🍲", "who": "Der Kellner", "setting": "Your soup is cold.", "turns": [["Entschuldigung, ist alles in Ordnung mit dem Essen?", "Excuse me, is everything all right with the food?", "Say the soup is cold.", ["Leider nicht, die Suppe ist kalt.", "Nein, die Suppe ist leider kalt.", "Die Suppe ist nicht warm genug."]], ["Oh, das tut mir leid. Soll ich sie aufwärmen lassen?", "Oh, I'm sorry. Should I have it warmed up?", "Ask for a new soup.", ["Bringen Sie mir bitte eine neue Suppe.", "Ja, bitte, oder bringen Sie eine neue.", "Nein danke, ich möchte lieber etwas anderes."]], ["Selbstverständlich. Möchten Sie etwas anderes bestellen?", "Of course. Would you like to order something else?", "Say you'll take the salad instead.", ["Ich nehme stattdessen den Salat.", "Dann nehme ich lieber den Salat.", "Ich hätte gern das Gericht des Tages."]], ["Sehr gern. Ich bringe Ihnen auch ein Getränk aufs Haus.", "Gladly. I'll also bring you a drink on the house.", "Thank them.", ["Das ist sehr nett, vielen Dank.", "Vielen Dank, das ist freundlich."]], ["Gern geschehen. Guten Appetit!", "You're welcome. Enjoy your meal!", "Say thank you.", ["Danke schön!", "Vielen Dank!"]]]}, {"id": "bahn", "level": "B1", "title": "Zugauskunft", "en": "At the train information desk", "emo": "🚆", "who": "Die Mitarbeiterin", "setting": "Your train was cancelled.", "turns": [["Guten Tag, kann ich Ihnen helfen?", "Hello, can I help you?", "Say your train to Munich was cancelled.", ["Ja, mein Zug nach München ist ausgefallen.", "Ich habe den Zug nach München verpasst.", "Wann fährt der nächste Zug nach München?"]], ["Das tut mir leid. Der nächste Zug fährt um 15:40 Uhr von Gleis sieben.", "I'm sorry. The next train leaves at 3:40 pm from platform seven.", "Ask whether you have to change trains.", ["Muss ich umsteigen?", "Fährt der Zug direkt?", "Kann ich mit meiner Fahrkarte einsteigen?"]], ["Sie müssen in Nürnberg umsteigen. Ihre Fahrkarte bleibt gültig.", "You have to change in Nuremberg. Your ticket stays valid.", "Ask how long the journey takes.", ["Wie lange dauert die Fahrt?", "Wann komme ich in München an?"]], ["Etwa drei Stunden. Sie kommen um 18:45 Uhr an.", "About three hours. You arrive at 6:45 pm.", "Thank them for the information.", ["Vielen Dank für die Auskunft.", "Danke, das hilft mir sehr."]], ["Gern. Gute Reise!", "You're welcome. Have a good trip!", "Say goodbye.", ["Danke, auf Wiedersehen!", "Tschüss!"]]]}, {"id": "bewerbung", "level": "B1", "title": "Vorstellungsgespräch", "en": "Job interview", "emo": "💼", "who": "Frau Hoffmann", "setting": "A short job interview.", "turns": [["Guten Tag, nehmen Sie bitte Platz. Erzählen Sie mir etwas über sich.", "Hello, please take a seat. Tell me something about yourself.", "Say what you studied and how long you have worked.", ["Ich habe {Medizin} studiert und arbeite seit zwei Jahren als {Arzt}.", "Ich habe {Informatik} studiert und arbeite seit drei Jahren in diesem Bereich.", "Ich komme aus {Indien} und lebe seit zwei Jahren in Deutschland."]], ["Warum interessieren Sie sich für diese Stelle?", "Why are you interested in this job?", "Say the job fits your training.", ["Die Stelle passt sehr gut zu meiner Ausbildung.", "Ich möchte mich weiterentwickeln.", "Ich suche eine neue Herausforderung."]], ["Was sind Ihre größten Stärken?", "What are your greatest strengths?", "Say you work well in a team and are reliable.", ["Ich arbeite gern im Team und bin sehr zuverlässig.", "Ich bin zuverlässig und lerne schnell.", "Meine Stärke ist, dass ich genau arbeite."]], ["Und wie gut sind Ihre Deutschkenntnisse?", "And how good is your German?", "Describe your German level.", ["Ich spreche Deutsch auf dem Niveau B2.", "Ich lerne täglich und verbessere mich ständig.", "Ich kann mich im Alltag gut verständigen."]], ["Wann könnten Sie bei uns anfangen?", "When could you start with us?", "Say when you could start.", ["Ich könnte sofort anfangen.", "Ich könnte in einem Monat anfangen.", "Ich habe eine Kündigungsfrist von drei Monaten."]], ["Vielen Dank für das Gespräch. Wir melden uns nächste Woche bei Ihnen.", "Thank you for the conversation. We'll get back to you next week.", "Thank them politely.", ["Vielen Dank, ich freue mich auf Ihre Antwort.", "Danke, auf Wiedersehen!"]]]}, {"id": "homeoffice", "level": "B2", "title": "Meinung zum Homeoffice", "en": "Giving your opinion on working from home", "emo": "🏠", "who": "Markus", "setting": "A colleague asks for your opinion.", "turns": [["Was hältst du eigentlich vom Homeoffice? Ich bin da noch unentschlossen.", "What do you actually think about working from home? I'm still undecided.", "Give your opinion.", ["Meiner Meinung nach hat Homeoffice große Vorteile.", "Ich finde, dass man zu Hause konzentrierter arbeiten kann.", "Ich halte es für eine gute Lösung."]], ["Aber geht dabei nicht der Kontakt zu den Kollegen verloren?", "But doesn't contact with colleagues get lost?", "Partly agree and name a solution.", ["Das stimmt, aber man kann Videokonferenzen nutzen.", "Da hast du recht, deshalb sollte man auch ins Büro kommen.", "Einerseits ja, andererseits spart man viel Zeit."]], ["Stimmt. Und was ist mit der Motivation? Manche arbeiten zu Hause weniger.", "True. And what about motivation? Some people work less at home.", "Say it depends on the person.", ["Ich bin der Meinung, dass es von der Person abhängt.", "Das hängt meiner Ansicht nach von der Selbstdisziplin ab.", "Ich glaube nicht, dass man weniger arbeitet."]], ["Wie sollte die Firma das deiner Meinung nach organisieren?", "How should the company organise it, in your opinion?", "Make a suggestion.", ["Ich würde zwei Tage im Büro und drei zu Hause vorschlagen.", "Am besten gibt es klare Regeln für alle.", "Ich schlage ein flexibles Modell vor."]], ["Das klingt vernünftig. Ich werde das beim nächsten Treffen ansprechen.", "That sounds reasonable. I'll raise it at the next meeting.", "Say you support him.", ["Gute Idee, ich unterstütze dich dabei.", "Das wäre sehr hilfreich, danke."]]]}, {"id": "vermieter", "level": "B2", "title": "Beschwerde beim Vermieter", "en": "Complaining to the property manager", "emo": "🔧", "who": "Hausverwaltung Neumann", "setting": "Your heating is broken.", "turns": [["Hausverwaltung Neumann, guten Tag. Worum geht es?", "Neumann property management, hello. What is it about?", "Say your heating has not worked for a week.", ["Ich rufe an, weil die Heizung in meiner Wohnung seit einer Woche nicht funktioniert.", "Es geht um einen Defekt in meiner Wohnung.", "Ich möchte mich über ein Problem beschweren."]], ["Das tut mir leid. Haben Sie den Schaden schon gemeldet?", "I'm sorry. Have you already reported the damage?", "Say you sent an email three days ago.", ["Ja, ich habe vor drei Tagen eine E-Mail geschickt.", "Ich habe Ihnen letzte Woche schon eine Nachricht geschrieben.", "Bisher noch nicht, deshalb rufe ich jetzt an."]], ["Da muss ein Fehler passiert sein. Ich schicke einen Techniker vorbei.", "A mistake must have happened. I'll send a technician.", "Ask when the technician can come.", ["Wann kann der Techniker kommen?", "Können Sie mir einen genauen Termin nennen?", "Das muss aber bitte schnell passieren."]], ["Morgen Vormittag zwischen acht und zwölf Uhr. Sind Sie dann zu Hause?", "Tomorrow morning between eight and twelve. Will you be at home?", "Say you will be there.", ["Ja, ich werde da sein.", "Leider arbeite ich bis zwölf. Geht es auch nachmittags?", "Ja, bitte rufen Sie vorher kurz an."]], ["In Ordnung. Ich notiere mir das.", "All right. I'll make a note of that.", "Thank them and say goodbye.", ["Vielen Dank, ich erwarte Ihren Techniker.", "Danke für Ihre Hilfe, auf Wiederhören!"]]]}, {"id": "urlaub", "level": "B2", "title": "Urlaub verhandeln", "en": "Negotiating holiday with your boss", "emo": "🌴", "who": "Frau Lange", "setting": "You talk to your boss about holiday.", "turns": [["Sie wollten mich sprechen? Worum geht es?", "You wanted to speak to me? What is it about?", "Say you want to talk about your holiday.", ["Ich möchte gern über meinen Urlaub sprechen.", "Ich würde gern im August drei Wochen Urlaub nehmen."]], ["Drei Wochen am Stück? Das ist schwierig, weil wir im August ein großes Projekt haben.", "Three weeks in a row? That's difficult because we have a big project in August.", "Show understanding and suggest a compromise.", ["Ich verstehe, aber ich habe den Urlaub schon lange geplant.", "Ich könnte vorher alles übergeben.", "Könnten wir einen Kompromiss finden?"]], ["Hm. Wie wäre es mit zwei Wochen im August und einer im September?", "Hm. How about two weeks in August and one in September?", "Say that would be fine.", ["Das wäre für mich in Ordnung.", "Das klingt nach einer guten Lösung.", "Ich müsste kurz darüber nachdenken."]], ["Wer würde Sie in der Zeit vertreten?", "Who would cover for you in that time?", "Say a colleague can take over.", ["Mein Kollege kann meine Aufgaben übernehmen.", "Ich werde alles gut vorbereiten und dokumentieren.", "Ich kläre das mit dem Team."]], ["Gut, dann genehmige ich das. Bitte reichen Sie den Antrag bis Freitag ein.", "Good, then I'll approve it. Please submit the request by Friday.", "Thank her and say you will submit it.", ["Vielen Dank, ich reiche ihn morgen ein.", "Das mache ich gleich, danke für Ihr Verständnis."]]]}];
+  var T = null;            // current conversation or null
+  function talkById(id) { for (var i = 0; i < TALK.length; i++) if (TALK[i].id === id) return TALK[i]; return null; }
+  function slotHtml(s) {
+    return esc(s).replace(/\{([^}]*)\}/g, '<span class="slot">$1</span>');
+  }
+  function slotPlain(s) { return s.replace(/\{([^}]*)\}/g, '$1'); }
+  function evalTalk(models, alts) {
+    var best = null;
+    alts.forEach(function (alt) {
+      var ht = fold(alt).split(' ').filter(Boolean), joined = ht.join('');
+      models.forEach(function (m, mi) {
+        var toks = m.split(/\s+/), marks = [], scored = 0, pts = 0;
+        toks.forEach(function (tk) {
+          var slot = /\{[^}]*\}/.test(tk);
+          var w = tk.replace(/[{}]/g, '').replace(/^[^\wÄÖÜäöüß]+|[^\wÄÖÜäöüß]+$/g, '');
+          var st = slot ? 'skip' : matchWord(fold(w), ht, joined);
+          marks.push({ w:w, st:st, slot:slot });
+          if (st !== 'skip') { scored++; pts += st === 'ok' ? 1 : (st === 'close' ? 0.7 : 0); }
+        });
+        var ratio = scored ? pts / scored : (ht.length ? 1 : 0);
+        if (!best || ratio > best.ratio) best = { heard:alt, marks:marks, ratio:ratio, model:mi };
+      });
+    });
+    if (!best) best = { heard:'', marks:[], ratio:0, model:0 };
+    best.pass = best.ratio >= 0.6;
+    return best;
+  }
+  function startTalk(id) {
+    var sc = talkById(id); if (!sc) return;
+    stopListening(true);
+    T = { sc:sc, i:0, log:[], status:'idle', msg:'', result:null, showTr:false, showHint:false, typing:false, typed:'', passed:0, tried:0, finished:false };
+    render(true);
+    speak(sc.turns[0][0]);
+  }
+  function talkSay() { if (T && !T.finished) speak(T.sc.turns[T.i][0]); }
+  function talkListen() {
+    var Ctor = speechCtor();
+    if (!Ctor) { T.status = 'error'; T.msg = MSG_UNSUPPORTED; T.typing = true; render(); return; }
+    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+    stopListening(true);
+    var rec, tt = T;
+    try { rec = new Ctor(); } catch (e) { tt.status = 'error'; tt.msg = MSG_UNAVAILABLE; tt.typing = true; render(); return; }
+    REC = rec;
+    rec.lang = 'de-DE'; rec.interimResults = false; rec.maxAlternatives = 5; rec.continuous = false;
+    var finished = false, started = false;
+    rec.onstart = function () { started = true; clearTimeout(recTimer); };
+    rec.onresult = function (e) {
+      if (REC !== rec || finished || T !== tt) return;
+      finished = true; clearTimeout(recTimer); REC = null;
+      var res = e.results[e.results.length - 1], alts = [];
+      for (var i = 0; i < res.length; i++) alts.push(res[i].transcript);
+      talkAnswer(alts);
+    };
+    rec.onerror = function (e) {
+      if (REC !== rec || finished || T !== tt) return;
+      finished = true; clearTimeout(recTimer); REC = null;
+      if (e.error === 'aborted') { tt.status = 'idle'; tt.msg = ''; }
+      else { tt.status = 'error'; tt.msg = speechError(e.error); tt.typing = true; }
+      render();
+    };
+    rec.onend = function () {
+      if (REC !== rec) return;
+      clearTimeout(recTimer); REC = null;
+      if (!finished && T === tt) { tt.status = 'error'; tt.msg = "I didn't hear anything. Tap the microphone and answer again, or type your answer."; render(); }
+    };
+    tt.status = 'listening'; tt.msg = '';
+    render();
+    recTimer = setTimeout(function () {
+      if (!started && REC === rec) { stopListening(true); tt.status = 'error'; tt.msg = MSG_UNAVAILABLE; tt.typing = true; render(); }
+    }, 20000);
+    try { rec.start(); } catch (e) { stopListening(true); tt.status = 'error'; tt.msg = MSG_UNAVAILABLE; tt.typing = true; render(); }
+  }
+  function talkAnswer(alts) {
+    var turn = T.sc.turns[T.i];
+    var r = evalTalk(turn[3], alts);
+    T.result = r; T.status = 'result'; T.tried++;
+    if (r.pass) T.passed++;
+    if (!state.talk) state.talk = { done:{}, tries:0, good:0 };
+    state.talk.tries++; if (r.pass) state.talk.good++;
+    save();
+    render(); scrollToFeedback();
+  }
+  function talkNext() {
+    if (!T) return;
+    var turn = T.sc.turns[T.i], r = T.result;
+    T.log.push({ me:false, text:turn[0], tr:turn[1] });
+    T.log.push({ me:true, text:(r && r.heard) ? r.heard : slotPlain(turn[3][0]), ok:!!(r && r.pass) });
+    T.i++; T.status = 'idle'; T.msg = ''; T.result = null; T.showHint = false; T.showTr = false; T.typed = ''; T.typing = false;
+    if (T.i >= T.sc.turns.length) {
+      T.finished = true;
+      if (!state.talk) state.talk = { done:{}, tries:0, good:0 };
+      state.talk.done[T.sc.id] = Math.max(state.talk.done[T.sc.id] || 0, T.passed);
+      save(); render(true); return;
+    }
+    render(true);
+    speak(T.sc.turns[T.i][0]);
+  }
+  function talkTypeSend() {
+    var inp = $('#tans'); if (!inp || !T) return;
+    var val = inp.value.trim();
+    if (!val) { inp.focus(); return; }
+    T.typed = val;
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    talkAnswer([val]);
+  }
+  function viewTalkList() {
+    var h = '<h1 class="page-title">Talk</h1>' +
+      '<p class="muted">Have a short conversation in German. Your partner speaks, you answer out loud. Start easy and work up.</p>';
+    ['A1', 'A2', 'B1', 'B2'].forEach(function (lv) {
+      var list = TALK.filter(function (s) { return s.level === lv; });
+      if (!list.length) return;
+      h += '<h2 class="sec">' + lv + '</h2><div class="modes">';
+      list.forEach(function (s) {
+        var d = state.talk && state.talk.done[s.id];
+        h += '<button class="row" data-act="tstart" data-v="' + esc(s.id) + '"><span class="emo">' + s.emo + '</span><span class="t"><strong>' + esc(s.title) + '</strong><small>' +
+          esc(s.en) + ' · ' + s.turns.length + ' turns with ' + esc(s.who) + '</small></span>' +
+          (d !== undefined ? '<span class="tdone">' + d + '/' + s.turns.length + '</span>' : '') + '<span class="chev">' + icon('chev') + '</span></button>';
+      });
+      h += '</div>';
+    });
+    h += '<p class="say-note">Speech recognition is done by your iPhone and needs internet. If it will not start (iOS often blocks it in Home Screen apps), you can type your answers instead, or open this address in Safari.</p>';
+    return h;
+  }
+  function viewTalk() {
+    var sc = T.sc, n = sc.turns.length;
+    if (T.finished) {
+      var pct = n ? Math.round(100 * T.passed / n) : 0;
+      var h0 = '<section class="summary"><h2>' + (pct >= 80 ? 'Sehr gut!' : (pct >= 50 ? 'Gut gemacht!' : 'Weiter üben!')) + '</h2><p class="big">' + T.passed + ' / ' + n + '</p><p class="muted">answers understood</p>';
+      h0 += '<div class="chat done">' + T.log.map(bubble).join('') + '</div>';
+      h0 += '<div class="stack"><button class="btn" data-act="tstart" data-v="' + esc(sc.id) + '">Talk again</button><button class="btn ghost" data-act="close">Back to Talk</button></div></section>';
+      return h0;
+    }
+    var turn = sc.turns[T.i];
+    var h = '<header class="sbar"><button class="icon-btn" data-act="close" aria-label="Close and go back">' + icon('close') + '</button>' +
+      '<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + T.i + '"><i style="width:' + Math.round(100 * T.i / n) + '%"></i></div>' +
+      '<span class="count">' + Math.min(T.i + 1, n) + '/' + n + '</span></header>';
+    h += '<p class="setting">' + sc.emo + ' ' + esc(sc.setting) + '</p>';
+    h += '<div class="chat">' + T.log.map(bubble).join('');
+    h += '<div class="bub them"><b>' + esc(sc.who) + '</b><p>' + esc(turn[0]) + '</p>' + (T.showTr ? '<p class="tr">' + esc(turn[1]) + '</p>' : '') + '</div></div>';
+    h += '<div class="btns"><button class="btn ghost" data-act="thear">' + icon('speaker') + '&nbsp;Hear again</button>' +
+      '<button class="btn ghost" data-act="ttr" aria-pressed="' + T.showTr + '">' + (T.showTr ? 'Hide English' : 'Show English') + '</button></div>';
+    h += '<p class="hintline"><b>Your turn:</b> ' + esc(turn[2]) + '</p>';
+    if (T.status === 'idle' || T.status === 'listening') {
+      var live = T.status === 'listening';
+      h += '<button class="mic' + (live ? ' live' : '') + '" data-act="tmic" aria-label="' + (live ? 'Stop listening' : 'Start speaking') + '">' + icon('mic') + '</button>' +
+        '<p class="miclabel">' + (live ? 'Listening... tap to stop' : 'Tap the microphone and answer') + '</p>';
+    }
+    if (T.status === 'error') {
+      h += '<section class="fb bad" role="status"><h3>Could not listen</h3><p class="line">' + esc(T.msg) + '</p>' +
+        '<div class="btns"><button class="btn ghost" data-act="tmic">Try the microphone</button></div></section>';
+    }
+    if (T.status !== 'result') {
+      if (T.typing) {
+        h += '<div class="tform"><input id="tans" class="field" type="text" autocapitalize="sentences" autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="send" placeholder="Type your answer in German" aria-label="Your answer" value="' + esc(T.typed) + '">' +
+          '<button class="btn" data-act="tsend">Send</button></div>';
+      } else {
+        h += '<div class="btns"><button class="btn ghost" data-act="ttype">Type instead</button><button class="btn ghost" data-act="thint">' + (T.showHint ? 'Hide example' : 'Show example') + '</button></div>';
+      }
+      if (T.showHint) h += '<p class="exlist">' + turn[3].map(function (m) { return '<span>' + slotHtml(m) + '</span>'; }).join('') + '</p><p class="say-note">Coloured words in an example are your own words, for example your name or city. They are not checked.</p>';
+      h += '<div class="btns"><button class="btn ghost" data-act="tnext">Skip this turn</button></div>';
+    } else {
+      var r = T.result, last = T.i >= n - 1;
+      h += '<section class="fb ' + (r.pass ? 'good' : 'bad') + '" role="status"><h3>' + (r.pass ? 'Verstanden!' : 'Nicht ganz.') + '</h3>' +
+        '<p class="line muted">I heard: ' + (r.heard ? esc(r.heard) : '(nothing)') + '</p>' +
+        '<p class="line sentence-s">' + r.marks.map(function (m) { return m.slot ? '<span class="slot">' + esc(m.w) + '</span>' : '<span class="w ' + m.st + '">' + esc(m.w) + '</span>'; }).join(' ') + '</p>';
+      if (!r.pass) h += '<p class="line small">Red words were missing. Listen to the model, then try again.</p>';
+      h += '<div class="btns"><button class="btn ghost" data-act="tmodel" data-say="' + esc(slotPlain(turn[3][r.model])) + '">Hear a model answer</button><button class="btn ghost" data-act="tretry">Try again</button></div>' +
+        '<button class="btn" data-act="tnext">' + (last ? 'Finish' : (r.pass ? 'Next' : 'Continue anyway')) + '</button></section>';
+    }
+    return h;
+  }
+  function bubble(b) {
+    return b.me ? '<div class="bub me' + (b.ok ? '' : ' off') + '"><p>' + esc(b.text) + '</p></div>'
+                : '<div class="bub them"><p>' + esc(b.text) + '</p>' + (b.tr ? '<p class="tr">' + esc(b.tr) + '</p>' : '') + '</div>';
+  }
+
+  /* =====================================================
+     RENDER
+     ===================================================== */
+  function renderNav() {
+    var items = [['practise','Practise'], ['verbs','Verbs'], ['words','Words'], ['talk','Talk'], ['progress','Progress']];
+    $('#nav').innerHTML = items.map(function (it) {
+      return '<button data-act="tab" data-v="' + it[0] + '"' + (tab === it[0] ? ' aria-current="page"' : '') + '><span class="pill">' + icon(it[0]) + '</span>' + it[1] + '</button>';
+    }).join('');
+  }
+  function render(toTop) {
+    var app = $('#app'), html;
+    if (T) {
+      document.body.classList.add('in-session');
+      html = viewTalk();
+    } else if (P) {
+      document.body.classList.add('in-session');
+      html = viewPic();
+    } else if (S) {
+      document.body.classList.add('in-session');
+      if (S.finished) html = viewSummary();
+      else html = S.mode === 'cards' ? viewCards() : (S.mode === 'speak' ? viewSpeak() : viewQuestion());
+    } else {
+      document.body.classList.remove('in-session');
+      html = tab === 'verbs' ? viewVerbs() : (tab === 'progress' ? viewProgress() : (tab === 'account' ? viewAccount() : (tab === 'words' ? viewWords() : (tab === 'talk' ? viewTalkList() : viewPractise()))));
+      renderNav();
+    }
+    app.innerHTML = html;
+    if (!S && tab === 'verbs' && vsearch) applySearch();
+    hydratePhotos();
+    if (toTop) window.scrollTo(0, 0);
+  }
+  function scrollToFeedback() {
+    var fb = $('.fb');
+    if (fb && fb.scrollIntoView) { try { fb.scrollIntoView({ block:'end', behavior:'smooth' }); } catch (e) { fb.scrollIntoView(false); } }
+  }
+
+  /* =====================================================
+     EVENTS
+     ===================================================== */
+  function currentQ() { return S && S.qs ? S.qs[S.i] : null; }
+
+  function doCheck() {
+    var q = currentQ(); if (!q || q.done) return;
+    var input = $('#ans'); if (!input) return;
+    var val = input.value;
+    if (!val.trim()) { input.focus(); return; }
+    q.typed = val;
+    var r = checkTyped(byId(q.id), val);
+    q.note = r.note;
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    answerQuestion(q, r.ok);
+    render(); scrollToFeedback();
+  }
+
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest ? e.target.closest('[data-act]') : null;
+    if (!el) return;
+    var act = el.getAttribute('data-act'), v = el.getAttribute('data-v');
+    var q = currentQ();
+
+    switch (act) {
+      case 'tab': tab = v; render(true); break;
+      case 'toggleEn': state.englishFirst = !state.englishFirst; save(); render(); break;
+      case 'hideInstall': state.hideInstall = true; save(); render(); break;
+      case 'start': if (el.getAttribute('data-mode') === 'speak') startSpeak(null); else startSession(el.getAttribute('data-mode')); break;
+      case 'close': stopListening(true); try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {} S = null; P = null; T = null; render(true); break;
+      case 'tstart': startTalk(v); break;
+      case 'thear': talkSay(); break;
+      case 'ttr': if (T) { T.showTr = !T.showTr; render(); } break;
+      case 'thint': if (T) { T.showHint = !T.showHint; render(); } break;
+      case 'ttype': if (T) { stopListening(true); T.typing = true; T.status = 'idle'; render(); var ti = $('#tans'); if (ti) { try { ti.focus(); } catch (err) {} } } break;
+      case 'tsend': talkTypeSend(); break;
+      case 'tmic': if (T) { if (REC) { stopListening(false); } else talkListen(); } break;
+      case 'tmodel': speak(el.getAttribute('data-say')); break;
+      case 'tretry': if (T) { T.status = 'idle'; T.msg = ''; T.result = null; T.typed = ''; render(); } break;
+      case 'tnext': stopListening(true); talkNext(); break;
+      case 'speakOne': if (!account.premium) { openUpgrade(); break; } startSpeak([el.getAttribute('data-id')]); break;
+      case 'speakagain': startSpeak(S.single ? S.ids : null); break;
+      case 'speakTarget':
+        state.speakTarget = v; save();
+        if (S && S.mode === 'speak') { stopListening(true); S.target = v; var sq = S.qs[S.i]; if (sq.status !== 'idle') { sq.status = 'idle'; sq.msg = ''; sq.result = null; } render(); }
+        break;
+      case 'mic':
+        if (REC) stopListening(false); else startListening();
+        break;
+      case 'speaknext': nextSpeak(); break;
+      case 'say': speak(el.getAttribute('data-say')); break;
+      case 'sendcode': sendCode(); break;
+      case 'havecode':
+        var hi = $('#acEmail'), he = ((hi ? hi.value : account.email) || '').trim().toLowerCase();
+        if (!emailOk(he)) { setMsg('Type your email address first.', 'bad'); render(); break; }
+        account.email = he; account.step = 'code'; setMsg('Enter the code from your email.', ''); render();
+        break;
+      case 'verify': verifyCode(); break;
+      case 'changeemail': account.step = 'email'; setMsg(''); render(); break;
+      case 'signout': signOut(); break;
+      case 'buy': startCheckout(); break;
+      case 'checkbuy': checkPurchase(); break;
+      case 'upgrade': openUpgrade(); break;
+      case 'wstart': startPics(el.getAttribute('data-mode')); break;
+      case 'wopen': wscope = Number(el.getAttribute('data-i')); render(true); break;
+      case 'wflip': if (P && P.mode === 'pcards' && !P.flipped) { P.flipped = true; render(); } break;
+      case 'wknown':
+      case 'wagain':
+        if (!P || P.mode !== 'pcards' || !P.flipped) break;
+        var wid = P.queue.shift(), wok = (act === 'wknown');
+        precord(wid, wok); pNoteResult(wid, wok);
+        if (wok) P.resolved++;
+        else { P.retries[wid] = (P.retries[wid] || 0) + 1; if (P.retries[wid] <= 2) P.queue.push(wid); else P.resolved++; }
+        P.flipped = false;
+        if (!P.queue.length) pFinish();
+        render(true);
+        break;
+      case 'wpickans':
+        var wq = P && P.qs ? P.qs[P.i] : null;
+        if (!wq || wq.done) break;
+        wq.picked = el.getAttribute('data-id'); pAnswer(wq, wq.picked === wq.id); render(); scrollToFeedback();
+        break;
+      case 'wcheck': doWCheck(); break;
+      case 'wnext':
+        if (P && P.qs) { if (P.i < P.qs.length - 1) { P.i++; render(true); var wf = $('#wans'); if (wf) { try { wf.focus(); } catch (err2) {} } } else { pFinish(); render(true); } }
+        break;
+
+      case 'pick':
+        if (!q || q.done) break;
+        q.picked = el.getAttribute('data-id');
+        answerQuestion(q, q.picked === q.id);
+        render(); scrollToFeedback();
+        break;
+      case 'check': doCheck(); break;
+      case 'hint':
+        if (!q || q.done) break;
+        var inp = $('#ans'); if (inp) q.typed = inp.value;
+        q.hint = true; render();
+        var again = $('#ans'); if (again) again.focus();
+        break;
+      case 'next':
+        if (S.i < S.qs.length - 1) { S.i++; render(true);
+          var f = $('#ans'); if (f) { try { f.focus(); } catch (err) {} } }
+        else { finishSession(); render(true); }
+        break;
+
+      case 'flip':
+        if (!S.flipped) { S.flipped = true; S.justFlipped = true; render(); }
+        break;
+      case 'known':
+      case 'again':
+        if (S.mode === 'speak') { var cq = S.qs[S.i]; cq.status = 'idle'; cq.msg = ''; cq.result = null; render(); break; }
+        if (!S.flipped) break;
+        var id = S.queue.shift(), ok = (act === 'known');
+        var pts = record(id, ok);
+        noteResult(id, ok, pts);
+        if (ok) { S.resolved++; }
+        else {
+          S.retries[id] = (S.retries[id] || 0) + 1;
+          if (S.retries[id] <= 2) S.queue.push(id); else S.resolved++;
+        }
+        S.flipped = false;
+        if (!S.queue.length) finishSession();
+        render(true);
+        break;
+
+      case 'reset':
+        if (window.confirm(state.owner ? 'Delete all your scores and progress, also in your account? This cannot be undone.' : 'Delete all your scores and progress on this device? This cannot be undone.')) {
+          var keepInstall = state.hideInstall;
+          var owner = state.owner;
+          state = defaults(); state.hideInstall = keepInstall; state.owner = owner; save(); render(true);
+          if (canSync()) pushNow();
+        }
+        break;
+    }
+  });
+
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (!t || !t.getAttribute) return;
+    var which = t.getAttribute('data-sel');
+    if (which === 'scopeSel') { state.scope = parseScope(t.value); save(); render(); }
+    else if (which === 'verbsSel') { verbsScope = parseScope(t.value); render(); }
+    else if (which === 'wordsSel') { wscope = (t.value === 'all') ? 'all' : Number(t.value); render(); }
+  });
+  document.addEventListener('input', function (e) {
+    if (e.target && e.target.id === 'vsearch') { vsearch = e.target.value; applySearch(); }
+    if (e.target && e.target.id === 'acEmail') account.email = e.target.value;
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target && e.target.id === 'ans') { e.preventDefault(); doCheck(); }
+    if (e.key === 'Enter' && e.target && e.target.id === 'tans') { e.preventDefault(); talkTypeSend(); }
+    if (e.key === 'Enter' && e.target && e.target.id === 'wans') { e.preventDefault(); doWCheck(); }
+    if (e.key === 'Enter' && e.target && e.target.id === 'acEmail') { e.preventDefault(); sendCode(); }
+    if (e.key === 'Enter' && e.target && e.target.id === 'acCode') { e.preventDefault(); verifyCode(); }
+    if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.getAttribute && e.target.getAttribute('role') === 'button' && S && S.mode === 'cards') {
+      e.preventDefault(); if (!S.flipped) { S.flipped = true; S.justFlipped = true; render(); }
+    }
+    if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.getAttribute && e.target.getAttribute('role') === 'button' && P && P.mode === 'pcards') {
+      e.preventDefault(); if (!P.flipped) { P.flipped = true; render(); }
+    }
+  });
+
+  /* =====================================================
+     START + OFFLINE SUPPORT
+     ===================================================== */
+  account.session = loadStoredSession();
+  (function startUp() {
+    var back = false;
+    try {
+      var q = new URLSearchParams(window.location.search);
+      if (q.get('checkout') === 'return') {
+        back = true;
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    } catch (e) {}
+    if (back) {
+      tab = 'account';
+      if (!account.session) setMsg('Thank you! Please sign in with the SAME email address you used to pay. Premium will then unlock.', 'good');
+    }
+    render(true);
+    if (back && account.session && SB_OK) pollAfterCheckout();
+    else refreshAccount().then(pullProgress);
+  })();
+  window.addEventListener('online', function () { if (SB_OK && account.session) refreshAccount().then(pullProgress); });
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && SB_OK && account.session && !account.waiting && Date.now() - account.lastRefresh > 60000) refreshAccount();
+  });
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('service-worker.js').then(function () {
+        return navigator.serviceWorker.ready;
+      }).then(function () {
+        offlineReady = true;
+        if (!S) render();
+      }).catch(function () { /* app still works online without it */ });
+    });
+  }
+})();
+</script>
+</body>
+</html>
