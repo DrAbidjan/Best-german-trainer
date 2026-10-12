@@ -310,6 +310,14 @@ details.all[open] summary::after{content:"Hide"}
 .exo.bad{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
 .exaudio{display:flex;gap:10px;margin-top:12px}
 .exaudio .btn{gap:6px}
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+@media (min-width:700px){.igrid{grid-template-columns:repeat(3,1fr)}}
+.icard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.icard .pic{border-radius:10px;border:0}
+.icard .inm{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:4px}
+.icard .inm b{font-size:15.5px;line-height:1.2;overflow-wrap:anywhere}
+.icard .ien{font-size:14px;color:var(--muted)}
+.icard .iuse{font-size:13px;color:var(--muted);line-height:1.35}
 .extimer{position:sticky;top:0;z-index:5;margin:10px 0;padding:8px 14px;border-radius:12px;background:var(--surface);border:1.5px solid var(--line);font-weight:700;font-variant-numeric:tabular-nums;text-align:center}
 .extimer.low{border-color:#d33;color:#d33}
 .excl{font:inherit;font-size:16px;padding:4px 6px;margin:0 2px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);max-width:46vw}
@@ -539,6 +547,8 @@ details.all[open] summary::after{content:"Hide"}
       fvocab:'<path d="M5 3h11a3 3 0 0 1 3 3v15H8a3 3 0 0 1-3-3z"/><path d="M9 8h6M9 12h6"/>',
       fphrase:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
       fdialog:'<path d="M3 5h11v8H8l-3 3v-3H3z"/><path d="M17 9h4v8h-2v3l-3-3h-5v-2"/>',
+      fix:'<path d="M4 20h4l10-10-4-4L4 16z"/><path d="M13 7l4 4"/>',
+      finstr:'<path d="M4 20l8-8"/><path d="M12 12l5-5a3 3 0 1 0-4-4l-5 5z"/>',
       lock:'<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>'
     }[name];
     return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">' + p + '</svg>';
@@ -1677,11 +1687,31 @@ details.all[open] summary::after{content:"Hide"}
         PHOTO[title] = u; return u;
       }).catch(function () { return null; });
   }
+  /* last fallback for instrument pictures: search Wikimedia Commons for a photo of the object */
+  function commonsPhoto(q) {
+    var k = 'c:' + q;
+    if (Object.prototype.hasOwnProperty.call(PHOTO, k)) return Promise.resolve(PHOTO[k]);
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return Promise.resolve(null);
+    return fetch('https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=8&gsrsearch=' + encodeURIComponent(q + ' filetype:bitmap') + '&prop=imageinfo&iiprop=url&iiurlwidth=360')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j) return null;
+        var pg = (j.query && j.query.pages) || {}, arr = Object.keys(pg).map(function (z) { return pg[z]; });
+        arr.sort(function (a, b) { return (a.index || 0) - (b.index || 0); });
+        for (var i = 0; i < arr.length; i++) {
+          var ii = arr[i].imageinfo && arr[i].imageinfo[0], u = ii && ii.thumburl;
+          if (typeof u === 'string' && /^https:\/\/upload\.wikimedia\.org\//.test(u) && /\.(jpe?g|png)(\?|$)/i.test(u)) { PHOTO[k] = u; return u; }
+        }
+        PHOTO[k] = false; return false;
+      }).catch(function () { return null; });
+  }
   function hydratePhotos() {
     var els = document.querySelectorAll('.pic[data-title]');
     Array.prototype.forEach.call(els, function (el) {
-      var t = el.getAttribute('data-title');
-      photoUrl(t).then(function (u) {
+      var t = el.getAttribute('data-title'), alt = el.getAttribute('data-alt'), qq = el.getAttribute('data-q'), pr = photoUrl(t);
+      if (alt) pr = pr.then(function (u) { return u ? u : photoUrl(alt); });
+      if (qq) pr = pr.then(function (u) { return u ? u : commonsPhoto(qq); });
+      pr.then(function (u) {
         if (!u || !el.isConnected || el.getAttribute('data-title') !== t || el.querySelector('img')) return;
         var im = new Image();
         im.alt = ''; im.decoding = 'async'; im.referrerPolicy = 'no-referrer';
@@ -3273,6 +3303,7 @@ return D;
     if (r.note) h += '<p class="say-note">' + esc(r.note) + '</p>';
     if (R.auto) h += '<p class="say-note"><b>Time was up.</b> Your answers were checked automatically, like in the real exam.</p>';
     h += '<div class="btns"><button class="btn ghost" data-act="exquit">Exam menu</button><button class="btn" data-act="exstart" data-v="' + R.skill + '">New mock test</button></div></section>';
+    if (R.skill === 'schreiben') h += '<section class="card"><h2>Grammar check</h2><p class="muted">The percentage above does not check grammar in your free text. Run it through the sentence checker to find typical mistakes.</p><button class="btn" data-act="fxfrom">Check my text for typical mistakes</button></section>';
     if (R.skill === 'schreiben') h += '<section class="card"><h2>Model answer</h2><div class="extext">' + esc(t.model) + '</div></section>';
     if (R.skill === 'sprechen') t.steps.forEach(function (s, i) {
       h += '<section class="card"><h2>' + esc(s.t) + '</h2><p><b>Your score ' + r.steps[i] + '%</b></p><ul class="exlist">' + r.stepLines[i].map(function (l) { return '<li class="' + (l[0] ? 'ok' : 'bad') + '">' + (l[0] ? '✓' : '✗') + ' ' + esc(l[1]) + '</li>'; }).join('') + '</ul><p class="muted" style="margin-top:8px"><b>Model answer</b></p><div class="extext">' + esc(s.model) + '</div>' + sayBtn(s.model, 'model answer') + '</section>';
@@ -3418,13 +3449,393 @@ return D;
     else if (/^exs\d+$/.test(t.id)) { var i = t.id.slice(3); X.run.txt['s' + i] = t.value; var c2 = $('#exc' + i); if (c2) c2.textContent = exWords(t.value).length + ' words'; }
   });
 
+
+  /* =====================================================
+     INSTRUMENTS (inside Zahnmedizin FSP and Medizin FSP)
+     ===================================================== */
+  var INSTR_RAW = ["zm|der Mundspiegel|dental mirror|Shows the back of the teeth and reflects light into the mouth.|Mouth mirror|Dental mirror|🪞|Examination", "zm|die Zahnsonde|dental explorer|Sharp probe that finds caries and rough edges on the tooth surface.|Dental explorer|Dental instrument|🔎|Examination", "zm|die Parodontalsonde|periodontal probe|Measures the depth of gum pockets.|Periodontal probe|Periodontal examination|📏|Examination", "zm|die Pinzette|dental tweezers|Holds and places small things like cotton rolls.|Tweezers|Dental tweezers|🤏|Examination", "zm|die Watterolle|cotton roll|Absorbs saliva and keeps the area dry.|Cotton roll|Cotton swab|🧻|Examination", "zm|der Speichelsauger|saliva ejector|Small suction tube that removes saliva.|Saliva ejector|Dental suction|💧|Examination", "zm|der Absauger|high-volume suction|Strong suction for water, blood and debris.|Dental suction|Saliva ejector|🌀|Examination", "zm|die Intraoralkamera|intraoral camera|Small camera that shows the teeth on a screen.|Intraoral camera|Dental camera|📷|Examination", "zm|die Lupenbrille|dental loupes|Magnifying glasses that help to see fine details.|Loupe|Dental loupes|👓|Examination", "zm|das Winkelstück|contra-angle handpiece|Holds the bur at an angle, runs slowly with high torque.|Dental handpiece|Dental drill|⚙️|Preparation", "zm|die Turbine|air turbine handpiece|Very fast handpiece with water spray for cutting tooth.|Dental drill|Dental handpiece|🌪️|Preparation", "zm|der Bohrer|dental bur|Rotating cutter for removing caries and shaping teeth.|Dental burr|Dental bur|🔩|Preparation", "zm|der Kofferdam|rubber dam|Rubber sheet that keeps one tooth dry and clean.|Rubber dam|Dental dam|🟦|Preparation", "zm|die Kofferdamklammer|rubber dam clamp|Metal clamp that holds the rubber dam on the tooth.|Rubber dam|Dental dam|🗜️|Preparation", "zm|die Spritze|dental syringe|Carries the local anaesthetic to the injection site.|Dental syringe|Syringe|💉|Anaesthesia", "zm|die Karpule|anaesthetic cartridge|Small glass tube filled with local anaesthetic.|Local anesthesia|Dental anesthesia|🧪|Anaesthesia", "zm|die Kanüle|needle|Thin needle for the injection of local anaesthetic.|Hypodermic needle|Needle (disambiguation)|📍|Anaesthesia", "zm|das Oberflächenanästhetikum|topical anaesthetic gel|Numbs the surface of the gum before the injection.|Topical anesthetic|Local anesthesia|🧴|Anaesthesia", "zm|die Extraktionszange|extraction forceps|Grips the tooth to remove it from the socket.|Dental extraction|Forceps|🔧|Surgery", "zm|der Hebel|dental elevator|Loosens the tooth in the socket before extraction.|Dental extraction|Elevator (dental)|🪛|Surgery", "zm|der Beinhebel|root elevator|Strong lever for removing roots and difficult teeth.|Dental extraction|Wisdom tooth|🪛|Surgery", "zm|der scharfe Löffel|bone curette|Spoon-shaped tool that cleans the socket or a cyst.|Curette|Bone curette|🥄|Surgery", "zm|die Knochenfeile|bone file|Smooths sharp bone edges after extraction.|Bone file|Rasp|🪚|Surgery", "zm|das Skalpell|scalpel|Surgical knife for cutting the gum.|Scalpel|Surgical knife|🔪|Surgery", "zm|das Raspatorium|periosteal elevator|Lifts the gum from the bone.|Periosteal elevator|Surgical instrument|🪛|Surgery", "zm|der Nadelhalter|needle holder|Holds the curved needle while suturing.|Needle holder|Hemostat|✂️|Surgery", "zm|die Naht|suture|Thread that closes the wound after surgery.|Surgical suture|Suture|🧵|Surgery", "zm|die Wurzelkanalfeile|endodontic file|Thin file that cleans and shapes the root canal.|Endodontic file|Root canal|📌|Endodontics", "zm|der Reamer|root canal reamer|Widens the root canal by turning.|Root canal|Endodontic file|📌|Endodontics", "zm|der Apexlokalisator|apex locator|Electronic device that measures the length of the root canal.|Apex locator|Root canal|📟|Endodontics", "zm|die Papierspitze|paper point|Dries the root canal.|Root canal|Endodontic|📄|Endodontics", "zm|die Guttapercha|gutta-percha|Rubber-like material that fills the root canal.|Gutta-percha|Root canal|⚪|Endodontics", "zm|die Spülkanüle|irrigation needle|Rinses the root canal with disinfectant.|Root canal irrigant|Root canal|💦|Endodontics", "zm|die Füllung|filling|Replaces the tooth structure lost to caries.|Dental restoration|Tooth filling|🦷|Restoration", "zm|das Amalgam|amalgam|Silver-coloured metal filling material.|Dental amalgam|Amalgam (chemistry)|🪙|Restoration", "zm|das Komposit|composite resin|Tooth-coloured plastic filling material.|Dental composite|Composite resin|🟡|Restoration", "zm|die Polymerisationslampe|curing light|Blue light that hardens the composite.|Dental curing light|Curing light|🔦|Restoration", "zm|die Matrize|matrix band|Thin band that shapes the side wall of a filling.|Matrix band|Dental matrix|〰️|Restoration", "zm|der Keil|dental wedge|Small wedge that seals the matrix and separates teeth.|Dental wedge|Matrix band|🔺|Restoration", "zm|der Stopfer|plugger|Presses the filling material into the cavity.|Dental plugger|Dental instrument|🔨|Restoration", "zm|der Zahnzement|dental cement|Glues crowns and inlays onto the tooth.|Dental cement|Cement|🧱|Restoration", "zm|die Krone|crown|Cap that covers and protects a damaged tooth.|Crown (dentistry)|Dental crown|👑|Prosthetics", "zm|die Brücke|bridge|Replaces a missing tooth by joining it to the neighbours.|Dental bridge|Fixed bridge|🌉|Prosthetics", "zm|das Implantat|implant|Titanium screw in the jawbone that replaces a root.|Dental implant|Implant (dentistry)|🔩|Prosthetics", "zm|die Prothese|denture|Removable replacement for several or all teeth.|Dentures|Denture|😁|Prosthetics", "zm|der Abdrucklöffel|impression tray|Holds the impression material in the mouth.|Dental impression|Impression tray|🥣|Prosthetics", "zm|der Abdruck|impression|Negative copy of teeth, used to make models.|Dental impression|Impression material|🧬|Prosthetics", "zm|der Artikulator|articulator|Mechanical device that copies the movements of the jaw.|Articulator (dental)|Dental articulator|⚙️|Prosthetics", "zm|das Provisorium|temporary crown|Temporary restoration worn until the final crown is ready.|Temporary crown|Crown (dentistry)|⏳|Prosthetics", "zm|die Zahnspange|braces|Fixed or removable appliance that moves teeth.|Dental braces|Orthodontics|😬|Orthodontics", "zm|das Bracket|bracket|Small attachment glued to the tooth that holds the wire.|Dental braces|Orthodontic bracket|▫️|Orthodontics", "zm|der Bogen|archwire|Wire that guides the teeth into position.|Archwire|Dental braces|〰️|Orthodontics", "zm|der Retainer|retainer|Keeps the teeth in position after treatment.|Retainer (orthodontics)|Orthodontic retainer|📐|Orthodontics", "zm|die Aufbissschiene|occlusal splint|Plastic splint against teeth grinding at night.|Occlusal splint|Mouthguard|😴|Orthodontics", "zm|der Mundschutz|mouthguard|Protects teeth during sports.|Mouthguard|Mouth guard|🥊|Orthodontics", "zm|die Zahnbürste|toothbrush|Cleans the teeth with bristles.|Toothbrush|Electric toothbrush|🪥|Prevention", "zm|die Interdentalbürste|interdental brush|Small brush for the spaces between the teeth.|Interdental brush|Dental floss|🧽|Prevention", "zm|die Zahnseide|dental floss|Thin thread that removes plaque between the teeth.|Dental floss|Floss|🧵|Prevention", "zm|der Scaler|scaler|Removes tartar from the teeth.|Dental scaler|Scaling and root planing|🔧|Prevention", "zm|die Kürette|curette|Scrapes tartar and cleans root surfaces under the gum.|Curette|Dental curette|🥄|Prevention", "zm|das Ultraschallgerät|ultrasonic scaler|Removes tartar with vibration and water.|Ultrasonic scaler|Dental scaler|🔊|Prevention", "zm|das Pulverstrahlgerät|air polisher|Removes stains with air, water and powder.|Air polishing|Tooth polishing|💨|Prevention", "zm|die Zahnpasta|toothpaste|Contains fluoride and protects against caries.|Toothpaste|Dentifrice|🪥|Prevention", "zm|das Fluorid|fluoride|Strengthens the enamel and prevents caries.|Fluoride therapy|Fluoride|🧪|Prevention", "zm|die Fissurenversiegelung|fissure sealant|Plastic coating in the grooves of molars.|Dental sealant|Pit and fissure sealant|🛡️|Prevention", "zm|das Zahnbleaching|tooth whitening|Lightens the colour of the teeth.|Tooth whitening|Tooth bleaching|✨|Prevention", "zm|das Röntgengerät|dental X-ray unit|Takes pictures of teeth and bone.|Dental radiography|Dental X-ray|☢️|Imaging", "zm|die Röntgenschürze|lead apron|Protects the body from radiation during X-rays.|Lead apron|Radiation protection|🥼|Imaging", "zm|das Panoramaröntgenbild|panoramic X-ray|Shows all teeth and both jaws in one picture.|Panoramic radiograph|Orthopantomogram|🖼️|Imaging", "zm|das DVT|cone beam CT|3D X-ray of the teeth and jaw.|Cone beam computed tomography|Dental cone-beam CT|🧊|Imaging", "zm|der Behandlungsstuhl|dental chair|Chair that positions the patient for treatment.|Dental chair|Dental unit|💺|Equipment", "zm|die Behandlungseinheit|dental unit|Treatment unit with handpieces, suction and water.|Dental unit|Dental chair|🏥|Equipment", "zm|die OP-Leuchte|operating light|Bright light that illuminates the mouth.|Operating light|Surgical lighting|💡|Equipment", "zm|der Autoklav|autoclave|Sterilises instruments with steam under pressure.|Autoclave|Sterilization|♨️|Equipment", "zm|der Ultraschallreiniger|ultrasonic cleaner|Cleans instruments in a bath with vibration.|Ultrasonic cleaning|Ultrasonic cleaner|🛁|Equipment", "zm|der Dentallaser|dental laser|Cuts soft tissue and treats gums with light.|Dental laser|Laser dentistry|🔆|Equipment", "zm|die Einmalhandschuhe|disposable gloves|Protect the team and the patient from infection.|Medical glove|Disposable glove|🧤|Equipment", "zm|die OP-Maske|surgical mask|Protects the team and patient from droplets.|Surgical mask|Face mask|😷|Equipment", "med|das Stethoskop|stethoscope|Listens to the heart, lungs and bowel sounds.|Stethoscope|Auscultation|🩺|Examination", "med|das Blutdruckmessgerät|blood pressure monitor|Measures blood pressure with an arm cuff.|Sphygmomanometer|Blood pressure|🩸|Examination", "med|das Fieberthermometer|clinical thermometer|Measures body temperature.|Medical thermometer|Thermometer|🌡️|Examination", "med|das Otoskop|otoscope|Looks into the ear canal and at the eardrum.|Otoscope|Ear examination|👂|Examination", "med|das Ophthalmoskop|ophthalmoscope|Looks at the back of the eye.|Ophthalmoscope|Fundus examination|👁️|Examination", "med|der Reflexhammer|reflex hammer|Tests the tendon reflexes.|Reflex hammer|Tendon reflex|🔨|Examination", "med|die Stimmgabel|tuning fork|Tests hearing and vibration sense.|Tuning fork|Rinne test|🎼|Examination", "med|der Spatel|tongue depressor|Presses down the tongue to see the throat.|Tongue depressor|Spatula|🍦|Examination", "med|die Stirnlampe|head light|Gives bright light for examinations of ear, nose and throat.|Headlamp|Head mirror|🔦|Examination", "med|das Spekulum|speculum|Opens a body cavity so the doctor can look inside.|Speculum (medical)|Vaginal speculum|🔍|Examination", "med|das Maßband|measuring tape|Measures height, waist and wounds.|Tape measure|Measuring tape|📏|Examination", "med|die Waage|scale|Measures body weight.|Weighing scale|Medical scale|⚖️|Examination", "med|das Skalpell|scalpel|Surgical knife for cutting skin and tissue.|Scalpel|Surgical knife|🔪|Surgery", "med|die Schere|surgical scissors|Cuts tissue, thread and bandages.|Surgical scissors|Scissors|✂️|Surgery", "med|die Pinzette|forceps|Holds tissue or small objects.|Forceps|Tweezers|🤏|Surgery", "med|die chirurgische Pinzette|surgical forceps|Toothed forceps for holding tissue during surgery.|Forceps|Surgical forceps|🤏|Surgery", "med|die Arterienklemme|artery clamp|Clamps vessels to stop the bleeding.|Hemostat|Artery forceps|🗜️|Surgery", "med|der Nadelhalter|needle holder|Holds the needle when stitching a wound.|Needle holder|Hemostat|✂️|Surgery", "med|der Wundhaken|retractor|Holds the edges of a wound apart.|Retractor (medicine)|Surgical retractor|🪝|Surgery", "med|der Faden|suture thread|Closes wounds and holds tissue together.|Surgical suture|Suture|🧵|Surgery", "med|das Klammernahtgerät|skin stapler|Closes skin with metal staples.|Surgical stapler|Surgical staple|📎|Surgery", "med|der Elektrokauter|electrocautery|Cuts and stops bleeding with heat.|Electrosurgery|Cauterization|⚡|Surgery", "med|der Autoklav|autoclave|Sterilises instruments with steam under pressure.|Autoclave|Sterilization|♨️|Surgery", "med|der Operationstisch|operating table|Table on which the patient lies during surgery.|Operating table|Surgical table|🛏️|Surgery", "med|die OP-Lampe|operating light|Bright shadow-free light over the wound.|Operating light|Surgical lighting|💡|Surgery", "med|die Spritze|syringe|Injects fluid or draws blood.|Syringe|Hypodermic syringe|💉|Injection", "med|die Kanüle|cannula|Hollow needle for injections and infusions.|Cannula|Hypodermic needle|📍|Injection", "med|der Venenkatheter|IV catheter|Thin tube placed in a vein.|Peripheral venous catheter|Intravenous catheter|🩸|Injection", "med|die Infusion|infusion|Fluid or drug given into a vein over time.|Intravenous therapy|Infusion|💧|Injection", "med|die Infusionspumpe|infusion pump|Controls the speed of an infusion.|Infusion pump|Intravenous therapy|🔌|Injection", "med|das Blutentnahmeröhrchen|blood collection tube|Tube for blood samples.|Vacutainer|Blood collection tube|🧪|Injection", "med|der Stauschlauch|tourniquet|Squeezes the arm so the veins become visible.|Tourniquet|Medical tourniquet|🎗️|Injection", "med|die Lanzette|lancet|Makes a small prick to draw a drop of blood.|Lancet device|Lancet|📍|Injection", "med|der Blutzuckermesser|blood glucose meter|Measures blood sugar from a drop of blood.|Glucose meter|Blood glucose monitoring|🍬|Monitoring", "med|das EKG|ECG machine|Records the electrical activity of the heart.|Electrocardiography|Electrocardiogram|📈|Monitoring", "med|das Pulsoximeter|pulse oximeter|Measures oxygen in the blood with a finger clip.|Pulse oximetry|Pulse oximeter|🩹|Monitoring", "med|der Monitor|patient monitor|Shows heart rate, blood pressure and oxygen.|Patient monitor|Vital signs|🖥️|Monitoring", "med|das Spirometer|spirometer|Measures how much air the lungs can move.|Spirometry|Spirometer|🌬️|Monitoring", "med|das Peak-Flow-Meter|peak flow meter|Measures how fast a patient can breathe out.|Peak expiratory flow|Peak flow meter|💨|Monitoring", "med|das Langzeit-EKG|Holter monitor|Portable ECG worn for 24 hours.|Holter monitor|Ambulatory ECG|🎒|Monitoring", "med|das Ultraschallgerät|ultrasound machine|Shows organs with sound waves.|Medical ultrasound|Ultrasound|📡|Imaging", "med|das Röntgengerät|X-ray machine|Makes pictures of bones and lungs.|Radiography|X-ray|☢️|Imaging", "med|der Computertomograph|CT scanner|Takes layered X-ray pictures of the body.|CT scan|Computed tomography|🌀|Imaging", "med|der Magnetresonanztomograph|MRI scanner|Shows soft tissue with a strong magnet.|Magnetic resonance imaging|MRI|🧲|Imaging", "med|das Endoskop|endoscope|Flexible camera tube to look inside the body.|Endoscopy|Endoscope|🎥|Imaging", "med|das Gastroskop|gastroscope|Endoscope for the oesophagus and stomach.|Esophagogastroduodenoscopy|Gastroscopy|🍽️|Imaging", "med|das Laryngoskop|laryngoscope|Shows the vocal cords for intubation.|Laryngoscopy|Laryngoscope|🗣️|Emergency", "med|der Tubus|endotracheal tube|Tube in the windpipe that secures the airway.|Tracheal intubation|Endotracheal tube|🫁|Emergency", "med|das Beatmungsgerät|ventilator|Breathes for patients who cannot breathe alone.|Mechanical ventilation|Medical ventilator|🫁|Emergency", "med|der Beatmungsbeutel|bag valve mask|Hand-held bag for rescue breathing.|Bag valve mask|Resuscitator|🎈|Emergency", "med|der Defibrillator|defibrillator|Gives an electric shock to restart a normal heart rhythm.|Defibrillation|Automated external defibrillator|⚡|Emergency", "med|die Sauerstoffmaske|oxygen mask|Gives the patient extra oxygen.|Oxygen mask|Oxygen therapy|😷|Emergency", "med|der Vernebler|nebulizer|Turns liquid medicine into a mist that is inhaled.|Nebulizer|Nebuliser|☁️|Emergency", "med|der Inhalator|inhaler|Delivers asthma medicine into the lungs.|Inhaler|Metered-dose inhaler|💨|Emergency", "med|der Absauger|suction unit|Removes fluid or vomit from the airway.|Suction (medicine)|Medical suction|🌀|Emergency", "med|die Trage|stretcher|Carries a patient who cannot walk.|Stretcher|Gurney|🛌|Emergency", "med|die Rettungsdecke|emergency blanket|Foil blanket that keeps the body warm.|Emergency blanket|Space blanket|🟨|Emergency", "med|der Verband|bandage|Covers a wound or supports an injury.|Bandage|Dressing|🩹|Wound care", "med|die Kompresse|gauze compress|Absorbs blood and protects the wound.|Gauze|Compress|🧻|Wound care", "med|das Pflaster|plaster|Small dressing for minor cuts.|Adhesive bandage|Band-Aid|🩹|Wound care", "med|die elastische Binde|elastic bandage|Supports joints and holds dressings.|Elastic bandage|Bandage|🎀|Wound care", "med|das Dreiecktuch|triangular bandage|Cloth for slings and emergency bandages.|Triangular bandage|Sling (medicine)|🔺|Wound care", "med|der Gips|plaster cast|Hard cover that holds a broken bone still.|Orthopedic cast|Plaster cast|🦴|Orthopaedics", "med|die Schiene|splint|Keeps a limb still after an injury.|Splint (medicine)|Orthopedic splint|🦿|Orthopaedics", "med|die Unterarmgehstütze|crutch|Helps a patient walk without putting weight on a leg.|Crutch|Forearm crutch|🦯|Orthopaedics", "med|der Rollstuhl|wheelchair|Chair with wheels for patients who cannot walk.|Wheelchair|Medical wheelchair|♿|Orthopaedics", "med|die Halskrause|cervical collar|Supports the neck after an injury.|Cervical collar|Neck brace|🛟|Orthopaedics", "med|der Rollator|walker|Walking frame with wheels for elderly patients.|Walker (mobility)|Rollator|🚶|Orthopaedics", "med|der Harnkatheter|urinary catheter|Tube that drains urine from the bladder.|Urinary catheter|Foley catheter|🚽|Other", "med|die Magensonde|feeding tube|Tube through the nose into the stomach for feeding.|Nasogastric intubation|Feeding tube|🍼|Other", "med|der Mundschutz|surgical mask|Protects against droplets.|Surgical mask|Face mask|😷|Other", "med|die Einmalhandschuhe|disposable gloves|Protect doctor and patient from infection.|Medical glove|Disposable glove|🧤|Other", "med|das Desinfektionsmittel|disinfectant|Kills germs on skin and surfaces.|Disinfectant|Hand sanitizer|🧴|Other", "med|die Kanülenabwurfbox|sharps container|Safe box for used needles.|Sharps waste|Sharps container|📦|Other", "med|das Hörgerät|hearing aid|Amplifies sound for patients with hearing loss.|Hearing aid|Hearing aids|🦻|Other"];
+  var INSTR = INSTR_RAW.map(function (l) { var a = l.split('|'); return { tr:a[0], de:a[1], en:a[2], use:a[3], wt:a[4], alt:a[5], emo:a[6], cat:a[7] }; });
+  var IN = { cat:'All', quiz:null };
+  var IN_FREE = 12;
+  function instrList() {
+    var l = INSTR.filter(function (x) { return x.tr === state.track; });
+    return (!account.premium && SB_OK) ? l.slice(0, IN_FREE) : l;
+  }
+  function instrAll() { return INSTR.filter(function (x) { return x.tr === state.track; }); }
+  function instrQ(x) { return x.en + (/dental|tooth|medical/i.test(x.en) ? '' : (x.tr === 'zm' ? ' dentistry' : ' medical')); }
+  function instrPic(x) {
+    return '<div class="pic" data-title="' + esc(x.wt) + '" data-alt="' + esc(x.alt) + '" data-q="' + esc(instrQ(x)) + '" role="img" aria-label="' + esc(x.en) + '"><span class="emo" aria-hidden="true">' + esc(x.emo) + '</span></div>';
+  }
+  function viewInstr() {
+    if (IN.quiz) return viewInstrQuiz();
+    var vis = instrList(), cats = ['All'];
+    vis.forEach(function (x) { if (cats.indexOf(x.cat) < 0) cats.push(x.cat); });
+    if (cats.indexOf(IN.cat) < 0) IN.cat = 'All';
+    var list = vis.filter(function (x) { return IN.cat === 'All' || x.cat === IN.cat; });
+    var h = '<h1 class="page-title">' + esc(L('Instruments')) + '</h1><p class="glead muted">' + esc(state.track === 'zm' ? L('Dental instruments, materials and equipment with a photo. Tap the speaker to hear the German name.') : L('Medical instruments and devices with a photo. Tap the speaker to hear the German name.')) + '</p>';
+    h += '<div class="chips" role="group" aria-label="Category">' + cats.map(function (c) { return '<button data-act="icat" data-v="' + esc(c) + '" aria-pressed="' + (IN.cat === c ? 'true' : 'false') + '">' + esc(c) + '</button>'; }).join('') + '</div>';
+    h += '<button class="btn" data-act="iquiz" style="margin:12px 0">' + esc(L('Quiz: what is this?')) + '</button>';
+    h += '<div class="igrid">' + list.map(function (x) {
+      return '<div class="icard">' + instrPic(x) + '<div class="inm"><b>' + esc(x.de) + '</b>' + sayBtn(x.de.replace(/^(der|die|das) /, ''), x.de) + '</div><div class="ien">' + esc(x.en) + '</div><div class="iuse">' + esc(x.use) + '</div></div>';
+    }).join('') + '</div>';
+    var more = instrAll().length - vis.length;
+    if (more > 0) h += '<div class="upsell"><b>Free: a sample.</b> Premium adds ' + more + ' more instruments with photos from ' + priceFrom() + ', cancel anytime.<button class="btn" data-act="upgrade">See Premium</button></div>';
+    h += '<p class="foot">Photos come from Wikipedia and Wikimedia Commons. Names are for learning; check details against your course material.</p>';
+    return h;
+  }
+  function instrShuf(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function instrQuizStart() {
+    var vis = instrList(), qs = instrShuf(vis).slice(0, 10).map(function (x) {
+      var same = instrShuf(vis.filter(function (y) { return y !== x && y.de !== x.de && y.cat === x.cat; })), rest = instrShuf(vis.filter(function (y) { return y !== x && y.de !== x.de && y.cat !== x.cat; }));
+      var wrong = [], seen = {};
+      same.concat(rest).forEach(function (y) { if (wrong.length < 3 && !seen[y.de]) { seen[y.de] = 1; wrong.push(y); } });
+      var opts = instrShuf([x].concat(wrong));
+      return { x:x, opts:opts, ans:opts.indexOf(x), pick:-1 };
+    });
+    IN.quiz = { i:0, qs:qs, score:0, done:false };
+  }
+  function viewInstrQuiz() {
+    var Q = IN.quiz, h = '<button class="linkbtn" data-act="iexit">← ' + esc(L('Instruments')) + '</button>';
+    if (Q.done) {
+      return h + '<section class="card"><h2>' + esc(L('Result')) + '</h2><div class="exbig"><b>' + Q.score + ' / ' + Q.qs.length + '</b></div><div class="btns"><button class="btn ghost" data-act="iexit">' + esc(L('Instruments')) + '</button><button class="btn" data-act="iquiz">' + esc(L('Try again')) + '</button></div></section>';
+    }
+    var q = Q.qs[Q.i];
+    h += '<p class="say-note" style="margin-top:8px">' + (Q.i + 1) + ' / ' + Q.qs.length + '</p><section class="card">' + instrPic(q.x) + '<h2 style="margin-top:12px">' + esc(L('What is this?')) + '</h2><div class="exopts">';
+    q.opts.forEach(function (o, oi) {
+      var cls = ''; if (q.pick >= 0) { if (oi === q.ans) cls = ' good'; else if (oi === q.pick) cls = ' bad'; }
+      h += '<button class="exo' + cls + '" data-act="ians" data-v="' + oi + '"' + (q.pick >= 0 ? ' disabled' : '') + '>' + esc(o.de) + '</button>';
+    });
+    h += '</div>';
+    if (q.pick >= 0) h += '<p class="muted" style="margin-top:10px"><b>' + esc(q.x.de) + '</b> = ' + esc(q.x.en) + '. ' + esc(q.x.use) + '</p><button class="btn" data-act="inext" style="margin-top:10px">' + esc(Q.i + 1 >= Q.qs.length ? L('See result') : L('Next')) + '</button>';
+    return h + '</section>';
+  }
+
+  /*FX-START*/
+  /* =====================================================
+     SENTENCE CHECKER (works on the phone, no internet needed)
+     Looks for typical learner mistakes. It cannot understand every sentence.
+     ===================================================== */
+  var FX_PERSON = { ich:[0], du:[1], er:[2], sie:[2, 5], man:[2], wir:[3, 5] };
+  var FX_SUBJ = { ich:[0], du:[1], er:[2], sie:[2, 5], es:[2], man:[2], wir:[3, 5], ihr:[4] };
+  var FX_AMBIG = 'morgen mittag fest essen arm recht orange rosa lila gold silber grau blau rot gelb grün braun schwarz weiß schloss band rat tat last leid'.split(' ');
+  var FX_IRR = {
+    sein:['bin','bist','ist','sind','seid','sind'], haben:['habe','hast','hat','haben','habt','haben'], werden:['werde','wirst','wird','werden','werdet','werden'],
+    können:['kann','kannst','kann','können','könnt','können'], müssen:['muss','musst','muss','müssen','müsst','müssen'], wollen:['will','willst','will','wollen','wollt','wollen'],
+    sollen:['soll','sollst','soll','sollen','sollt','sollen'], dürfen:['darf','darfst','darf','dürfen','dürft','dürfen'], mögen:['mag','magst','mag','mögen','mögt','mögen'],
+    möchten:['möchte','möchtest','möchte','möchten','möchtet','möchten'], wissen:['weiß','weißt','weiß','wissen','wisst','wissen'],
+    fahren:['fahre','fährst','fährt','fahren','fahrt','fahren'], laufen:['laufe','läufst','läuft','laufen','lauft','laufen'], sprechen:['spreche','sprichst','spricht','sprechen','sprecht','sprechen'],
+    essen:['esse','isst','isst','essen','esst','essen'], geben:['gebe','gibst','gibt','geben','gebt','geben'], nehmen:['nehme','nimmst','nimmt','nehmen','nehmt','nehmen'],
+    sehen:['sehe','siehst','sieht','sehen','seht','sehen'], lesen:['lese','liest','liest','lesen','lest','lesen'], schlafen:['schlafe','schläfst','schläft','schlafen','schlaft','schlafen'],
+    helfen:['helfe','hilfst','hilft','helfen','helft','helfen'], treffen:['treffe','triffst','trifft','treffen','trefft','treffen'], tragen:['trage','trägst','trägt','tragen','tragt','tragen'],
+    werfen:['werfe','wirfst','wirft','werfen','werft','werfen'], halten:['halte','hältst','hält','halten','haltet','halten'], gehen:['gehe','gehst','geht','gehen','geht','gehen'],
+    kommen:['komme','kommst','kommt','kommen','kommt','kommen'], tun:['tue','tust','tut','tun','tut','tun']
+  };
+  var FX_FORM = {};   /* form -> list of [verb, person] */
+  Object.keys(FX_IRR).forEach(function (v) { FX_IRR[v].forEach(function (f, p) { (FX_FORM[f] = FX_FORM[f] || []).push([v, p]); }); });
+  var FX_SEIN_PART = 'gegangen gekommen gefahren geflogen gelaufen geblieben gewesen gestiegen aufgestanden eingeschlafen passiert geschehen gestorben gereist umgezogen ausgestiegen eingestiegen angekommen abgefahren geworden gesprungen gewandert aufgewacht abgereist zurückgekommen zurückgegangen gefallen ausgegangen mitgekommen hingefallen verschwunden gelandet gestartet'.split(' ');
+  var FX_HABEN_PART = 'gemacht gesehen gegessen getrunken gelesen geschrieben gekauft gearbeitet gelernt gesagt gehabt genommen gegeben gefunden besucht bekommen gespielt gehört gebracht gewusst gekocht geholfen getroffen verstanden angerufen eingekauft bestellt untersucht behandelt geputzt gewartet geöffnet vergessen genommen'.split(' ');
+  var FX_SEP = 'auf an ab aus ein mit zu vor weg zurück fest nach her hin um'.split(' ');
+  var FX_SUB = 'weil dass ob wenn obwohl damit während nachdem bevor falls sodass als'.split(' ');
+  var FX_ADV = 'heute morgen gestern jetzt dann danach später zuerst manchmal oft hier dort normalerweise leider deshalb deswegen trotzdem außerdem abends morgens mittags nachmittags montags dienstags mittwochs donnerstags freitags samstags sonntags früher bald inzwischen schließlich zuletzt anschließend vielleicht natürlich'.split(' ');
+  var FX_FUNC = 'ich du er sie es wir ihr man und oder aber denn weil dass ob wenn als wie wo was wer wann warum nicht kein keine auch noch schon sehr nur dann doch mit von zu in auf für an bei nach aus um über unter vor durch gegen ohne bis seit während ist sind bin bist war waren hat haben habe hast wird werden kann muss will soll darf mag den dem der die das des ein eine einen einem einer mein meine meinen meinem dein sein unser euer'.split(' ');
+  var FX_TYPO = { vieleicht:'vielleicht', villeicht:'vielleicht', warscheinlich:'wahrscheinlich', wahrscheinlig:'wahrscheinlich', garnicht:'gar nicht', nähmlich:'nämlich', nemlich:'nämlich', interresant:'interessant', interessannt:'interessant', endschuldigung:'Entschuldigung', entschuldigund:'Entschuldigung', bischen:'bisschen', bißchen:'bisschen', standart:'Standard', wiederspiegeln:'widerspiegeln', agressiv:'aggressiv', addresse:'Adresse', adrese:'Adresse', morgends:'morgens', abents:'abends', bezalen:'bezahlen', freunt:'Freund', kolegen:'Kollegen', komplet:'komplett', erfarung:'Erfahrung', ärtzin:'Ärztin', artzt:'Arzt', ärtzt:'Arzt', patiet:'Patient', rechnug:'Rechnung', zahnartz:'Zahnarzt', teremin:'Termin', zahne:'Zähne', hande:'Hände', haende:'Hände', bucher:'Bücher', buecher:'Bücher', fusse:'Füße', arzte:'Ärzte', ärzte:'Ärzte', termien:'Termin', shcmerzen:'Schmerzen', schmerzten:'Schmerzen', wohnug:'Wohnung', arbet:'Arbeit', krankenhause:'Krankenhaus', dannke:'danke', danek:'danke', bite:'bitte', biite:'bitte', };
+  var FX_ASCII = { fuer:'für', ueber:'über', koennen:'können', koennte:'könnte', moechte:'möchte', moechten:'möchten', muessen:'müssen', muesste:'müsste', waere:'wäre', haette:'hätte', wuerde:'würde', wuerden:'würden', spaet:'spät', frueh:'früh', frueher:'früher', zurueck:'zurück', natuerlich:'natürlich', schoen:'schön', gruesse:'Grüße', gruss:'Gruß', maedchen:'Mädchen', aerztin:'Ärztin', aerzte:'Ärzte', buero:'Büro', gemuese:'Gemüse', hoeren:'hören', hoere:'höre', hoert:'hört', fuehle:'fühle', fuehlen:'fühlen', moeglich:'möglich', schluessel:'Schlüssel', fruehstueck:'Frühstück', woerter:'Wörter', kuerzlich:'kürzlich', zaehne:'Zähne', zaehnen:'Zähnen', waehrend:'während', draussen:'draußen', strasse:'Straße', weiss:'weiß', heisse:'heiße', heisst:'heißt', gross:'groß', grosse:'große', spass:'Spaß', fuss:'Fuß', ausser:'außer', ausserdem:'außerdem' };
+  var FX_CORE = 'der Arzt|die Ärztin|der Patient|die Patientin|der Zahnarzt|die Zahnärztin|das Haus|die Wohnung|das Zimmer|die Küche|das Bad|die Arbeit|die Praxis|das Krankenhaus|die Schule|die Stadt|das Dorf|das Land|die Straße|der Termin|die Zeit|der Tag|die Woche|der Monat|das Jahr|der Morgen|der Abend|die Nacht|das Wochenende|der Urlaub|die Ferien|das Auto|der Zug|der Bus|das Fahrrad|der Bahnhof|der Flughafen|das Geld|die Rechnung|der Preis|das Essen|das Frühstück|das Mittagessen|das Abendessen|das Wasser|der Kaffee|der Tee|das Brot|das Obst|das Gemüse|das Fleisch|der Fisch|die Milch|der Käse|das Buch|die Zeitung|der Brief|die E-Mail|das Handy|der Computer|das Telefon|der Freund|die Freundin|der Mann|die Frau|das Kind|die Mutter|der Vater|der Bruder|die Schwester|die Familie|die Eltern|der Kollege|die Kollegin|der Chef|die Chefin|der Lehrer|die Lehrerin|der Schüler|die Schülerin|der Student|die Studentin|das Problem|die Frage|die Antwort|die Hilfe|der Schmerz|die Krankheit|das Fieber|der Husten|die Erkältung|das Medikament|die Tablette|das Rezept|die Untersuchung|die Behandlung|die Operation|der Zahn|das Auge|das Ohr|die Nase|der Mund|der Kopf|der Arm|das Bein|der Fuß|die Hand|der Finger|der Rücken|der Bauch|das Herz|der Magen|die Haut|das Blut|das Kino|das Restaurant|das Café|der Park|das Geschäft|der Supermarkt|die Apotheke|die Bank|die Post|das Hotel|das Museum|das Konzert|das Fest|die Party|der Geburtstag|das Geschenk|das Wetter|die Sonne|der Regen|der Schnee|der Sommer|der Winter|der Frühling|der Herbst|die Sprache|der Kurs|die Prüfung|die Aufgabe|das Ergebnis|die Meinung|der Vorteil|der Nachteil|die Gesundheit|der Sport|die Musik|der Film|das Spiel|die Reise|das Ticket|der Koffer|die Tasche|das Hemd|die Hose|die Jacke|der Schuh|der Hund|die Katze|das Tier|der Garten|der Baum|die Blume|die Stelle|der Beruf|das Gehalt|der Vertrag|die Firma|das Büro|die Besprechung|der Lebenslauf|die Bewerbung'.split('|');
+  var FX_CVERBS = 'gehen kommen machen arbeiten lernen wohnen spielen bleiben stehen sitzen liegen finden suchen brauchen kaufen verkaufen bezahlen trinken schreiben hören sagen fragen antworten denken glauben meinen leben lieben wünschen hoffen warten rufen anrufen telefonieren besuchen reisen schwimmen tanzen singen kochen backen putzen waschen öffnen schließen beginnen anfangen aufhören bringen holen zeigen verstehen erklären studieren üben wiederholen vergessen bestellen schmecken schauen heißen kosten dauern passen gefallen gehören feiern schenken einladen abholen aufstehen einkaufen mitkommen ankommen abfahren umziehen vereinbaren untersuchen behandeln verschreiben empfehlen erhalten bekommen suchen interessieren freuen ärgern fühlen duschen spazieren wandern joggen parken fotografieren'; 
+  var FX_PRET = 'war waren warst wart hatte hatten hattest hattet wurde wurden konnte konnten musste mussten wollte wollten sollte sollten durfte durften würde würden würdest würdet wäre wären wärst hätte hätten hättest könnte könnten könntest müsste müssten ging gingen kam kamen sah sahen gab gaben nahm nahmen fuhr fuhren lief liefen blieb blieben stand standen lag lagen saß fand fanden aß aßen trank tranken schrieb schrieben las lasen sprach sprachen sagte meinte fragte dachte'.split(' ');
+  var FX_REPORT = 'sagte sagt meinte meint erklärte erklärt behauptete behauptet berichtete berichtet fragte antwortete antwortet glaubt glaubte hieß'.split(' ');
+  var FX_PROPER = 'Montag Dienstag Mittwoch Donnerstag Freitag Samstag Sonntag Januar Februar März April Mai Juni Juli August September Oktober November Dezember Deutschland Österreich Schweiz Berlin München Hamburg Köln Frankfurt Stuttgart Düsseldorf Dresden Leipzig Hannover Bremen Nürnberg Syrien Afghanistan Iran Irak Pakistan Indien Türkei Ukraine Russland Polen Italien Spanien Frankreich England Europa Amerika Ägypten Marokko China Japan Deutsch Englisch Französisch Spanisch Arabisch Persisch Türkisch Russisch Ukrainisch Polnisch Urdu Pashto Dari Kurdisch Mongolisch'.split(' ');
+  var FX_NOUNS = null, FX_STEMS = null, FX_INF = null;
+
+  function fxBuild() {
+    if (FX_NOUNS) return;
+    FX_NOUNS = {}; FX_STEMS = {}; FX_INF = {};
+    function addN(art, de) {
+      art = String(art || '').toLowerCase(); de = String(de || '').trim();
+      if (!/^(der|die|das)$/.test(art) || !de || /[\s\/(]/.test(de) || de.length < 3) return;
+      var k = de.toLowerCase(); if (FX_AMBIG.indexOf(k) >= 0) return;
+      if (!FX_NOUNS[k]) FX_NOUNS[k] = { g:art === 'der' ? 'm' : (art === 'die' ? 'f' : 'n'), cap:de };
+    }
+    FX_CORE.forEach(function (s) { var a = s.split(' '); addN(a[0], a.slice(1).join(' ')); });
+    addN('das', 'Hause');
+    FX_PROPER.forEach(function (p) { FX_NOUNS[p.toLowerCase()] = { g:'?', cap:p }; });
+    try { (WORD_CATS || []).forEach(function (c) { (c.items || []).forEach(function (it) { addN(it[0], it[1]); }); }); } catch (e) {}
+    try { (FSP || []).forEach(function (s) { if (s.type === 'vocab') (s.items || []).forEach(function (it) { var m = /^(der|die|das)\s+(\S+)$/i.exec(it[0]); if (m) addN(m[1], m[2]); }); }); } catch (e) {}
+    try { INSTR.forEach(function (x) { var m = /^(der|die|das)\s+(\S+)$/i.exec(x.de); if (m) addN(m[1], m[2]); }); } catch (e) {}
+    try { VERBS.forEach(function (v) { var inf = String(v.de).toLowerCase().replace(/^sich\s+/, ''); if (/^[a-zäöüß]+n$/.test(inf)) { FX_INF[inf] = 1; var st = inf.replace(/en$/, '').replace(/n$/, ''); if (st.length > 1) FX_STEMS[st] = inf; } }); } catch (e) {}
+    FX_CVERBS.split(' ').forEach(function (inf) { FX_INF[inf] = 1; var st = inf.replace(/en$/, '').replace(/n$/, ''); if (st.length > 1 && !FX_STEMS[st]) FX_STEMS[st] = inf; });
+    Object.keys(FX_IRR).forEach(function (v) { FX_INF[v] = 1; });
+  }
+  function fxVerbForm(w) {   /* { persons:[...], inf } or null */
+    if (FX_FORM[w]) return { persons:FX_FORM[w].map(function (x) { return x[1]; }), inf:FX_FORM[w][0][0], irr:true };
+    if (w.length > 5 && w.slice(0, 2) === 'ge' && /(t|en)$/.test(w)) { var rest = w.slice(2), rs = rest.replace(/(en|et|t)$/, ''); if (FX_STEMS[rs]) return null; }   /* gehört, gemacht: participles */
+    var ends = [['est', [1]], ['et', [2, 4]], ['en', [3, 5]], ['st', [1]], ['e', [0]], ['t', [2, 4]]];
+    for (var i = 0; i < ends.length; i++) {
+      var e = ends[i][0];
+      if (w.length > e.length + 1 && w.slice(-e.length) === e) { var st = w.slice(0, -e.length); if (FX_STEMS[st]) return { persons:ends[i][1], inf:FX_STEMS[st] }; }
+    }
+    return null;
+  }
+  function fxConj(inf, p) {
+    if (FX_IRR[inf]) return FX_IRR[inf][p];
+    var st = inf.replace(/en$/, '').replace(/n$/, '');
+    if (p === 0) return /el$/.test(st) ? st.slice(0, -2) + 'le' : st + 'e';
+    if (p === 1) return st + (/(t|d|chn|ffn|gn|tm)$/.test(st) ? 'est' : (/[sßxz]$/.test(st) ? 't' : 'st'));
+    if (p === 2 || p === 4) return st + (/(t|d|chn|ffn|gn|tm)$/.test(st) ? 'et' : 't');
+    return inf;
+  }
+  function fxCap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  function fxUp(s) { return /^[A-ZÄÖÜ]/.test(s); }
+  function fxAgree(persons, subj) { return persons.filter(function (p) { return subj.indexOf(p) >= 0; }).length > 0; }
+
+  /* checks one sentence: { text, issues:[{a, b, why}] } */
+  function fxSentence(raw, opt) {
+    opt = opt || {};
+    var issues = [], s = String(raw).replace(/\s+/g, ' ').trim();
+    if (!s) return { text:'', issues:issues };
+    function note(a, b, why) { issues.push({ a:a, b:b, why:why }); }
+    var MODAL = '(kann|kannst|können|könnt|muss|musst|müssen|müsst|will|willst|wollen|wollt|soll|sollst|sollen|sollt|darf|darfst|dürfen|dürft|möchte|möchtest|möchten|möchtet)';
+    var PH = [
+      [/\bseit (ein|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf|\d+) (Jahre|Monate|Tage)\b/gi, function (m, n, u) { return 'seit ' + n + ' ' + { jahre:'Jahren', monate:'Monaten', tage:'Tagen' }[u.toLowerCase()]; }, 'After "seit" the dative plural is used: seit zwei Jahren.'],
+      [/\b(bin|bist|ist|sind|seid) (\d+|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf|dreizehn|vierzehn|fünfzehn|sechzehn|siebzehn|achtzehn|neunzehn|zwanzig|dreißig|vierzig|fünfzig|sechzig|siebzig|achtzig|neunzig|hundert|[a-zäöüß]+und[a-zäöüß]+zig) Jahre\b(?! alt)/gi, function (m, v, n) { return v + ' ' + n + ' Jahre alt'; }, 'Age: "Ich bin 30 Jahre alt" (do not forget "alt").'],
+      [/\bich habe (\d+) jahre( alt)?\b/gi, function (m, n) { return 'ich bin ' + n + ' Jahre alt'; }, 'Age: "Ich bin 30 Jahre alt" (with "sein", not "haben").'],
+      [/\bich bin (kalt|warm|heiß|heiss)\b/gi, function (m, a) { return 'mir ist ' + a.toLowerCase().replace('heiss', 'heiß'); }, 'For temperature say "Mir ist kalt/warm/heiß".'],
+      [/\b(gehe|gehst|geht|gehen|fahre|fährst|fährt|fahren|komme|kommst|kommt|kommen|laufe|läufst|läuft|laufen) zu hause\b/gi, function (m, v) { return v + ' nach Hause'; }, '"nach Hause" = going home, "zu Hause" = being at home.'],
+      [/\b(bin|bist|ist|sind|seid|bleibe|bleibst|bleibt|bleiben) nach hause\b/gi, function (m, v, off, str) { return /^\s+(gekommen|gegangen|gefahren|gelaufen|geflogen|gereist|zurückgekommen|zurückgegangen|zurückgefahren|gerannt|gebracht|geschickt)/i.test(str.slice(off + m.length)) ? m : v + ' zu Hause'; }, '"zu Hause" = being at home, "nach Hause" = going home.'],
+      [/\bwie viel uhr ist es\b/gi, function () { return 'wie spät ist es'; }, 'The usual question is "Wie spät ist es?"'],
+      [new RegExp('\\b' + MODAL + '\\b([^.,;!?]*?) zu ([a-zäöüß]{4,}en)\\b', 'gi'), function (m, mv, mid, inf) { return (!/^[a-zäöüß]/.test(inf) || /^(einen|diesen|jeden|meinen|deinen|seinen|unseren|keinen|welchen|anderen)$/i.test(inf)) ? m : mv + mid + ' ' + inf; }, 'After a modal verb (können, müssen, wollen ...) the infinitive comes without "zu".']
+    ];
+    PH.forEach(function (r) {
+      s = s.replace(r[0], function () { var m = arguments[0], b = r[1].apply(null, arguments); if (b !== m) { if (fxUp(m)) b = fxCap(b); note(m, b, r[2]); return b; } return m; });
+    });
+    var T = s.split(' ').map(function (p) { var m = /^([„"'(]*)(.*?)([.,;:!?"“”')]*)$/.exec(p); return { pre:m[1], w:m[2], post:m[3] }; });
+    function lw(i) { return T[i] ? T[i].w.toLowerCase() : ''; }
+    function join() { return T.map(function (t) { return t.pre + t.w + t.post; }).join(' '); }
+    function win(i, n) { return T.slice(i, i + n).map(function (t) { return t.w; }).join(' '); }
+    fxBuild();
+    /* spelling: ae/oe/ue instead of ä/ö/ü, and common typos */
+    T.forEach(function (t, i) {
+      var k = t.w.toLowerCase(), r = FX_ASCII[k] || FX_TYPO[k];
+      if (!r || r === t.w) return;
+      if (i === 0 || fxUp(t.w)) r = fxCap(r);
+      if (r === t.w) return;
+      note(t.w, r, FX_ASCII[k] ? 'Use the German letters ä ö ü ß (not ae oe ue ss).' : 'Spelling: ' + r + '.'); t.w = r;
+    });
+    /* adverb + pronoun + verb: the verb must be the second word (at the start of any clause) */
+    for (var ai = 0; ai < T.length - 2; ai++) {
+      if (ai > 0 && !/,/.test(T[ai - 1].post) && !/^(und|aber|oder|denn)$/.test(lw(ai - 1))) continue;
+      if (FX_ADV.indexOf(lw(ai)) >= 0 && FX_SUBJ[lw(ai + 1)] && !fxUp(T[ai + 2].w) && fxVerbForm(lw(ai + 2)) && !/[,.;:!?]/.test(T[ai].post) && !/[,.;:!?]/.test(T[ai + 1].post)) {
+        var o3 = win(ai, 3), a0 = T[ai], p0 = T[ai + 1], v0 = T[ai + 2];
+        T = T.slice(0, ai).concat([a0, { pre:'', w:v0.w, post:'' }, { pre:'', w:p0.w, post:v0.post }], T.slice(ai + 3));
+        note(o3, win(ai, 3), 'In a statement the verb is the second word: "' + a0.w + ' ' + v0.w + ' ' + p0.w + ' ...".');
+      }
+    }
+    /* "Weil ..., ich bleibe": after the subordinate clause the main clause starts with the verb */
+    if (FX_SUB.indexOf(lw(0)) >= 0) {
+      for (var ci = 1; ci < T.length - 2; ci++) {
+        if (/,/.test(T[ci].post) && FX_SUBJ[lw(ci + 1)] && !fxUp(T[ci + 2].w) && fxVerbForm(lw(ci + 2)) && fxAgree(fxVerbForm(lw(ci + 2)).persons, FX_SUBJ[lw(ci + 1)])) {
+          var o2 = win(ci + 1, 2), pp1 = T[ci + 1], vv1 = T[ci + 2], pw1 = pp1.w;
+          T[ci + 1] = { pre:pp1.pre, w:vv1.w, post:'' }; T[ci + 2] = { pre:'', w:pw1, post:vv1.post };
+          note(o2, win(ci + 1, 2), 'After a "weil / wenn / obwohl ..." clause the main clause starts with the verb: "..., ' + vv1.w + ' ' + pw1 + ' ...".'); break;
+        }
+      }
+    }
+    /* subordinate clause: the conjugated verb goes to the end */
+    for (var i = 0; i < T.length - 3; i++) {
+      if (FX_SUB.indexOf(lw(i)) < 0 || !FX_SUBJ[lw(i + 1)] || /,/.test(T[i + 1].post) || /,/.test(T[i + 2].post) || fxUp(T[i + 2].w)) continue;
+      var f = fxVerbForm(lw(i + 2)); if (!f || !fxAgree(f.persons, FX_SUBJ[lw(i + 1)])) continue;
+      var e = i + 3; while (e < T.length - 1 && !/,/.test(T[e].post)) e++;
+      var before = join(), vt = T[i + 2], lastW = lw(e);
+      if (FX_SEP.indexOf(lastW) >= 0 && e > i + 3) { T[e] = { pre:T[e].pre, w:T[e].w + vt.w, post:T[e].post }; }
+      else { var ep = T[e].post; T[e] = { pre:T[e].pre, w:T[e].w, post:'' }; T.splice(e + 1, 0, { pre:'', w:vt.w, post:ep }); }
+      T.splice(i + 2, 1);
+      note(before, join(), 'In a clause with "' + lw(i) + '" the conjugated verb goes to the end of the clause.');
+      break;
+    }
+    /* subject and verb must agree */
+    for (var k2 = 0; k2 < T.length - 1; k2++) {
+      var pw = lw(k2), pp = FX_PERSON[pw]; if (!pp) continue;
+      if (/[,.;:!?]/.test(T[k2].post) || /^(und|oder|sowie)$/.test(lw(k2 - 1))) continue;   /* "meine Frau und ich kochen" */
+      var fv = !fxUp(T[k2 + 1].w) ? fxVerbForm(lw(k2 + 1)) : null;
+      if (fv && fv.persons.length === 2 && fv.persons[0] === 3 && pp.length === 1) {   /* "ich arbeiten": only a mistake right at the start of a clause; "soll ich sagen", "ging ich schlafen", "weil ich arbeiten muss" are fine */
+        var atStart = k2 === 0 || /,/.test(T[k2 - 1].post) || /^(und|oder|aber|denn|dann|jetzt|heute|morgen|gestern|manchmal|oft|immer|hier|dort)$/.test(lw(k2 - 1));
+        var infOk = !atStart || FX_PRET.indexOf(lw(k2 - 1)) >= 0;
+        for (var z = k2 + 2; !infOk && z < T.length && z < k2 + 8; z++) { if (FX_FORM[lw(z)] && FX_FORM[lw(z)][0][1] !== 3) infOk = true; if (/[,.;:!?]/.test(T[z - 1].post)) break; }
+        if (infOk) fv = null;
+      }
+      if (fv && pp.length === 1 && pp[0] === 2 && fv.persons.indexOf(0) >= 0) {   /* indirect speech: "Er sagte, er habe keine Zeit." */
+        for (var z2 = 0; z2 < k2; z2++) if (FX_REPORT.indexOf(lw(z2)) >= 0) { fv = null; break; }
+      }
+      if (fv && !fxAgree(fv.persons, pp)) {
+        var want = fxConj(fv.inf, pp[0]);
+        if (want && want !== lw(k2 + 1)) { note(T[k2].w + ' ' + T[k2 + 1].w, T[k2].w + ' ' + want, 'After "' + T[k2].w + '" the verb form is "' + want + '".' + (pp[0] === 2 && fv.persons.indexOf(0) >= 0 ? ' (In indirect speech "er habe / er könne ..." is correct.)' : '')); T[k2 + 1].w = want; }
+      }
+      if (k2 > 0 && /^(ich|du|er|wir|man)$/.test(pw)) {   /* verb first: "Kann du ...?" */
+        var pf = fxVerbForm(lw(k2 - 1));
+        if (pf && pf.irr && !fxAgree(pf.persons, pp) && (k2 - 1 === 0 || /,/.test(T[k2 - 2].post))) {
+          var want2 = FX_IRR[pf.inf][pp[0]], c2 = k2 - 1 === 0 ? fxCap(want2) : want2;
+          note(T[k2 - 1].w + ' ' + T[k2].w, c2 + ' ' + T[k2].w, 'After "' + T[k2].w + '" the verb form is "' + want2 + '".'); T[k2 - 1].w = c2;
+        }
+      }
+    }
+    /* Perfekt: haben or sein (the participle must be in the same clause) */
+    for (var q = 0; q < T.length; q++) {
+      var af = FX_FORM[lw(q)]; if (!af) continue;
+      var an = af[0][0], ap = af[0][1];
+      if (an !== 'haben' && an !== 'sein') continue;
+      var subj = FX_PERSON[lw(q - 1)] || FX_PERSON[lw(q + 1)]; if (!subj) { var wq = q - 1; while (wq >= 0 && !subj && !/[,.!?;]/.test(T[wq].post) && q - wq < 5) { subj = FX_PERSON[lw(wq)]; wq--; } }
+      if (!subj) continue;
+      var hit = -1;
+      for (var r2 = q + 1; r2 < Math.min(T.length, q + 6); r2++) { if (FX_SEIN_PART.indexOf(lw(r2)) >= 0 || FX_HABEN_PART.indexOf(lw(r2)) >= 0) { hit = r2; break; } if (/[,.!?;]/.test(T[r2].post)) break; }
+      if (hit < 0) for (var r3 = q - 1; r3 >= Math.max(0, q - 6); r3--) { if (r3 < q - 1 && /[,.!?;]/.test(T[r3].post)) break; if (FX_SEIN_PART.indexOf(lw(r3)) >= 0 || FX_HABEN_PART.indexOf(lw(r3)) >= 0) { hit = r3; break; } }
+      if (hit < 0) continue;
+      var part = lw(hit), want3 = '';
+      if (an === 'haben' && FX_SEIN_PART.indexOf(part) >= 0) want3 = FX_IRR.sein[ap];
+      else if (an === 'sein' && FX_HABEN_PART.indexOf(part) >= 0 && subj[0] !== 2 && subj[0] !== 5) want3 = FX_IRR.haben[ap];
+      if (want3) { var c3 = fxUp(T[q].w) ? fxCap(want3) : want3; note(T[q].w + ' ... ' + T[hit].w, c3 + ' ... ' + T[hit].w, '"' + T[hit].w + '" forms the Perfekt with "' + (an === 'haben' ? 'sein' : 'haben') + '": ' + want3 + ' ... ' + T[hit].w + '.'); T[q].w = c3; }
+    }
+    /* article, gender and case */
+    var DAT = ' mit nach bei seit von zu aus gegenüber ', AKK = ' für durch ohne gegen um ';
+    for (var n = 0; n < T.length - 1; n++) {
+      var art = lw(n), nk = lw(n + 1), ent = FX_NOUNS[nk]; if (!ent || ent.g === '?') continue;
+      var g = ent.g, plSame = /(er|el|en|chen|lein)$/.test(nk), prev = lw(n - 1), to = '', why = '';
+      if (/^(der|die|das|dem|den)$/.test(art) && prev && DAT.indexOf(' ' + prev + ' ') >= 0) {
+        var ex = g === 'f' ? 'der' : 'dem';
+        if (art !== ex && !(plSame && (art === 'den' || art === 'die'))) { to = ex; why = 'After "' + prev + '" the dative is used: ' + prev + ' ' + ex + ' ' + ent.cap + '.'; }
+      } else if (/^(der|die|das|dem|den)$/.test(art) && prev && AKK.indexOf(' ' + prev + ' ') >= 0) {
+        var ex2 = g === 'm' ? 'den' : (g === 'f' ? 'die' : 'das');
+        if (art !== ex2 && !(plSame && art === 'die')) { to = ex2; why = 'After "' + prev + '" the accusative is used: ' + prev + ' ' + ex2 + ' ' + ent.cap + '.'; }
+      } else if (art === 'das' && g !== 'n') { to = g === 'm' ? 'der' : 'die'; why = '"' + ent.cap + '" is ' + (g === 'm' ? 'masculine' : 'feminine') + ': ' + to + ' ' + ent.cap + '.'; }
+      else if (art === 'der' && g === 'n' && !plSame) { to = 'das'; why = '"' + ent.cap + '" is neuter: das ' + ent.cap + '.'; }
+      else if (art === 'die' && g !== 'f' && !plSame) { to = g === 'm' ? 'der' : 'das'; why = '"' + ent.cap + '" is ' + (g === 'm' ? 'masculine' : 'neuter') + ': ' + to + ' ' + ent.cap + '.'; }
+      else if (art === 'dem' && g === 'f') { to = 'der'; why = '"' + ent.cap + '" is feminine: der ' + ent.cap + ' (dative).'; }
+      else if ((art === 'ein' || art === 'kein') && g === 'f') { to = art + 'e'; why = '"' + ent.cap + '" is feminine: ' + to + ' ' + ent.cap + '.'; }
+      else if (art === 'eine' && g !== 'f' && !plSame) { to = 'ein'; why = '"' + ent.cap + '" is not feminine: ein ' + ent.cap + '.'; }
+      else if ((art === 'einen' || art === 'keinen') && g !== 'm' && !plSame) { to = art.slice(0, -2) + (g === 'f' ? 'e' : ''); why = '"' + ent.cap + '" is ' + (g === 'f' ? 'feminine' : 'neuter') + ': ' + to + ' ' + ent.cap + '.'; }
+      if (to) { var c4 = fxUp(T[n].w) ? fxCap(to) : to; note(T[n].w + ' ' + T[n + 1].w, c4 + ' ' + T[n + 1].w, why); T[n].w = c4; }
+    }
+    /* masculine object after common verbs: "ein Termin" -> "einen Termin" */
+    var VACC = ' habe hast hat haben habt brauche brauchst braucht brauchen möchte möchtest möchten suche suchst sucht suchen kaufe kaufst kauft kaufen nehme nimmst nimmt nehmen sehe siehst sieht sehen trinke esse isst bestelle bestellt vereinbare vereinbaren mache machst macht machen kenne kennst kennt kennen finde findest findet finden ';
+    for (var vi = 1; vi < T.length - 1; vi++) {
+      var an2 = lw(vi), nn = FX_NOUNS[lw(vi + 1)];
+      if (!/^(ein|kein|mein|dein|sein|unser|euer)$/.test(an2) || !nn || nn.g !== 'm') continue;
+      var FILL = /^(mir|dir|uns|euch|ihm|ihr|bitte|auch|noch|heute|morgen|gern|gerne|nur|jetzt|schon|gleich|leider|dringend)$/, jv = vi - 1;
+      while (jv > 0 && FILL.test(lw(jv))) jv--;
+      var okA = VACC.indexOf(' ' + lw(jv) + ' ') >= 0 && jv > 0 && !!FX_SUBJ[lw(jv - 1)];                                  /* "Ich habe ein ..." */
+      var okB = !!FX_SUBJ[lw(jv)] && jv > 0 && VACC.indexOf(' ' + lw(jv - 1) + ' ') >= 0 && (jv - 1 === 0 || /,/.test(T[jv - 2].post));   /* "Hast du ein ..." */
+      if (!okA && !okB) continue;
+      var an3 = an2 === 'unser' ? 'unseren' : (an2 === 'euer' ? 'euren' : an2 + 'en');
+      note(T[vi].w + ' ' + T[vi + 1].w, an3 + ' ' + T[vi + 1].w, '"' + nn.cap + '" is masculine (der). After this verb the object takes the accusative: ' + an3 + ' ' + nn.cap + '.'); T[vi].w = an3;
+    }
+    /* capital letters */
+    T.forEach(function (t, i) {
+      var k = t.w.toLowerCase(), ent = FX_NOUNS[k];
+      if (!k) return;
+      if (!fxUp(t.w) && ent && i > 0 && !FX_INF[k] && !fxVerbForm(k) && FX_FUNC.indexOf(k) < 0) { note(t.w, ent.cap, 'Nouns always start with a capital letter: ' + ent.cap + '.'); t.w = ent.cap; }
+      else if (fxUp(t.w) && i > 0 && !t.pre && !/[:;]/.test(T[i - 1].post) && !/^[–—-]$/.test(T[i - 1].w) && FX_FUNC.indexOf(k) >= 0 && !ent && !/^(sie|ihr|ihre|ihren|ihrem|ihrer)$/.test(k)) { note(t.w, k, '"' + k + '" is not a noun, so it has a small letter inside a sentence.'); t.w = k; }
+    });
+    if (T.length && !opt.lowerOk && /^[a-zäöü]/.test(T[0].w)) { var fw = T[0].w; T[0].w = fxCap(fw); note(fw, T[0].w, 'A sentence starts with a capital letter.'); }
+    /* end of the sentence */
+    var out = join();
+    if (opt.punct !== false && !/[.!?,:;]["”“')]*$/.test(out)) {
+      var isQ = /^(wer|was|wie|wo|wann|warum|wieso|weshalb|wohin|woher|welche|welcher|welches|wieviel|kannst|kann|können|könnt|hast|hat|habt|ist|sind|bist|gibt|darf|darfst|willst|möchtest|magst|musst|sollst|hättest|könntest|würdest|haben)$/i.test(T[0].w);
+      var endc = isQ ? '?' : '.'; note(out, out + endc, 'A sentence needs ' + (isQ ? 'a question mark.' : 'a full stop.')); out += endc;
+    }
+    return { text:out, issues:issues };
+  }
+  function fxCheck(text) {
+    var t = String(text || '').replace(/\r/g, '').trim();
+    if (!t) return { text:'', issues:[] };
+    /* keep full stops of numbers like "am 3. Mai" and of short forms like "Dr." inside the sentence */
+    t = t.replace(/(\S)\.(?=[A-Za-z0-9])/g, '$1\u0001').replace(/(\d)\.(?=\s+(?:[a-zäöü]|Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember))/g, '$1\u0001').replace(/\b(Dr|Prof|Nr|ca|bzw|usw|etc|Str|Hr|Fr)\.(?=\s)/g, '$1\u0001').replace(/\bz\. ?B\./g, 'z\u0001B\u0001').replace(/\bd\.h\./g, 'd\u0001h\u0001');
+    var multi = /\n/.test(t), segs = t.match(/[^.!?\n]+[.!?]*["”“')]*|\n/g) || [t], out = [], all = [], lastEnd = '';
+    segs.forEach(function (x, si) {
+      if (x === '\n') { out.push('\n'); return; }
+      var nextBreak = si + 1 >= segs.length || segs[si + 1] === '\n';
+      var words = x.trim().split(/\s+/).length, closing = /^(mit freundlichen|viele|liebe|beste|herzliche|freundliche|dein|deine|ihr|euer|eure|hochachtungsvoll|bis bald|bis dann|tsch|lg|vg|hallo|guten|sehr geehrte)/i.test(x.trim());
+      var r = fxSentence(x.replace(/\u0001/g, '.'), { lowerOk:/[,:;]$/.test(lastEnd), punct:!(multi && nextBreak && (words < 4 || closing)) });
+      if (r.text) { out.push(r.text); lastEnd = r.text.replace(/\s+$/, ''); }
+      all = all.concat(r.issues);
+    });
+    return { text:out.join(' ').replace(/ ?\n ?/g, '\n'), issues:all };
+  }
+
+  /* ----- Check tab (next to Exam): write or speak a sentence, see the corrected version ----- */
+  var FXS = { text:'', res:null, rec:false, ai:null, aiBusy:false, aiErr:'' };
+  var FXREC = null;
+  var FX_EX = ['heute ich gehe zur arbeit', 'Ich habe gestern ins Kino gegangen.', 'Weil ich habe keine Zeit, komme ich nicht.', 'Ich fahre mit die Bus zur Arbeit.', 'Kann du mir helfen'];
+  function fxRun() { FXS.res = fxCheck(FXS.text); FXS.ai = null; FXS.aiErr = ''; }
+  function fxAiOn() { return CFG.AI_CORRECT === true && SB_OK && !!account.premium; }
+  function fxIssueHtml(i) {
+    return '<li class="bad">✗ <b>' + esc(i.a) + '</b> → <b>' + esc(i.b) + '</b><div class="say-note">' + esc(i.why) + '</div></li>';
+  }
+  function viewFix() {
+    var can = !!speechCtor(), r = FXS.res;
+    var h = '<h1 class="page-title">' + esc(L('Sentence check')) + '</h1><p class="glead muted">' + esc(L('Write a German sentence or a short text. You get the corrected version and an explanation of each mistake. You can also speak: tap the microphone and talk.')) + '</p>';
+    h += '<textarea id="fxin" class="extarea" rows="5" placeholder="Schreiben Sie hier ..." autocapitalize="off" autocorrect="off" spellcheck="false">' + esc(FXS.text) + '</textarea>';
+    h += '<div class="btns" style="margin-top:10px">';
+    if (can) h += '<button class="btn' + (FXS.rec ? '' : ' ghost') + '" data-act="fxmic">' + (FXS.rec ? '■ ' + esc(L('Stop')) : '🎤 ' + esc(L('Speak'))) + '</button>';
+    h += '<button class="btn" data-act="fxcheck">' + esc(L('Check')) + '</button><button class="btn ghost" data-act="fxclear">' + esc(L('Clear')) + '</button></div>';
+    if (FXS.rec) h += '<p class="say-note">' + esc(L('Listening ... speak in German, then tap Stop.')) + '</p>';
+    if (!can) h += '<p class="say-note">' + esc(L('This device cannot record speech in the app. On iPhone you can tap the microphone key on the keyboard to dictate instead.')) + '</p>';
+    h += '<p class="say-note" style="margin-top:12px">' + esc(L('Try an example:')) + '</p><div class="chips">' + FX_EX.map(function (x, i) { return '<button data-act="fxex" data-v="' + i + '">' + esc(x.length > 26 ? x.slice(0, 24) + '…' : x) + '</button>'; }).join('') + '</div>';
+    if (r && r.text) {
+      h += '<section class="card" style="margin-top:14px"><h2>' + esc(L('Corrected')) + '</h2><div class="extext">' + esc(r.text) + '</div><div class="say-row">' + sayBtn(r.text, r.text) + (r.issues.length ? '<button class="btn small ghost" data-act="fxuse">' + esc(L('Use this text')) + '</button>' : '') + '</div>';
+      if (r.issues.length) h += '<ul class="exlist" style="margin-top:12px">' + r.issues.map(fxIssueHtml).join('') + '</ul>';
+      else h += '<ul class="exlist" style="margin-top:10px"><li class="ok">✓ ' + esc(L('No typical mistake found.')) + '</li></ul><p class="say-note">' + esc(L('This does not prove that the sentence is perfect. The checker only knows typical mistakes.')) + '</p>';
+      h += '</section>';
+      if (fxAiOn()) h += '<button class="btn" data-act="fxai" style="margin-top:12px"' + (FXS.aiBusy ? ' disabled' : '') + '>' + esc(FXS.aiBusy ? L('Checking ...') : L('Check with AI (Premium)')) + '</button>';
+      if (FXS.aiErr) h += '<div class="notice" style="margin-top:10px">' + esc(FXS.aiErr) + '</div>';
+      if (FXS.ai) {
+        h += '<section class="card" style="margin-top:14px"><h2>AI</h2><div class="extext">' + esc(FXS.ai.corrected) + '</div><div class="say-row">' + sayBtn(FXS.ai.corrected, FXS.ai.corrected) + '</div>';
+        if (FXS.ai.issues.length) h += '<ul class="exlist" style="margin-top:12px">' + FXS.ai.issues.map(fxIssueHtml).join('') + '</ul>';
+        h += '</section>';
+      }
+    }
+    h += '<p class="say-note" style="margin-top:16px">' + esc(L('The checker finds typical learner mistakes: capital letters, verb position, verb endings, haben or sein, articles after prepositions and common spelling mistakes. It does not understand every sentence, so it can miss mistakes. For important texts ask a teacher.')) + '</p>';
+    return h;
+  }
+  function fxRecStop() { var r = FXREC; FXREC = null; FXS.rec = false; if (r) { try { r.stop(); } catch (e) {} } }
+  function fxRecStart() {
+    var Ctor = speechCtor(); if (!Ctor) return;
+    exStop(); fxRecStop();
+    var rec; try { rec = new Ctor(); } catch (e) { return; }
+    FXREC = rec; FXS.rec = true;
+    var base = FXS.text;
+    rec.lang = 'de-DE'; rec.interimResults = true; rec.continuous = true; rec.maxAlternatives = 1;
+    rec.onresult = function (ev) {
+      var fin = '', tmp = '';
+      for (var k = 0; k < ev.results.length; k++) { var tx = ev.results[k][0].transcript; if (ev.results[k].isFinal) fin += tx + ' '; else tmp += tx; }
+      FXS.text = ((base ? base.replace(/\s+$/, '') + ' ' : '') + fin + tmp).trim();
+      var ta = $('#fxin'); if (ta) ta.value = FXS.text;
+    };
+    rec.onerror = function () { };
+    rec.onend = function () { if (FXREC === rec) { FXREC = null; FXS.rec = false; if (FXS.text.trim()) fxRun(); render(); } };
+    try { rec.start(); } catch (e) { FXREC = null; FXS.rec = false; }
+    render();
+  }
+  function fxAsk() {
+    var t = FXS.text.trim(); if (!t || FXS.aiBusy) return;
+    FXS.aiBusy = true; FXS.aiErr = ''; render();
+    callFn('correct-sentence', { text:t.slice(0, 600) }).then(function (res) {
+      FXS.aiBusy = false;
+      var r = res && res.ok ? res.data : null;
+      var ok = r && typeof r.corrected === 'string' && Array.isArray(r.issues);
+      if (!ok) { FXS.aiErr = (res && res.status === 429) ? L('Daily limit of the AI check reached. Try again tomorrow.') : L('The AI check did not work. The result above is from the app.'); render(); return; }
+      FXS.ai = { corrected:r.corrected.slice(0, 1200), issues:r.issues.slice(0, 10).map(function (i) { return { a:String(i.a || '').slice(0, 200), b:String(i.b || '').slice(0, 200), why:String(i.why || '').slice(0, 300) }; }) };
+      render();
+    }).catch(function () { FXS.aiBusy = false; FXS.aiErr = L('The AI check did not work. The result above is from the app.'); render(); });
+  }
+  document.addEventListener('input', function (e) { var t = e.target; if (t && t.id === 'fxin') FXS.text = t.value; });
+  /*FX-END*/
+
   /* =====================================================
      RENDER
      ===================================================== */
   function renderNav() {
     var items = state.track === 'allg'
       ? [['practise','Practise'], ['verbs','Verbs'], ['words','Words'], ['grammar','Grammar'], ['chat','Chat'], ['progress','Progress'], ['account','Account']]
-      : (state.track === 'exam' ? [['exam','Exam'], ['chat','Chat'], ['account','Account']] : [['fvocab','Vocabulary'], ['fphrase','Phrases'], ['fdialog','Dialogues'], ['chat','Chat'], ['account','Account']]);
+      : (state.track === 'exam' ? [['exam','Exam'], ['fix','Check'], ['chat','Chat'], ['account','Account']] : [['fvocab','Vocabulary'], ['fphrase','Phrases'], ['fdialog','Dialogues'], ['finstr','Instruments'], ['chat','Chat'], ['account','Account']]);
     $('#nav').innerHTML = items.map(function (it) {
       return '<button data-act="tab" data-v="' + it[0] + '"' + (tab === it[0] ? ' aria-current="page"' : '') + '><span class="pill">' + icon(it[0]) + '</span>' + it[1] + '</button>';
     }).join('');
@@ -3442,13 +3853,13 @@ return D;
       else html = S.mode === 'cards' ? viewCards() : (S.mode === 'speak' ? viewSpeak() : viewQuestion());
     } else {
       document.body.classList.remove('in-session');
-      var isF = /^f(vocab|phrase|dialog)$/.test(tab);
-      if (state.track === 'exam') { if (tab !== 'exam' && tab !== 'chat' && tab !== 'account') tab = 'exam'; }
+      var isF = /^f(vocab|phrase|dialog|instr)$/.test(tab);
+      if (state.track === 'exam') { if (tab !== 'exam' && tab !== 'fix' && tab !== 'chat' && tab !== 'account') tab = 'exam'; }
       else {
         if (state.track !== 'allg' && !isF && tab !== 'chat' && tab !== 'account') tab = 'fvocab';
-        if (state.track === 'allg' && (isF || tab === 'exam')) tab = 'practise';
+        if (state.track === 'allg' && (isF || tab === 'exam' || tab === 'fix')) tab = 'practise';
       }
-      html = tab === 'exam' ? viewExam() : tab === 'verbs' ? viewVerbs() : (tab === 'progress' ? viewProgress() : (tab === 'account' ? viewAccount() : (tab === 'chat' ? viewChat() : (tab === 'words' ? viewWords() : (tab === 'grammar' ? viewGrammar() : (/^f(vocab|phrase|dialog)$/.test(tab) ? viewFsp() : viewPractise()))))));
+      html = tab === 'fix' ? viewFix() : tab === 'finstr' ? viewInstr() : tab === 'exam' ? viewExam() : tab === 'verbs' ? viewVerbs() : (tab === 'progress' ? viewProgress() : (tab === 'account' ? viewAccount() : (tab === 'chat' ? viewChat() : (tab === 'words' ? viewWords() : (tab === 'grammar' ? viewGrammar() : (/^f(vocab|phrase|dialog)$/.test(tab) ? viewFsp() : viewPractise()))))));
       renderNav();
       html = trackBar() + html;
     }
@@ -3488,15 +3899,27 @@ return D;
     var q = currentQ();
 
     switch (act) {
-      case 'tab': tab = v; if (v !== 'chat') chatStop(); render(true); if (v === 'chat') chatOpen(); break;
+      case 'tab': tab = v; if (v !== 'chat') chatStop(); if (v !== 'fix') fxRecStop(); render(true); if (v === 'chat') chatOpen(); break;
       case 'xtrack':
-        if (v === 'allg' || v === 'zm' || v === 'med' || v === 'exam') { exStop(); exRecStop(); exTimerStop(); X.run = null; state.track = v; F = { id:'', mode:'', c:null, z:null, d:null }; tab = v === 'allg' ? 'practise' : (v === 'exam' ? 'exam' : 'fvocab'); chatStop(); save(); render(true); }
+        if (v === 'allg' || v === 'zm' || v === 'med' || v === 'exam') { exStop(); exRecStop(); exTimerStop(); X.run = null; fxRecStop(); state.track = v; IN.quiz = null; IN.cat = 'All'; F = { id:'', mode:'', c:null, z:null, d:null }; tab = v === 'allg' ? 'practise' : (v === 'exam' ? 'exam' : 'fvocab'); chatStop(); save(); render(true); }
         break;
       case 'xopen': F = { id:v, mode:'', c:null, z:null, d:null }; render(true); break;
       case 'xback': if (F.mode) { F.mode = ''; F.c = F.z = F.d = null; } else { F.id = ''; } render(true); break;
       case 'vlevel': if (VLEVELS.indexOf(v) >= 0) { vlevel = v; render(true); } break;
       case 'wlevel': if (GEN_LEVELS.indexOf(v) >= 0) { wlevel = v; render(true); } break;
       case 'wsub': if (v === 'pic' || v === 'lvl') { wsub = v; F = { id:'', mode:'', c:null, z:null, d:null }; render(true); } break;
+      case 'fxcheck': { var fta = $('#fxin'); if (fta) FXS.text = fta.value; fxRecStop(); fxRun(); render(); break; }
+      case 'fxclear': fxRecStop(); FXS.text = ''; FXS.res = null; FXS.ai = null; FXS.aiErr = ''; render(); break;
+      case 'fxmic': if (FXS.rec) { fxRecStop(); if (FXS.text.trim()) fxRun(); render(); } else { var fta2 = $('#fxin'); if (fta2) FXS.text = fta2.value; fxRecStart(); } break;
+      case 'fxex': FXS.text = FX_EX[Number(v)] || ''; fxRecStop(); fxRun(); render(); break;
+      case 'fxuse': if (FXS.res) { FXS.text = FXS.res.text; fxRun(); render(); } break;
+      case 'fxai': fxAsk(); break;
+      case 'fxfrom': { var fr = X.run; if (fr && fr.txt && fr.txt.w) { exStop(); exRecStop(); exTimerStop(); FXS.text = fr.txt.w; X.run = null; tab = 'fix'; fxRun(); render(true); } break; }
+      case 'icat': IN.cat = v; render(); break;
+      case 'iquiz': instrQuizStart(); render(true); break;
+      case 'iexit': IN.quiz = null; render(true); break;
+      case 'ians': { var iq = IN.quiz && IN.quiz.qs[IN.quiz.i]; if (iq && iq.pick < 0) { iq.pick = Number(v); if (iq.pick === iq.ans) IN.quiz.score++; render(); } break; }
+      case 'inext': if (IN.quiz) { if (IN.quiz.i + 1 >= IN.quiz.qs.length) IN.quiz.done = true; else IN.quiz.i++; render(true); } break;
       case 'xmode': fspMode(v); break;
       case 'xflip': if (F.c) { F.c.flipped = !F.c.flipped; render(); } break;
       case 'xgot': fspCard(true); break;
