@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>B2 Verb Trainer</title>
+<title>Best German Trainer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FFD400" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F1318" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Verbtrainer">
+<meta name="apple-mobile-web-app-title" content="Best German">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.json">
@@ -1394,7 +1394,7 @@ li>.row{margin-top:10px}
   function supportHref(extra) {
     var to = String(CFG.SUPPORT_EMAIL || '');
     var body = 'Hello,\n\nMy account email: ' + (account.session ? account.session.user.email : '(not signed in)') + '\n' + (extra || '') + '\nMy question:\n';
-    return 'mailto:' + encodeURIComponent(to).replace('%40', '@') + '?subject=' + encodeURIComponent('Verbtrainer support') + '&body=' + encodeURIComponent(body);
+    return 'mailto:' + encodeURIComponent(to).replace('%40', '@') + '?subject=' + encodeURIComponent('Best German Trainer support') + '&body=' + encodeURIComponent(body);
   }
   function fmtDate(iso) {
     var d = new Date(iso); if (isNaN(d.getTime())) return '';
@@ -1558,7 +1558,7 @@ li>.row{margin-top:10px}
      ===================================================== */
   function viewPractise() {
     var m = masteredCount(), total = VERBS.length, mis = mistakes();
-    var h = '<h1 class="page-title">Verbtrainer B2</h1>';
+    var h = '<h1 class="page-title">Best German Trainer</h1>';
     h += '<section class="hero" aria-label="Your progress">' +
       '<div><p class="hero-n">' + m + '<span>/' + total + '</span></p><p class="l">verbs mastered</p></div>' +
       '<div class="hero-r"><p class="hero-n">' + dayStreakNow() + '</p><p class="l">day streak</p></div>' +
