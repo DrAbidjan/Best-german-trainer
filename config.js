@@ -8,5 +8,9 @@ window.VT_CONFIG = {
   PRICE_MONTHLY: '€5.99',
   PRICE_YEARLY: '€9.99',
   PREMIUM_VERB_COUNT: 534,
-  PREMIUM_WORD_COUNT: 132
+  PREMIUM_WORD_COUNT: 132,
+  /* Sentence check: online check with the free LanguageTool service. Set to false to switch it off. */
+  LT_ON: true,
+  /* AI sentence check (Premium). Keep false until the AI function is set up. Then change it to true. */
+  AI_CORRECT: false
 };

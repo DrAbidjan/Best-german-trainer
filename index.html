@@ -4477,10 +4477,46 @@ return D;
   }
 
   /* ----- Check tab (next to Exam): write or speak a sentence, see the corrected version ----- */
-  var FXS = { text:'', res:null, rec:false, ai:null, aiBusy:false, aiErr:'' };
+  var FXS = { text:'', res:null, rec:false, ai:null, aiBusy:false, aiErr:'', busy:false, src:'offline', ltErr:'', reqId:0 };
   var FXREC = null;
   var FX_EX = ['heute ich gehe zur arbeit', 'Ich habe gestern ins Kino gegangen.', 'Weil ich habe keine Zeit, komme ich nicht.', 'Ich fahre mit die Bus zur Arbeit.', 'Kann du mir helfen', 'Ich habe ein Termien beim Zahnartz'];
-  function fxRun() { FXS.res = fxCheck(FXS.text); FXS.ai = null; FXS.aiErr = ''; }
+  function fxRun() { FXS.res = fxCheck(FXS.text); FXS.ai = null; FXS.aiErr = ''; FXS.src = 'offline'; FXS.ltErr = ''; FXS.reqId++; FXS.busy = false; fxLt(FXS.text.trim(), FXS.reqId); }
+  /* Online check with LanguageTool (free public service). Used when the phone is online; otherwise the result of the app stays. */
+  var FX_LT_LABEL = { TYPOS:'Spelling', GRAMMAR:'Grammar', CASING:'Capital letters', PUNCTUATION:'Punctuation', COMPOUNDING:'Compound word', CONFUSED_WORDS:'Confused words', MISC:'Check', AGREEMENT:'Grammar' };
+  function fxLtOn() { return CFG.LT_ON !== false && !(typeof navigator !== 'undefined' && navigator.onLine === false) && typeof fetch === 'function'; }
+  function fxLt(t, id) {
+    if (!t || !fxLtOn()) return;
+    FXS.busy = true;
+    var done = false, ctl = null, tm = 0;
+    try { if (typeof AbortController === 'function') ctl = new AbortController(); } catch (e) {}
+    function fail() { if (done) return; done = true; clearTimeout(tm); if (id !== FXS.reqId) return; FXS.busy = false; FXS.ltErr = L('The online check did not answer. The result is from the app.'); render(); }
+    tm = setTimeout(function () { if (ctl) { try { ctl.abort(); } catch (e) {} } fail(); }, 9000);
+    var url = String(CFG.LT_URL || 'https://api.languagetool.org/v2/check');
+    fetch(url, { method:'POST', headers:{ 'Content-Type':'application/x-www-form-urlencoded', Accept:'application/json' }, body:'language=de-DE&text=' + encodeURIComponent(t.slice(0, 1500)), signal:ctl ? ctl.signal : undefined })
+      .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+      .then(function (j) {
+        if (done) return; done = true; clearTimeout(tm);
+        if (id !== FXS.reqId || FXS.text.trim() !== t) return;
+        var ms = ((j && j.matches) || []).slice().sort(function (a, b) { return a.offset - b.offset; });
+        var out = '', pos = 0, issues = [], notes = [];
+        ms.forEach(function (m) {
+          if (typeof m.offset !== 'number' || m.offset < pos || m.offset > t.length) return;
+          var cat = (m.rule && m.rule.category && m.rule.category.id) || '', rid = (m.rule && m.rule.id) || '';
+          if (!FX_LT_LABEL[cat]) return;                                  /* style and typography hints are not mistakes */
+          var orig = t.substr(m.offset, m.length), r0 = m.replacements && m.replacements[0] && m.replacements[0].value, msg = String(m.message || m.shortMessage || '').slice(0, 300);
+          var label = L(FX_LT_LABEL[cat]);
+          if (!r0 || r0 === orig) { if (msg) notes.push({ w:orig || '…', why:label + ': ' + msg }); return; }
+          if (cat === 'TYPOS' && dxDist(orig.toLowerCase(), String(r0).toLowerCase(), 3) > 2) { notes.push({ w:orig, why:L('Not sure about this word. Maybe you mean:') + ' ' + r0 + '? ' + L('If your word is correct, ignore this.') }); return; }
+          out += t.slice(pos, m.offset) + r0; pos = m.offset + m.length;
+          issues.push({ a:orig || '…', b:r0, why:label + (msg ? ': ' + msg : '') });
+        });
+        out += t.slice(pos);
+        var fin = fxCheck(out);
+        fin.issues = issues.concat(fin.issues); fin.notes = notes.concat(fin.notes || []).slice(0, 12);
+        FXS.res = fin; FXS.src = 'online'; FXS.busy = false; render();
+      })
+      .catch(function () { fail(); });
+  }
   function fxAiOn() { return CFG.AI_CORRECT === true && SB_OK && !!account.premium; }
   function fxIssueHtml(i) {
     return '<li class="bad">✗ <b>' + esc(i.a) + '</b> → <b>' + esc(i.b) + '</b><div class="say-note">' + esc(i.why) + '</div></li>';
@@ -4502,6 +4538,8 @@ return D;
       if (r.notes && r.notes.length) h += '<p class="say-note" style="margin-top:12px"><b>' + esc(L('Please check:')) + '</b></p><ul class="exlist">' + r.notes.map(function (n) { return '<li>? <b>' + esc(n.w) + '</b><div class="say-note">' + esc(n.why) + '</div></li>'; }).join('') + '</ul>';
       if (r.words && r.words.length) h += '<details class="fxdict" style="margin-top:14px"' + (r.words.length <= 8 ? ' open' : '') + '><summary><b>📖 ' + esc(L('Dictionary')) + '</b> · ' + r.words.length + '</summary><ul class="exlist">' + r.words.map(function (x) { return '<li><b>' + esc(x.line) + '</b>' + (x.en ? ' — ' + esc(L(x.en)) : '') + (x.extra ? '<div class="say-note">' + esc(x.extra) + '</div>' : '') + '</li>'; }).join('') + '</ul></details>';
       h += '</section>';
+      h += '<p class="say-note" style="margin-top:10px">' + (FXS.busy ? '⏳ ' + esc(L('Checking online ...')) : (FXS.src === 'online' ? '🌐 ' + esc(L('Checked online (LanguageTool) and in the app.')) : '📱 ' + esc(L('Checked in the app.')) + (FXS.ltErr ? ' ' + esc(FXS.ltErr) : ''))) + '</p>';
+      if (CFG.AI_CORRECT !== true) h += '<button class="btn ghost" disabled style="margin-top:6px;opacity:.55">✨ ' + esc(L('AI check (coming soon)')) + '</button>';
       if (fxAiOn()) h += '<button class="btn" data-act="fxai" style="margin-top:12px"' + (FXS.aiBusy ? ' disabled' : '') + '>' + esc(FXS.aiBusy ? L('Checking ...') : L('Check with AI (Premium)')) + '</button>';
       if (FXS.aiErr) h += '<div class="notice" style="margin-top:10px">' + esc(FXS.aiErr) + '</div>';
       if (FXS.ai) {
@@ -4510,7 +4548,7 @@ return D;
         h += '</section>';
       }
     }
-    h += '<p class="say-note" style="margin-top:16px">' + esc(L('The checker uses a built-in German word list (about 2,000 words) and typical grammar rules: capital letters, spelling, der/die/das of the noun, verb position, verb endings, haben or sein and articles after prepositions. A word that is not in the list is not marked as wrong. It does not understand every sentence, so it can miss mistakes. For important texts ask a teacher.')) + '</p>';
+    h += '<p class="say-note" style="margin-top:16px">' + esc(L('When you are online, your text is also sent to LanguageTool (languagetool.org) for a second check.')) + ' ' + esc(L('The checker uses a built-in German word list (about 2,000 words) and typical grammar rules: capital letters, spelling, der/die/das of the noun, verb position, verb endings, haben or sein and articles after prepositions. A word that is not in the list is not marked as wrong. It does not understand every sentence, so it can miss mistakes. For important texts ask a teacher.')) + '</p>';
     return h;
   }
   function fxRecStop() { var r = FXREC; FXREC = null; FXS.rec = false; if (r) { try { r.stop(); } catch (e) {} } }
