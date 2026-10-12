@@ -348,6 +348,80 @@ details.all[open] summary::after{content:"Hide"}
 .exlist li.bad{color:var(--bad)}
 .exres.passed{border-color:var(--good)}
 .exres.failed{border-color:var(--bad)}
+
+/* ================= v29 look: depth, glass, glow ================= */
+:root{
+  --glow:rgba(255,212,0,.22); --card-sh:0 1px 2px rgba(20,30,50,.06),0 8px 24px -10px rgba(20,30,50,.18);
+  --glass:rgba(255,255,255,.78); --hero-a:#1B2540; --hero-b:#0E1424; --tile:#FFF4BF; --tile-ink:#6B5300;
+  --r:20px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0A0E1A; --surface:#141B2D; --line:#242E47; --muted:#9AA7C0;
+    --glow:rgba(255,212,0,.16); --card-sh:0 1px 0 rgba(255,255,255,.04) inset,0 10px 28px -12px rgba(0,0,0,.7);
+    --glass:rgba(20,27,45,.72); --hero-a:#26345C; --hero-b:#101830; --tile:#2A3250; --tile-ink:#FFD400;
+  }
+}
+body{background:var(--bg) radial-gradient(900px 420px at 50% -120px,var(--glow),transparent 70%) no-repeat;background-attachment:fixed}
+.page-title{letter-spacing:-.01em}
+.sec,.daytitle{letter-spacing:-.005em}
+
+/* hero: dark glass card with flag stripe */
+.hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(150deg,var(--hero-a),var(--hero-b));border-radius:26px;padding:22px 22px 20px;box-shadow:0 18px 40px -18px rgba(10,16,40,.7),0 0 0 1px rgba(255,255,255,.07) inset}
+.hero::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,#000 0 33.3%,#DD0000 33.3% 66.6%,#FFCE00 66.6%)}
+.hero::after{content:"";position:absolute;right:-60px;top:-70px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(255,212,0,.28),transparent 68%);pointer-events:none}
+.hero>*{position:relative;z-index:1}
+.hero-n{color:#fff;font-size:50px;letter-spacing:-.02em}
+.hero-n span{color:#fff;opacity:.55}
+.hero p.l{color:rgba(255,255,255,.72);font-weight:600}
+.hero-r .hero-n{color:var(--accent)}
+.hero-r .hero-n::before{content:"\1F525";font-size:22px;margin-right:6px;vertical-align:6px}
+.bar{height:10px;background:rgba(255,255,255,.14);margin-top:16px}
+.bar i{background:linear-gradient(90deg,#FFB800,#FFE45C);box-shadow:0 0 12px rgba(255,212,0,.6);transition:width .9s cubic-bezier(.2,.8,.2,1)}
+@keyframes barin{from{width:0}}
+.hero .bar i{animation:barin 1s cubic-bezier(.2,.8,.2,1)}
+
+/* practice rows become cards with icon tiles */
+.modes{border-top:0;display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.row{background:var(--surface);border:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:var(--r);padding:14px 14px;box-shadow:var(--card-sh);transition:transform .1s,box-shadow .15s}
+.row:active{transform:scale(.985);background:var(--surface)}
+.row strong{font-size:17px;letter-spacing:-.005em}
+.row .chev{width:30px;height:30px;border-radius:50%;background:var(--bg);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.row .chev svg.i{width:16px;height:16px}
+.rico{flex:none;width:44px;height:44px;border-radius:14px;background:var(--tile);color:var(--tile-ink);display:inline-flex;align-items:center;justify-content:center;font-size:22px;line-height:1}
+.catemo{width:44px;height:44px;border-radius:14px;background:var(--tile);display:inline-flex;align-items:center;justify-content:center;font-size:24px}
+li>.row{margin-top:10px}
+
+/* buttons */
+.btn{background:linear-gradient(180deg,#FFE04A,#FFD000);box-shadow:0 8px 20px -8px rgba(255,190,0,.75),0 1px 0 rgba(255,255,255,.5) inset;border-radius:18px;letter-spacing:.005em}
+.btn.ghost{background:transparent;box-shadow:none;border:1.5px solid var(--line)}
+.btn[disabled]{box-shadow:none}
+.seg{border-radius:16px;box-shadow:var(--card-sh)}
+.seg button{border-radius:12px;transition:background .15s,color .15s}
+.seg button[aria-pressed=true]{background:linear-gradient(180deg,#FFE04A,#FFD000);color:#12161C}
+.chips button{background:var(--surface)}
+.chips button[aria-pressed=true]{background:linear-gradient(180deg,#FFE04A,#FFD000);color:#12161C;border-color:transparent}
+
+/* floating glass nav */
+#nav{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));padding-bottom:0;border:1px solid var(--line);border-radius:26px;background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(18px);backdrop-filter:saturate(180%) blur(18px);box-shadow:0 14px 34px -12px rgba(0,0,0,.45);max-width:536px;margin:0 auto}
+#nav button{padding:8px 0 6px}
+#nav button[aria-current=page] .pill{background:linear-gradient(180deg,#FFE04A,#FFD000);box-shadow:0 4px 12px -3px rgba(255,200,0,.7)}
+#app{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+
+/* cards, entries, quiz */
+.entry{border-left:0;border-radius:var(--r);padding:16px;box-shadow:var(--card-sh);border:1px solid var(--line);position:relative;overflow:hidden}
+.entry::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,#FFE04A,#FFB800)}
+.entry>*{position:relative}
+.card,.upsell,.wcard,.icard,.summary,.exo{border-radius:var(--r)}
+.card,.wcard,.icard,.summary{box-shadow:var(--card-sh)}
+.opt{border-radius:18px;box-shadow:var(--card-sh);transition:transform .1s,border-color .15s}
+.opt:active{transform:scale(.985)}
+.flash{border-radius:26px;box-shadow:var(--card-sh),0 0 0 1px rgba(255,212,0,.08)}
+.fb{border-radius:18px}
+.prog{height:10px}
+.prog i{background:linear-gradient(90deg,#FFB800,#FFE45C)}
+.install{background:var(--surface);border-style:solid;box-shadow:var(--card-sh)}
+@media (prefers-reduced-motion:reduce){.hero .bar i{animation:none}}
 </style>
 </head>
 <body>
@@ -1526,7 +1600,7 @@ details.all[open] summary::after{content:"Hide"}
   }
   function modeRow(mode, title, sub, premium) {
     var locked = premium && !account.premium;
-    return '<button class="row" data-act="start" data-mode="' + mode + '"><span class="t"><strong>' + title + (locked ? ' <span class="lock">' + icon('lock') + 'Premium</span>' : '') + '</strong><small>' + sub + '</small></span><span class="chev">' + icon('chev') + '</span></button>';
+    return '<button class="row" data-act="start" data-mode="' + mode + '"><span class="rico" aria-hidden="true">' + ({cards:'\uD83C\uDCCF',quiz:'\u2705',type:'\u2328\uFE0F',speak:'\uD83C\uDF99\uFE0F'}[mode] || '\u2B50') + '</span><span class="t"><strong>' + title + (locked ? ' <span class="lock">' + icon('lock') + 'Premium</span>' : '') + '</strong><small>' + sub + '</small></span><span class="chev">' + icon('chev') + '</span></button>';
   }
   function isStandalone() {
     try { return window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches; } catch (e) { return false; }
