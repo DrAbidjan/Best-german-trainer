@@ -1687,30 +1687,11 @@ details.all[open] summary::after{content:"Hide"}
         PHOTO[title] = u; return u;
       }).catch(function () { return null; });
   }
-  /* last fallback for instrument pictures: search Wikimedia Commons for a photo of the object */
-  function commonsPhoto(q) {
-    var k = 'c:' + q;
-    if (Object.prototype.hasOwnProperty.call(PHOTO, k)) return Promise.resolve(PHOTO[k]);
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) return Promise.resolve(null);
-    return fetch('https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=8&gsrsearch=' + encodeURIComponent(q + ' filetype:bitmap') + '&prop=imageinfo&iiprop=url&iiurlwidth=360')
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (j) {
-        if (!j) return null;
-        var pg = (j.query && j.query.pages) || {}, arr = Object.keys(pg).map(function (z) { return pg[z]; });
-        arr.sort(function (a, b) { return (a.index || 0) - (b.index || 0); });
-        for (var i = 0; i < arr.length; i++) {
-          var ii = arr[i].imageinfo && arr[i].imageinfo[0], u = ii && ii.thumburl;
-          if (typeof u === 'string' && /^https:\/\/upload\.wikimedia\.org\//.test(u) && /\.(jpe?g|png)(\?|$)/i.test(u)) { PHOTO[k] = u; return u; }
-        }
-        PHOTO[k] = false; return false;
-      }).catch(function () { return null; });
-  }
   function hydratePhotos() {
     var els = document.querySelectorAll('.pic[data-title]');
     Array.prototype.forEach.call(els, function (el) {
       var t = el.getAttribute('data-title'), alt = el.getAttribute('data-alt'), qq = el.getAttribute('data-q'), pr = photoUrl(t);
       if (alt) pr = pr.then(function (u) { return u ? u : photoUrl(alt); });
-      if (qq) pr = pr.then(function (u) { return u ? u : commonsPhoto(qq); });
       pr.then(function (u) {
         if (!u || !el.isConnected || el.getAttribute('data-title') !== t || el.querySelector('img')) return;
         var im = new Image();
@@ -3562,8 +3543,8 @@ return D;
     try { (WORD_CATS || []).forEach(function (c) { (c.items || []).forEach(function (it) { addN(it[0], it[1]); }); }); } catch (e) {}
     try { (FSP || []).forEach(function (s) { if (s.type === 'vocab') (s.items || []).forEach(function (it) { var m = /^(der|die|das)\s+(\S+)$/i.exec(it[0]); if (m) addN(m[1], m[2]); }); }); } catch (e) {}
     try { INSTR.forEach(function (x) { var m = /^(der|die|das)\s+(\S+)$/i.exec(x.de); if (m) addN(m[1], m[2]); }); } catch (e) {}
-    try { VERBS.forEach(function (v) { var inf = String(v.de).toLowerCase().replace(/^sich\s+/, ''); if (/^[a-zäöüß]+n$/.test(inf)) { FX_INF[inf] = 1; var st = inf.replace(/en$/, '').replace(/n$/, ''); if (st.length > 1) FX_STEMS[st] = inf; } }); } catch (e) {}
-    FX_CVERBS.split(' ').forEach(function (inf) { FX_INF[inf] = 1; var st = inf.replace(/en$/, '').replace(/n$/, ''); if (st.length > 1 && !FX_STEMS[st]) FX_STEMS[st] = inf; });
+    try { VERBS.forEach(function (v) { var inf = String(v.de).toLowerCase().replace(/^sich\s+/, ''); if (/^[a-zäöüß]+n$/.test(inf)) { FX_INF[inf] = 1; var st = /(eln|ern)$/.test(inf) ? inf.slice(0, -1) : (/en$/.test(inf) ? inf.slice(0, -2) : inf.slice(0, -1)); if (st.length > 1) FX_STEMS[st] = inf; } }); } catch (e) {}
+    FX_CVERBS.split(' ').forEach(function (inf) { FX_INF[inf] = 1; var st = /(eln|ern)$/.test(inf) ? inf.slice(0, -1) : (/en$/.test(inf) ? inf.slice(0, -2) : inf.slice(0, -1)); if (st.length > 1 && !FX_STEMS[st]) FX_STEMS[st] = inf; });
     Object.keys(FX_IRR).forEach(function (v) { FX_INF[v] = 1; });
   }
   function fxVerbForm(w) {   /* { persons:[...], inf } or null */
@@ -3578,7 +3559,7 @@ return D;
   }
   function fxConj(inf, p) {
     if (FX_IRR[inf]) return FX_IRR[inf][p];
-    var st = inf.replace(/en$/, '').replace(/n$/, '');
+    var st = /(eln|ern)$/.test(inf) ? inf.slice(0, -1) : (/en$/.test(inf) ? inf.slice(0, -2) : inf.slice(0, -1));
     if (p === 0) return /el$/.test(st) ? st.slice(0, -2) + 'le' : st + 'e';
     if (p === 1) return st + (/(t|d|chn|ffn|gn|tm)$/.test(st) ? 'est' : (/[sßxz]$/.test(st) ? 't' : 'st'));
     if (p === 2 || p === 4) return st + (/(t|d|chn|ffn|gn|tm)$/.test(st) ? 'et' : 't');
@@ -3743,9 +3724,628 @@ return D;
     }
     return { text:out, issues:issues };
   }
+  var DX_LEX = {n:"Arzt|m|¨e|doctor\nÄrztin|f|nen|doctor (female)\nZahnarzt|m|¨e|dentist\nZahnärztin|f|nen|dentist (female)\nPatient|m|en|patient\nPatientin|f|nen|patient (female)\nPfleger|m|=|nurse (male)\nKrankenschwester|f|n|nurse (female)\nSchwester|f|n|sister / nurse\nKrankenpfleger|m|=|nurse\nAssistent|m|en|assistant\nAssistentin|f|nen|assistant (female)\nHelferin|f|nen|helper (female)\nPraxis|f|!Praxen|practice / clinic\nKrankenhaus|n|¨er|hospital\nKlinik|f|en|clinic\nStation|f|en|ward\nNotaufnahme|f|n|emergency room\nNotfall|m|¨e|emergency\nKrankenwagen|m|=|ambulance\nRettungsdienst|m|e|ambulance service\nApotheke|f|n|pharmacy\nApotheker|m|=|pharmacist\nMedikament|n|e|medicine\nTablette|f|n|tablet\nTropfen|m|=|drop\nSalbe|f|n|ointment\nSpritze|f|n|injection / syringe\nImpfung|f|en|vaccination\nRezept|n|e|prescription\nÜberweisung|f|en|referral / bank transfer\nKrankschreibung|f|en|sick note\nKrankmeldung|f|en|sick notice\nTermin|m|e|appointment\nSprechstunde|f|n|consultation hours\nWartezimmer|n|=|waiting room\nUntersuchung|f|en|examination\nBehandlung|f|en|treatment\nOperation|f|en|operation\nNarkose|f|n|anaesthesia\nBetäubung|f|en|local anaesthesia\nRöntgenbild|n|er|X-ray image\nBefund|m|e|finding / result\nDiagnose|f|n|diagnosis\nTherapie|f|n|therapy\nSymptom|n|e|symptom\nKrankheit|f|en|illness\nErkältung|f|en|cold\nGrippe|f|-|flu\nHusten|m|-|cough\nSchnupfen|m|-|runny nose\nFieber|n|-|fever\nSchmerz|m|en|pain\nKopfschmerzen|p|=|headache\nZahnschmerzen|p|=|toothache\nBauchschmerzen|p|=|stomach ache\nHalsschmerzen|p|=|sore throat\nRückenschmerzen|p|=|back pain\nÜbelkeit|f|-|nausea\nSchwindel|m|-|dizziness\nAllergie|f|n|allergy\nInfektion|f|en|infection\nEntzündung|f|en|inflammation\nVerletzung|f|en|injury\nWunde|f|n|wound\nBruch|m|¨e|fracture\nBlutung|f|en|bleeding\nBlutdruck|m|-|blood pressure\nZucker|m|-|sugar\nDiabetes|m|-|diabetes\nKrebs|m|-|cancer\nHerzinfarkt|m|e|heart attack\nSchlaganfall|m|¨e|stroke\nGesundheit|f|-|health\nKrankenkasse|f|n|health insurance\nVersicherung|f|en|insurance\nVersichertenkarte|f|n|insurance card\nKrankenversicherung|f|en|health insurance\nZahn|m|¨e|tooth\nBackenzahn|m|¨e|molar\nWeisheitszahn|m|¨e|wisdom tooth\nMilchzahn|m|¨e|baby tooth\nZahnfleisch|n|-|gums\nZahnschmelz|m|-|enamel\nZahnwurzel|f|n|tooth root\nZahnkrone|f|n|crown\nZahnbürste|f|n|toothbrush\nZahnpasta|f|!Zahnpasten|toothpaste\nZahnseide|f|n|dental floss\nZahnspange|f|n|brace\nZahnersatz|m|-|dentures\nProthese|f|n|prosthesis\nBrücke|f|n|bridge\nImplantat|n|e|implant\nFüllung|f|en|filling\nKaries|f|-|caries\nWurzelbehandlung|f|en|root canal treatment\nZahnstein|m|-|tartar\nMundhygiene|f|-|oral hygiene\nMund|m|¨er|mouth\nZunge|f|n|tongue\nLippe|f|n|lip\nKiefer|m|=|jaw\nKopf|m|¨e|head\nGesicht|n|er|face\nAuge|n|n|eye\nOhr|n|en|ear\nNase|f|n|nose\nHals|m|¨e|neck / throat\nNacken|m|=|neck\nSchulter|f|n|shoulder\nArm|m|e|arm\nEllbogen|m|=|elbow\nHand|f|¨e|hand\nFinger|m|=|finger\nDaumen|m|=|thumb\nBrust|f|¨e|chest\nRücken|m|=|back\nBauch|m|¨e|stomach / belly\nMagen|m|¨|stomach\nDarm|m|¨e|intestine\nHerz|n|en|heart\nLunge|f|n|lung\nLeber|f|n|liver\nNiere|f|n|kidney\nBlase|f|n|bladder\nHaut|f|¨e|skin\nKnochen|m|=|bone\nMuskel|m|n|muscle\nGelenk|n|e|joint\nKnie|n|=|knee\nBein|n|e|leg\nFuß|m|¨e|foot\nZeh|m|en|toe\nHaar|n|e|hair\nBlut|n|-|blood\nKörper|m|=|body\nGehirn|n|e|brain\nNerv|m|en|nerve\nKind|n|er|child\nBaby|n|s|baby\nJunge|m|n|boy\nMädchen|n|=|girl\nMann|m|¨er|man\nFrau|f|en|woman / wife\nMensch|m|en|person\nPerson|f|en|person\nLeute|p|=|people\nErwachsene|m|n|adult\nJugendliche|m|n|teenager\nSenior|m|en|senior\nEltern|p|=|parents\nMutter|f|¨|mother\nVater|m|¨|father\nSohn|m|¨e|son\nTochter|f|¨|daughter\nBruder|m|¨|brother\nGroßmutter|f|¨|grandmother\nGroßvater|m|¨|grandfather\nOma|f|s|grandma\nOpa|m|s|grandpa\nEnkel|m|=|grandchild\nOnkel|m|=|uncle\nTante|f|n|aunt\nCousin|m|s|cousin\nCousine|f|n|cousin (female)\nEhemann|m|¨er|husband\nEhefrau|f|en|wife\nFamilie|f|n|family\nVerwandte|m|n|relative\nFreund|m|e|friend\nFreundin|f|nen|friend (female)\nNachbar|m|n|neighbour\nNachbarin|f|nen|neighbour (female)\nKollege|m|n|colleague\nKollegin|f|nen|colleague (female)\nChef|m|s|boss\nChefin|f|nen|boss (female)\nGast|m|¨e|guest\nKunde|m|n|customer\nKundin|f|nen|customer (female)\nHerr|m|en|Mr / gentleman\nDame|f|n|lady\nName|m|n|name\nVorname|m|n|first name\nNachname|m|n|surname\nAlter|n|-|age\nGeburtstag|m|e|birthday\nGeburtsdatum|n|!Geburtsdaten|date of birth\nGeburtsort|m|e|place of birth\nAdresse|f|n|address\nStraße|f|n|street\nHausnummer|f|n|house number\nPostleitzahl|f|en|postcode\nWohnort|m|e|place of residence\nTelefonnummer|f|n|phone number\nNummer|f|n|number\nStaatsangehörigkeit|f|en|nationality\nFamilienstand|m|-|marital status\nBeruf|m|e|job / profession\nHaus|n|¨er|house\nWohnung|f|en|flat\nZimmer|n|=|room\nKüche|f|n|kitchen\nBad|n|¨er|bathroom\nBadezimmer|n|=|bathroom\nSchlafzimmer|n|=|bedroom\nWohnzimmer|n|=|living room\nKinderzimmer|n|=|child's room\nFlur|m|e|hallway\nKeller|m|=|cellar\nDach|n|¨er|roof\nBalkon|m|s|balcony\nGarten|m|¨|garden\nTür|f|en|door\nFenster|n|=|window\nWand|f|¨e|wall\nBoden|m|¨|floor\nDecke|f|n|ceiling / blanket\nTreppe|f|n|stairs\nAufzug|m|¨e|lift\nStock|m|!Stockwerke|floor\nEtage|f|n|floor\nMiete|f|n|rent\nVermieter|m|=|landlord\nMieter|m|=|tenant\nMöbel|n|=|furniture\nTisch|m|e|table\nStuhl|m|¨e|chair\nSofa|n|s|sofa\nBett|n|en|bed\nSchrank|m|¨e|cupboard\nRegal|n|e|shelf\nLampe|f|n|lamp\nTeppich|m|e|carpet\nSpiegel|m|=|mirror\nUhr|f|en|clock / o'clock\nSchlüssel|m|=|key\nDusche|f|n|shower\nToilette|f|n|toilet\nWaschmaschine|f|n|washing machine\nKühlschrank|m|¨e|fridge\nHerd|m|e|cooker\nOfen|m|¨|oven\nHeizung|f|en|heating\nStrom|m|-|electricity\nLicht|n|er|light\nGas|n|e|gas\nMüll|m|-|rubbish\nAbfall|m|¨e|waste\nReinigung|f|en|cleaning\nHausaufgabe|f|n|homework\nEssen|n|=|food / meal\nFrühstück|n|e|breakfast\nMittagessen|n|=|lunch\nAbendessen|n|=|dinner\nGetränk|n|e|drink\nWasser|n|=|water\nMineralwasser|n|-|mineral water\nKaffee|m|s|coffee\nTee|m|s|tea\nMilch|f|-|milk\nSaft|m|¨e|juice\nBier|n|e|beer\nWein|m|e|wine\nLimonade|f|n|lemonade\nBrot|n|e|bread\nBrötchen|n|=|bread roll\nButter|f|-|butter\nKäse|m|=|cheese\nWurst|f|¨e|sausage\nSchinken|m|=|ham\nFleisch|n|-|meat\nHähnchen|n|=|chicken\nFisch|m|e|fish\nEi|n|er|egg\nReis|m|-|rice\nNudel|f|n|noodle\nKartoffel|f|n|potato\nPommes|m|-|chips\nSuppe|f|n|soup\nSalat|m|e|salad\nGemüse|n|-|vegetables\nObst|n|-|fruit\nApfel|m|¨|apple\nBanane|f|n|banana\nOrange|f|n|orange\nZitrone|f|n|lemon\nTomate|f|n|tomato\nGurke|f|n|cucumber\nZwiebel|f|n|onion\nKarotte|f|n|carrot\nPaprika|f|s|pepper\nErdbeere|f|n|strawberry\nTraube|f|n|grape\nKuchen|m|=|cake\nTorte|f|n|cake\nSchokolade|f|n|chocolate\nEis|n|-|ice cream\nSalz|n|e|salt\nPfeffer|m|-|pepper\nÖl|n|e|oil\nMarmelade|f|n|jam\nHonig|m|-|honey\nMüsli|n|s|muesli\nPizza|f|s|pizza\nHunger|m|-|hunger\nDurst|m|-|thirst\nRechnung|f|en|bill / invoice\nSpeisekarte|f|n|menu\nKellner|m|=|waiter\nKellnerin|f|nen|waitress\nTeller|m|=|plate\nGlas|n|¨er|glass\nTasse|f|n|cup\nFlasche|f|n|bottle\nLöffel|m|=|spoon\nGabel|f|n|fork\nMesser|n|=|knife\nTopf|m|¨e|pot\nPfanne|f|n|pan\nRestaurant|n|s|restaurant\nCafé|n|s|café\nKantine|f|n|canteen\nBäckerei|f|en|bakery\nMetzgerei|f|en|butcher\nSupermarkt|m|¨e|supermarket\nMarkt|m|¨e|market\nGeschäft|n|e|shop / business\nLaden|m|¨|shop\nKaufhaus|n|¨er|department store\nEinkauf|m|¨e|purchase\nEinkaufszettel|m|=|shopping list\nKasse|f|n|checkout\nPreis|m|e|price\nAngebot|n|e|offer\nRabatt|m|e|discount\nWare|f|n|goods\nProdukt|n|e|product\nTüte|f|n|bag\nTasche|f|n|bag\nRucksack|m|¨e|backpack\nKoffer|m|=|suitcase\nGeld|n|er|money\nEuro|m|s|euro\nCent|m|s|cent\nMünze|f|n|coin\nSchein|m|e|banknote\nBargeld|n|-|cash\nKarte|f|n|card / map / ticket\nKreditkarte|f|n|credit card\nKonto|n|!Konten|account\nBank|f|en|bank\nSparkasse|f|n|savings bank\nGehalt|n|¨er|salary\nLohn|m|¨e|wage\nSteuer|f|n|tax\nKosten|p|=|costs\nSchuld|f|en|debt / guilt\nKleidung|f|-|clothing\nHemd|n|en|shirt\nBluse|f|n|blouse\nPullover|m|=|sweater\nJacke|f|n|jacket\nMantel|m|¨|coat\nHose|f|n|trousers\nJeans|f|=|jeans\nRock|m|¨e|skirt\nKleid|n|er|dress\nAnzug|m|¨e|suit\nSchuh|m|e|shoe\nStiefel|m|=|boot\nSocke|f|n|sock\nMütze|f|n|cap\nHut|m|¨e|hat\nSchal|m|s|scarf\nHandschuh|m|e|glove\nBrille|f|n|glasses\nGürtel|m|=|belt\nGröße|f|n|size\nFarbe|f|n|colour\nStadt|f|¨e|city\nDorf|n|¨er|village\nLand|n|¨er|country\nHauptstadt|f|¨e|capital\nZentrum|n|!Zentren|centre\nStadtmitte|f|n|city centre\nViertel|n|=|district\nWeg|m|e|way / path\nPlatz|m|¨e|square / place\nEcke|f|n|corner\nKreuzung|f|en|crossing\nAmpel|f|n|traffic light\nFluss|m|¨e|river\nSee|m|n|lake\nMeer|n|e|sea\nStrand|m|¨e|beach\nBerg|m|e|mountain\nWald|m|¨er|forest\nPark|m|s|park\nBaum|m|¨e|tree\nBlume|f|n|flower\nGras|n|¨er|grass\nFeld|n|er|field\nNatur|f|-|nature\nUmwelt|f|-|environment\nTier|n|e|animal\nHund|m|e|dog\nKatze|f|n|cat\nVogel|m|¨|bird\nPferd|n|e|horse\nKuh|f|¨e|cow\nSchwein|n|e|pig\nAuto|n|s|car\nWagen|m|=|car\nFahrrad|n|¨er|bicycle\nMotorrad|n|¨er|motorbike\nBus|m|se|bus\nStraßenbahn|f|en|tram\nU-Bahn|f|en|underground\nS-Bahn|f|en|city train\nZug|m|¨e|train\nBahn|f|en|railway\nBahnhof|m|¨e|station\nHaltestelle|f|n|stop\nGleis|n|e|platform / track\nFlugzeug|n|e|aeroplane\nFlug|m|¨e|flight\nFlughafen|m|¨|airport\nSchiff|n|e|ship\nTaxi|n|s|taxi\nFahrkarte|f|n|ticket\nTicket|n|s|ticket\nFahrplan|m|¨e|timetable\nVerspätung|f|en|delay\nVerkehr|m|-|traffic\nStau|m|s|traffic jam\nUnfall|m|¨e|accident\nFührerschein|m|e|driving licence\nParkplatz|m|¨e|car park\nTankstelle|f|n|petrol station\nBenzin|n|-|petrol\nReise|f|n|trip\nUrlaub|m|e|holiday\nFerien|p|=|holidays\nHotel|n|s|hotel\nReisepass|m|¨e|passport\nPass|m|¨e|passport\nAusweis|m|e|ID card\nVisum|n|!Visa|visa\nGepäck|n|-|luggage\nAusland|n|-|abroad\nAusflug|m|¨e|excursion\nSehenswürdigkeit|f|en|sight\nMuseum|n|!Museen|museum\nKino|n|s|cinema\nTheater|n|=|theatre\nKonzert|n|e|concert\nSchwimmbad|n|¨er|swimming pool\nFitnessstudio|n|s|gym\nBibliothek|f|en|library\nPost|f|-|post office\nPolizei|f|-|police\nFeuerwehr|f|-|fire brigade\nRathaus|n|¨er|town hall\nAmt|n|¨er|office / authority\nKirche|f|n|church\nMoschee|f|n|mosque\nSchule|f|n|school\nUniversität|f|en|university\nKindergarten|m|¨|kindergarten\nSpielplatz|m|¨e|playground\nFlüchtlingsheim|n|e|refugee home\nHeim|n|e|home\nWohnheim|n|e|dormitory\nZeit|f|en|time\nUhrzeit|f|en|time of day\nSekunde|f|n|second\nMinute|f|n|minute\nStunde|f|n|hour\nTag|m|e|day\nWoche|f|n|week\nWochenende|n|n|weekend\nMonat|m|e|month\nJahr|n|e|year\nJahrhundert|n|e|century\nMorgen|m|=|morning\nVormittag|m|e|late morning\nMittag|m|e|noon\nNachmittag|m|e|afternoon\nAbend|m|e|evening\nNacht|f|¨e|night\nMitternacht|f|-|midnight\nDatum|n|!Daten|date\nKalender|m|=|calendar\nAnfang|m|¨e|beginning\nEnde|n|n|end\nMitte|f|-|middle\nGegenwart|f|-|present\nVergangenheit|f|-|past\nZukunft|f|-|future\nMoment|m|e|moment\nAugenblick|m|e|moment\nMal|n|e|time (occasion)\nFeiertag|m|e|public holiday\nWeihnachten|n|-|Christmas\nOstern|n|-|Easter\nRamadan|m|-|Ramadan\nFest|n|e|festival\nFeier|f|n|celebration\nParty|f|s|party\nHochzeit|f|en|wedding\nGeschenk|n|e|present\nEinladung|f|en|invitation\nMontag|m|e|Monday\nDienstag|m|e|Tuesday\nMittwoch|m|e|Wednesday\nDonnerstag|m|e|Thursday\nFreitag|m|e|Friday\nSamstag|m|e|Saturday\nSonntag|m|e|Sunday\nJanuar|m|e|January\nFebruar|m|e|February\nMärz|m|e|March\nApril|m|e|April\nMai|m|e|May\nJuni|m|s|June\nJuli|m|s|July\nAugust|m|e|August\nSeptember|m|=|September\nOktober|m|=|October\nNovember|m|=|November\nDezember|m|=|December\nFrühling|m|e|spring\nSommer|m|=|summer\nHerbst|m|e|autumn\nWinter|m|=|winter\nJahreszeit|f|en|season\nWetter|n|-|weather\nSonne|f|n|sun\nMond|m|e|moon\nStern|m|e|star\nHimmel|m|=|sky\nWolke|f|n|cloud\nRegen|m|=|rain\nSchnee|m|-|snow\nWind|m|e|wind\nSturm|m|¨e|storm\nGewitter|n|=|thunderstorm\nNebel|m|=|fog\nTemperatur|f|en|temperature\nGrad|n|e|degree\nKälte|f|-|cold\nHitze|f|-|heat\nArbeit|f|en|work\nJob|m|s|job\nStelle|f|n|position / place\nArbeitsplatz|m|¨e|workplace\nArbeitgeber|m|=|employer\nArbeitnehmer|m|=|employee\nMitarbeiter|m|=|colleague / employee\nMitarbeiterin|f|nen|colleague (female)\nFirma|f|!Firmen|company\nUnternehmen|n|=|company\nBetrieb|m|e|business\nBüro|n|s|office\nBesprechung|f|en|meeting\nSitzung|f|en|meeting\nKonferenz|f|en|conference\nSchicht|f|en|shift\nNachtschicht|f|en|night shift\nÜberstunde|f|n|overtime hour\nPause|f|n|break\nFeierabend|m|e|end of work\nVertrag|m|¨e|contract\nKündigung|f|en|notice / dismissal\nBewerbung|f|en|application\nLebenslauf|m|¨e|CV\nZeugnis|n|se|certificate\nZertifikat|n|e|certificate\nQualifikation|f|en|qualification\nErfahrung|f|en|experience\nAusbildung|f|en|training\nStudium|n|!Studien|studies\nPraktikum|n|!Praktika|internship\nAnerkennung|f|en|recognition\nApprobation|f|en|licence to practise\nGutachten|n|=|expert report\nGehaltserhöhung|f|en|pay rise\nKollegium|n|!Kollegien|staff\nTeam|n|s|team\nLeitung|f|en|management\nAbteilung|f|en|department\nDienst|m|e|service\nDienstleistung|f|en|service\nHandwerker|m|=|craftsman\nLehrer|m|=|teacher\nLehrerin|f|nen|teacher (female)\nSchüler|m|=|pupil\nSchülerin|f|nen|pupil (female)\nStudent|m|en|student\nStudentin|f|nen|student (female)\nProfessor|m|en|professor\nIngenieur|m|e|engineer\nVerkäufer|m|=|salesperson\nVerkäuferin|f|nen|saleswoman\nFahrer|m|=|driver\nKoch|m|¨e|cook\nKöchin|f|nen|cook (female)\nFriseur|m|e|hairdresser\nPolizist|m|en|policeman\nAnwalt|m|¨e|lawyer\nRichter|m|=|judge\nKlasse|f|n|class\nUnterricht|m|-|lessons\nKurs|m|e|course\nSprachkurs|m|e|language course\nIntegrationskurs|m|e|integration course\nPrüfung|f|en|exam\nTest|m|s|test\nAufgabe|f|n|task / exercise\nÜbung|f|en|exercise\nFrage|f|n|question\nAntwort|f|en|answer\nFehler|m|=|mistake\nLösung|f|en|solution\nBeispiel|n|e|example\nSatz|m|¨e|sentence\nWort|n|¨er|word\nText|m|e|text\nBuchstabe|m|n|letter (alphabet)\nWörterbuch|n|¨er|dictionary\nGrammatik|f|en|grammar\nSprache|f|n|language\nDeutsch|n|-|German\nEnglisch|n|-|English\nAussprache|f|n|pronunciation\nNote|f|n|grade / note\nErgebnis|n|se|result\nThema|n|!Themen|topic\nInhalt|m|e|content\nInformation|f|en|information\nAuskunft|f|¨e|information\nNachricht|f|en|message / news\nBrief|m|e|letter\nE-Mail|f|s|email\nPostkarte|f|n|postcard\nPaket|n|e|parcel\nAnruf|m|e|call\nTelefon|n|e|telephone\nHandy|n|s|mobile phone\nComputer|m|=|computer\nLaptop|m|s|laptop\nInternet|n|-|internet\nWebseite|f|n|website\nProgramm|n|e|programme\nDrucker|m|=|printer\nBildschirm|m|e|screen\nTastatur|f|en|keyboard\nFoto|n|s|photo\nBild|n|er|picture\nVideo|n|s|video\nFilm|m|e|film\nMusik|f|-|music\nLied|n|er|song\nRadio|n|s|radio\nFernseher|m|=|television\nSendung|f|en|programme\nZeitung|f|en|newspaper\nZeitschrift|f|en|magazine\nBuch|n|¨er|book\nHeft|n|e|notebook\nStift|m|e|pen\nKugelschreiber|m|=|ballpoint pen\nBleistift|m|e|pencil\nPapier|n|e|paper\nFormular|n|e|form\nAntrag|m|¨e|application\nUnterschrift|f|en|signature\nDokument|n|e|document\nKopie|f|n|copy\nAusdruck|m|¨e|printout\nAnmeldung|f|en|registration\nSpiel|n|e|game\nSport|m|-|sport\nFußball|m|¨e|football\nTraining|n|s|training\nMannschaft|f|en|team\nHobby|n|s|hobby\nFreizeit|f|-|free time\nAusstellung|f|en|exhibition\nGitarre|f|n|guitar\nKlavier|n|e|piano\nMeinung|f|en|opinion\nGedanke|m|n|thought\nIdee|f|n|idea\nPlan|m|¨e|plan\nZiel|n|e|goal\nWunsch|m|¨e|wish\nTraum|m|¨e|dream\nHoffnung|f|en|hope\nAngst|f|¨e|fear\nSorge|f|n|worry\nFreude|f|n|joy\nGlück|n|-|luck / happiness\nLiebe|f|-|love\nStreit|m|e|argument\nGefühl|n|e|feeling\nStimmung|f|en|mood\nStress|m|-|stress\nRuhe|f|-|calm\nHilfe|f|n|help\nBitte|f|n|request\nDank|m|-|thanks\nEntschuldigung|f|en|apology\nGrüße|m|-|greetings\nGruß|m|¨e|greeting\nProblem|n|e|problem\nGrund|m|¨e|reason\nUrsache|f|n|cause\nFolge|f|n|consequence\nWirkung|f|en|effect\nZweck|m|e|purpose\nVorteil|m|e|advantage\nNachteil|m|e|disadvantage\nMöglichkeit|f|en|possibility\nChance|f|n|chance\nRisiko|n|!Risiken|risk\nGefahr|f|en|danger\nSicherheit|f|-|safety\nSchutz|m|-|protection\nPflicht|f|en|duty\nRecht|n|e|right\nGesetz|n|e|law\nRegel|f|n|rule\nOrdnung|f|en|order\nVerbot|n|e|ban\nErlaubnis|f|se|permission\nGenehmigung|f|en|permit\nEntscheidung|f|en|decision\nVerantwortung|f|en|responsibility\nFall|m|¨e|case\nSituation|f|en|situation\nUmstand|m|¨e|circumstance\nZustand|m|¨e|condition\nEntwicklung|f|en|development\nVeränderung|f|en|change\nFortschritt|m|e|progress\nVerbesserung|f|en|improvement\nUnterschied|m|e|difference\nÄhnlichkeit|f|en|similarity\nVergleich|m|e|comparison\nBeziehung|f|en|relationship\nVerbindung|f|en|connection\nKontakt|m|e|contact\nGespräch|n|e|conversation\nDiskussion|f|en|discussion\nVortrag|m|¨e|talk\nRede|f|n|speech\nBericht|m|e|report\nStudie|f|n|study\nForschung|f|en|research\nWissenschaft|f|en|science\nWissen|n|-|knowledge\nBildung|f|-|education\nKultur|f|en|culture\nGesellschaft|f|en|society\nPolitik|f|-|politics\nRegierung|f|en|government\nWahl|f|en|election / choice\nStaat|m|en|state\nWirtschaft|f|en|economy\nIndustrie|f|n|industry\nTechnik|f|en|technology\nMedizin|f|-|medicine\nKrieg|m|e|war\nFrieden|m|-|peace\nFlucht|f|-|flight / escape\nHeimat|f|-|home country\nHerkunft|f|-|origin\nAsyl|n|e|asylum\nGrenze|f|n|border\nIntegration|f|-|integration\nReligion|f|en|religion\nTradition|f|en|tradition\nGeschichte|f|n|story / history\nErinnerung|f|en|memory\nErlebnis|n|se|experience\nLeben|n|=|life\nTod|m|-|death\nWelt|f|en|world\nErde|f|-|earth\nEnergie|f|n|energy\nKraft|f|¨e|strength\nGewicht|n|e|weight\nLänge|f|n|length\nBreite|f|n|width\nHöhe|f|n|height\nMenge|f|n|amount\nZahl|f|en|number\nProzent|n|e|percent\nHälfte|f|n|half\nTeil|m|e|part\nStück|n|e|piece\nGruppe|f|n|group\nReihe|f|n|row\nListe|f|n|list\nSeite|f|n|page / side\nRichtung|f|en|direction\nOrt|m|e|place\nRaum|m|¨e|room / space\nAusgang|m|¨e|exit\nEingang|m|¨e|entrance\nArt|f|en|kind\nSorte|f|n|sort\nForm|f|en|shape\nMuster|n|=|pattern\nMaterial|n|!Materialien|material\nGegenstand|m|¨e|object\nDing|n|e|thing\nSache|f|n|thing\nWerkzeug|n|e|tool\nMaschine|f|n|machine\nGerät|n|e|device\nInstrument|n|e|instrument\nZange|f|n|forceps\nBohrer|m|=|drill\nMaske|f|n|mask\nSchutzbrille|f|n|safety glasses\nNadel|f|n|needle\nPinzette|f|n|tweezers\nSonde|f|n|probe\nSkalpell|n|e|scalpel\nVerband|m|¨e|bandage\nPflaster|n|=|plaster\nTupfer|m|=|swab\nWatte|f|-|cotton wool\nDesinfektion|f|en|disinfection\nSterilisation|f|en|sterilisation\nHygiene|f|-|hygiene\nRöntgen|n|-|X-ray\nAbdruck|m|¨e|impression\nGipsmodell|n|e|plaster model\nLokalanästhesie|f|n|local anaesthesia\nEinwilligung|f|en|consent\nAufklärung|f|en|information / briefing\nAnamnese|f|n|medical history\nVorerkrankung|f|en|pre-existing condition\nNebenwirkung|f|en|side effect\nDosis|f|!Dosen|dose\nAnweisung|f|en|instruction\nPackungsbeilage|f|n|leaflet\nEinnahme|f|n|intake\nKontrolle|f|n|check-up\nVorsorge|f|-|prevention\nNachsorge|f|-|follow-up care\nHeilung|f|en|healing\nErfolg|m|e|success\nMisserfolg|m|e|failure\nQualität|f|en|quality\nKostenvoranschlag|m|¨e|cost estimate\nZuzahlung|f|en|co-payment\nEigenanteil|m|e|own share\nBonusheft|n|e|bonus booklet\nMundschutz|m|-|mouth guard\nAbendkasse|f|n|evening box office\nWohnungssuche|f|-|flat hunting\nKaution|f|en|deposit\nNebenkosten|p|=|extra costs\nUmzug|m|¨e|move\nNachbarschaft|f|en|neighbourhood\nLärm|m|-|noise\nGarage|f|n|garage\nHof|m|¨e|yard\nZaun|m|¨e|fence\nBriefkasten|m|¨|letterbox\nKlingel|f|n|doorbell\nHandtuch|n|¨er|towel\nSeife|f|n|soap\nShampoo|n|s|shampoo\nKamm|m|¨e|comb\nBürste|f|n|brush\nRasierer|m|=|razor\nWindel|f|n|nappy\nKissen|n|=|pillow\nBettdecke|f|n|duvet\nVorhang|m|¨e|curtain\nBesen|m|=|broom\nEimer|m|=|bucket\nSchere|f|n|scissors\nNagel|m|¨|nail\nHammer|m|¨|hammer\nLeiter|f|n|ladder\nBatterie|f|n|battery\nKabel|n|=|cable\nSteckdose|f|n|socket\nFernbedienung|f|en|remote control\nWecker|m|=|alarm clock\nKerze|f|n|candle\nFeuer|n|=|fire\nRauch|m|-|smoke\nZigarette|f|n|cigarette\nAlkohol|m|-|alcohol\nDrogen|p|=|drugs\nSchlaf|m|-|sleep\nGewohnheit|f|en|habit\nErnährung|f|-|nutrition\nDiät|f|en|diet\nVitamin|n|e|vitamin\nKalorie|f|n|calorie\nBewegung|f|en|movement\nGymnastik|f|-|gymnastics\nYoga|n|-|yoga\nSpaziergang|m|¨e|walk\nWanderung|f|en|hike\nRadtour|f|en|bike tour\nCamping|n|-|camping\nZelt|n|e|tent\nStadtplan|m|¨e|city map\nWegbeschreibung|f|en|directions\nTouristeninformation|f|en|tourist information\nReiseführer|m|=|guidebook\nReisebüro|n|s|travel agency\nBuchung|f|en|booking\nReservierung|f|en|reservation\nEinzelzimmer|n|=|single room\nDoppelzimmer|n|=|double room\nFrühstücksbuffet|n|s|breakfast buffet\nEmpfang|m|¨e|reception\nRezeption|f|en|reception\nAufenthalt|m|e|stay\nAbreise|f|n|departure\nAnkunft|f|¨e|arrival\nAbfahrt|f|en|departure\nUmweg|m|e|detour\nZoll|m|¨e|customs\nPflanze|f|n|plant\nWiese|f|n|meadow\nInsel|f|n|island\nTal|n|¨er|valley\nLuft|f|-|air\nKlima|n|s|climate\nKlimawandel|m|-|climate change\nErdbeben|n|=|earthquake\nÜberschwemmung|f|en|flood\nDürre|f|n|drought\nRecycling|n|-|recycling\nMülltrennung|f|-|waste separation\nPlastik|n|-|plastic\nMetall|n|e|metal\nHolz|n|¨er|wood\nStein|m|e|stone\nEisen|n|-|iron\nGold|n|-|gold\nWerbung|f|en|advertising\nAnzeige|f|n|advertisement\nPlakat|n|e|poster\nMedien|p|=|media\nFernsehen|n|-|television\nNachrichten|p|=|news\nArtikel|m|=|article\nInterview|n|s|interview\nUmfrage|f|n|survey\nStatistik|f|en|statistics\nGrafik|f|en|graph\nTabelle|f|n|table\nDiagramm|n|e|diagram\nÜberschrift|f|en|heading\nAbsatz|m|¨e|paragraph\nEinleitung|f|en|introduction\nSchluss|m|¨e|conclusion\nArgument|n|e|argument\nBehauptung|f|en|claim\nBeweis|m|e|proof\nAnnahme|f|n|assumption\nZweifel|m|=|doubt\nVermutung|f|en|assumption\nEindruck|m|¨e|impression\nEinfluss|m|¨e|influence\nBedeutung|f|en|meaning\nBedingung|f|en|condition\nVoraussetzung|f|en|prerequisite\nVerhältnis|n|se|relationship\nZusammenhang|m|¨e|connection\nZusammenarbeit|f|-|cooperation\nUnterstützung|f|en|support\nVerständnis|n|-|understanding\nVertrauen|n|-|trust\nRespekt|m|-|respect\nToleranz|f|-|tolerance\nGleichberechtigung|f|-|equality\nFreiheit|f|en|freedom\nGerechtigkeit|f|-|justice\nDemokratie|f|n|democracy\nVerfassung|f|en|constitution\nBürger|m|=|citizen\nEinwohner|m|=|inhabitant\nBevölkerung|f|en|population\nArbeitslosigkeit|f|-|unemployment\nArmut|f|-|poverty\nWohlstand|m|-|prosperity\nHandel|m|-|trade\nExport|m|e|export\nImport|m|e|import\nNachfrage|f|n|demand\nWettbewerb|m|e|competition\nGewinn|m|e|profit\nVerlust|m|e|loss\nUmsatz|m|¨e|turnover\nBudget|n|s|budget\nInvestition|f|en|investment\nDigitalisierung|f|-|digitalisation\nDatenschutz|m|-|data protection\nPasswort|n|¨er|password\nBenutzername|m|n|username\nNutzer|m|=|user\nAnwendung|f|en|application\nSoftware|f|s|software\nDatei|f|en|file\nOrdner|m|=|folder\nNetzwerk|n|e|network\nAkku|m|s|battery\nLadegerät|n|e|charger\nKamera|f|s|camera\nMikrofon|n|e|microphone\nLautsprecher|m|=|speaker\nSprachnachricht|f|en|voice message\nAnhang|m|¨e|attachment\nBetreff|m|e|subject\nAbsender|m|=|sender\nEmpfänger|m|=|recipient\nRückmeldung|f|en|feedback\nBeschwerde|f|n|complaint\nReklamation|f|en|complaint\nGarantie|f|n|guarantee\nQuittung|f|en|receipt\nKassenbon|m|s|receipt\nLieferung|f|en|delivery\nBestellung|f|en|order\nVersand|m|-|shipping\nUmtausch|m|-|exchange\nErsatz|m|-|replacement\nMangel|m|¨|defect\nSchaden|m|¨|damage\nReparatur|f|en|repair\nWerkstatt|f|¨en|workshop\nHandwerk|n|-|craft\nBaustelle|f|n|building site\nGebäude|n|=|building\nHochhaus|n|¨er|high-rise\nWolkenkratzer|m|=|skyscraper\nDenkmal|n|¨er|monument\nBurg|f|en|castle\nSchloss|n|¨er|castle\nTurm|m|¨e|tower\nMarktplatz|m|¨e|market square\nFußgängerzone|f|n|pedestrian zone\nRadweg|m|e|cycle path\nGehweg|m|e|pavement\nAutobahn|f|en|motorway\nLandstraße|f|n|country road\nUmleitung|f|en|diversion\nBaustellen|p|=|roadworks\nGeschwindigkeit|f|en|speed\nStrafe|f|n|fine / punishment\nBußgeld|n|er|fine\nVerkehrsschild|n|er|road sign\nFußgänger|m|=|pedestrian\nRadfahrer|m|=|cyclist\nAutofahrer|m|=|motorist\nPassagier|m|e|passenger\nReisende|m|n|traveller\nTourist|m|en|tourist\nAusländer|m|=|foreigner\nDeutsche|m|n|German\nFlüchtling|m|e|refugee\nMigrant|m|en|migrant\nDolmetscher|m|=|interpreter\nÜbersetzer|m|=|translator\nSozialarbeiter|m|=|social worker\nJobcenter|n|=|job centre\nArbeitsamt|n|¨er|employment office\nAusländerbehörde|f|n|immigration office\nAufenthaltserlaubnis|f|se|residence permit\nMeldebescheinigung|f|en|registration certificate\nFührungszeugnis|n|se|certificate of good conduct\nBeglaubigung|f|en|certification\nÜbersetzung|f|en|translation\nNachweis|m|e|proof\nBescheinigung|f|en|certificate\nFachsprachprüfung|f|en|specialist language exam\nKenntnisprüfung|f|en|knowledge exam\nBerufserlaubnis|f|se|permit to practise\nZahnmedizin|f|-|dentistry\nZahnheilkunde|f|-|dentistry\nKieferorthopädie|f|-|orthodontics\nChirurgie|f|n|surgery\nKinderarzt|m|¨e|paediatrician\nHausarzt|m|¨e|family doctor\nFacharzt|m|¨e|specialist\nChefarzt|m|¨e|chief physician\nOberarzt|m|¨e|senior physician\nAssistenzarzt|m|¨e|resident doctor\nAnästhesist|m|en|anaesthetist\nRadiologe|m|n|radiologist\nChirurg|m|en|surgeon\nHebamme|f|n|midwife\nPhysiotherapeut|m|en|physiotherapist\nZahntechniker|m|=|dental technician\nProphylaxe|f|n|prophylaxis\nZahnreinigung|f|en|dental cleaning\nKontrolluntersuchung|f|en|check-up\nAufbiss|m|e|bite plate\nZahnarztpraxis|f|!Zahnarztpraxen|dental practice\nZahnarztstuhl|m|¨e|dental chair\nBehandlungsstuhl|m|¨e|treatment chair\nBehandlungszimmer|n|=|treatment room\nPatientenakte|f|n|patient file\nKrankengeschichte|f|n|medical history\nKinderkrankheit|f|en|childhood illness\nMundgeruch|m|-|bad breath\nMundspülung|f|en|mouthwash\nSpeichel|m|-|saliva\nGaumen|m|=|palate\nMandel|f|n|tonsil\nKehlkopf|m|¨e|larynx\nSpeiseröhre|f|n|oesophagus\nWirbelsäule|f|n|spine\nRippe|f|n|rib\nBecken|n|=|pelvis\nHüfte|f|n|hip\nOberschenkel|m|=|thigh\nKnöchel|m|=|ankle\nHandgelenk|n|e|wrist\nStirn|f|en|forehead\nWange|f|n|cheek\nKinn|n|e|chin\nAugenbraue|f|n|eyebrow\nWimper|f|n|eyelash\nGehör|n|-|hearing\nSehvermögen|n|-|vision\nGeruch|m|¨e|smell\nGeschmack|m|¨e|taste\nAtem|m|-|breath\nPuls|m|e|pulse\nKreislauf|m|¨e|circulation\nStoffwechsel|m|=|metabolism\nImmunsystem|n|e|immune system\nAntibiotikum|n|!Antibiotika|antibiotic\nSchmerzmittel|n|=|painkiller\nImpfstoff|m|e|vaccine\nInfusion|f|en|infusion\nBlutprobe|f|n|blood sample\nBlutbild|n|er|blood count\nUltraschall|m|-|ultrasound\nGips|m|e|plaster cast\nKrücke|f|n|crutch\nRollstuhl|m|¨e|wheelchair\nPflege|f|-|care\nPflegeheim|n|e|nursing home\nRehabilitation|f|-|rehabilitation\nNotruf|m|e|emergency call\nErste Hilfe|f|-|first aid",v:"sein|be|ist|war|gewesen|s|wäre\nhaben|have|hat|hatte|gehabt|h|hätte\nwerden|become|wird|wurde|geworden|s|würde\nkönnen|can|kann|konnte|gekonnt|h|könnte\nmüssen|must|muss|musste|gemusst|h|müsste\nwollen|want to|will|wollte|gewollt|h|wollte\nsollen|should|soll|sollte|gesollt|h|sollte\ndürfen|may|darf|durfte|gedurft|h|dürfte\nmögen|like|mag|mochte|gemocht|h|möchte\nwissen|know (a fact)|weiß|wusste|gewusst|h|wüsste\ngehen|go|geht|ging|gegangen|s\nkommen|come|kommt|kam|gekommen|s\nfahren|drive / go|fährt|fuhr|gefahren|s\nlaufen|run / walk|läuft|lief|gelaufen|s\nfliegen|fly|fliegt|flog|geflogen|s\nbleiben|stay|bleibt|blieb|geblieben|s\nsitzen|sit|sitzt|saß|gesessen|h\nstehen|stand|steht|stand|gestanden|h\nliegen|lie|liegt|lag|gelegen|h\nfallen|fall|fällt|fiel|gefallen|s\nsteigen|climb|steigt|stieg|gestiegen|s\nspringen|jump|springt|sprang|gesprungen|s\nschwimmen|swim|schwimmt|schwamm|geschwommen|s\ntreten|step|tritt|trat|getreten|s\ngeben|give|gibt|gab|gegeben|h\nnehmen|take|nimmt|nahm|genommen|h\nessen|eat|isst|aß|gegessen|h\ntrinken|drink|trinkt|trank|getrunken|h\nsehen|see|sieht|sah|gesehen|h\nlesen|read|liest|las|gelesen|h\nsprechen|speak|spricht|sprach|gesprochen|h\nhelfen|help|hilft|half|geholfen|h\ntreffen|meet|trifft|traf|getroffen|h\nwerfen|throw|wirft|warf|geworfen|h\nbrechen|break|bricht|brach|gebrochen|h\nschlafen|sleep|schläft|schlief|geschlafen|h\nfangen|catch|fängt|fing|gefangen|h\nhalten|hold / stop|hält|hielt|gehalten|h\nlassen|let / leave|lässt|ließ|gelassen|h\nrufen|call|ruft|rief|gerufen|h\nheißen|be called|heißt|hieß|geheißen|h\nschreiben|write|schreibt|schrieb|geschrieben|h\nleiden|suffer|leidet|litt|gelitten|h\nschneiden|cut|schneidet|schnitt|geschnitten|h\nbeißen|bite|beißt|biss|gebissen|h\nreiten|ride|reitet|ritt|geritten|s\nscheinen|seem / shine|scheint|schien|geschienen|h\nschweigen|be silent|schweigt|schwieg|geschwiegen|h\nstreiten|argue|streitet|stritt|gestritten|h\nvergleichen|compare|vergleicht|verglich|verglichen|h\nverzeihen|forgive|verzeiht|verzieh|verziehen|h\nbieten|offer|bietet|bot|geboten|h\nfliehen|flee|flieht|floh|geflohen|s\nfrieren|freeze|friert|fror|gefroren|h\ngenießen|enjoy|genießt|genoss|genossen|h\ngießen|pour|gießt|goss|gegossen|h\nschließen|close|schließt|schloss|geschlossen|h\nziehen|pull|zieht|zog|gezogen|h\nwiegen|weigh|wiegt|wog|gewogen|h\nfinden|find|findet|fand|gefunden|h\nbinden|tie|bindet|band|gebunden|h\ngelingen|succeed|gelingt|gelang|gelungen|s\nklingen|sound|klingt|klang|geklungen|h\nsingen|sing|singt|sang|gesungen|h\nsinken|sink|sinkt|sank|gesunken|s\nzwingen|force|zwingt|zwang|gezwungen|h\nbeginnen|begin|beginnt|begann|begonnen|h\ngewinnen|win|gewinnt|gewann|gewonnen|h\nbitten|ask / request|bittet|bat|gebeten|h\ntun|do|tut|tat|getan|h\ngelten|be valid|gilt|galt|gegolten|h\nbefehlen|order|befiehlt|befahl|befohlen|h\nempfehlen|recommend|empfiehlt|empfahl|empfohlen|h\nstehlen|steal|stiehlt|stahl|gestohlen|h\nsterben|die|stirbt|starb|gestorben|s\nwerben|advertise|wirbt|warb|geworben|h\nverderben|spoil|verdirbt|verdarb|verdorben|h\nerschrecken|be startled|erschrickt|erschrak|erschrocken|s\nvergessen|forget|vergisst|vergaß|vergessen|h\nmessen|measure|misst|maß|gemessen|h\nbacken|bake|bäckt|backte|gebacken|h\nbraten|fry|brät|briet|gebraten|h\nraten|guess / advise|rät|riet|geraten|h\nschlagen|hit|schlägt|schlug|geschlagen|h\ntragen|carry / wear|trägt|trug|getragen|h\nwaschen|wash|wäscht|wusch|gewaschen|h\nwachsen|grow|wächst|wuchs|gewachsen|s\ngraben|dig|gräbt|grub|gegraben|h\nladen|load|lädt|lud|geladen|h\neinladen|invite|lädt ein|lud ein|eingeladen|h\nfragen|ask|fragt|fragte|gefragt|h\nbringen|bring|bringt|brachte|gebracht|h\ndenken|think|denkt|dachte|gedacht|h\nkennen|know (a person)|kennt|kannte|gekannt|h\nnennen|name|nennt|nannte|genannt|h\nrennen|run|rennt|rannte|gerannt|s\nsenden|send|sendet|sandte|gesandt|h\nwenden|turn|wendet|wandte|gewandt|h\nbrennen|burn|brennt|brannte|gebrannt|h\nhängen|hang|hängt|hing|gehangen|h\ngehören|belong|gehört|gehörte|gehört|h\nverlieren|lose|verliert|verlor|verloren|h\nanbieten|offer|bietet an|bot an|angeboten|h\nanfangen|begin|fängt an|fing an|angefangen|h\naufstehen|get up|steht auf|stand auf|aufgestanden|s\naussehen|look|sieht aus|sah aus|ausgesehen|h\neinsteigen|get in|steigt ein|stieg ein|eingestiegen|s\naussteigen|get out|steigt aus|stieg aus|ausgestiegen|s\numsteigen|change|steigt um|stieg um|umgestiegen|s\nmitnehmen|take along|nimmt mit|nahm mit|mitgenommen|h\nvorschlagen|suggest|schlägt vor|schlug vor|vorgeschlagen|h\nteilnehmen|take part|nimmt teil|nahm teil|teilgenommen|h\nstattfinden|take place|findet statt|fand statt|stattgefunden|h\nverstehen|understand|versteht|verstand|verstanden|h\nbestehen|pass|besteht|bestand|bestanden|h\nentscheiden|decide|entscheidet|entschied|entschieden|h\nerhalten|receive|erhält|erhielt|erhalten|h\nenthalten|contain|enthält|enthielt|enthalten|h\nbehalten|keep|behält|behielt|behalten|h\nbeschreiben|describe|beschreibt|beschrieb|beschrieben|h\nunterscheiden|distinguish|unterscheidet|unterschied|unterschieden|h\nverbinden|connect|verbindet|verband|verbunden|h\nverbieten|forbid|verbietet|verbot|verboten|h\nverlassen|leave|verlässt|verließ|verlassen|h\nvermeiden|avoid|vermeidet|vermied|vermieden|h\nverschwinden|disappear|verschwindet|verschwand|verschwunden|s\nversprechen|promise|verspricht|versprach|versprochen|h\nvorkommen|occur|kommt vor|kam vor|vorgekommen|s\nzunehmen|gain|nimmt zu|nahm zu|zugenommen|h\nabnehmen|lose weight|nimmt ab|nahm ab|abgenommen|h\nschwellen|swell|schwillt|schwoll|geschwollen|s\nheben|lift|hebt|hob|gehoben|h\nschieben|push|schiebt|schob|geschoben|h\nleihen|lend|leiht|lieh|geliehen|h\ntreiben|do / drive|treibt|trieb|getrieben|h\nfließen|flow|fließt|floss|geflossen|s\nriechen|smell|riecht|roch|gerochen|h\nschreien|shout|schreit|schrie|geschrien|h\nschwören|swear|schwört|schwor|geschworen|h\nlügen|lie|lügt|log|gelogen|h\nbewegen|move|bewegt|bewegte|bewegt|h\nzurückkommen|come back|kommt zurück|kam zurück|zurückgekommen|s\nmachen|do / make\narbeiten|work\nlernen|learn\nwohnen|live (reside)\nleben|live\nspielen|play\nsuchen|search\nbrauchen|need\nkaufen|buy\nverkaufen|sell\nbezahlen|pay\nzahlen|pay\nkosten|cost\nhören|hear\nsagen|say\nantworten|answer\nglauben|believe\nmeinen|mean / think\nlieben|love\nwünschen|wish\nhoffen|hope\nwarten|wait\nanrufen|call\ntelefonieren|phone\nbesuchen|visit\nreisen|travel\ntanzen|dance\nkochen|cook\nputzen|clean\nöffnen|open\nholen|fetch\nzeigen|show\nerklären|explain\nstudieren|study\nüben|practise\nwiederholen|repeat\nbestellen|order\nschmecken|taste\nschauen|look\ndauern|last\npassen|fit\ngefallen|please\nfeiern|celebrate\nschenken|give (a gift)\nabholen|pick up\neinkaufen|shop\nmitkommen|come along\nankommen|arrive\nabfahren|depart\numziehen|move house\nvereinbaren|arrange\nuntersuchen|examine\nbehandeln|treat\nverschreiben|prescribe\nbekommen|get\ninteressieren|interest\nfreuen|be glad\närgern|annoy\nfühlen|feel\nduschen|shower\nspazieren|stroll\nwandern|hike\njoggen|jog\nparken|park\nfotografieren|photograph\nrauchen|smoke\natmen|breathe\nhusten|cough\nniesen|sneeze\nbluten|bleed\nschwitzen|sweat\nzittern|tremble\nweinen|cry\nlachen|laugh\nlächeln|smile\nflüstern|whisper\nerzählen|tell\nberichten|report\nerwähnen|mention\nbehaupten|claim\nbemerken|notice\nbeobachten|observe\nbedeuten|mean\nbedanken|thank\nbegrüßen|greet\nverabschieden|say goodbye\nentschuldigen|excuse\ndanken|thank\ngratulieren|congratulate\nabsagen|cancel\nzusagen|accept\nverschieben|postpone\nverlängern|extend\nverkürzen|shorten\nändern|change\nwechseln|change\ntauschen|swap\numtauschen|exchange\nzurückgeben|return\nmitbringen|bring along\nschicken|send\nliefern|deliver\npacken|pack\nauspacken|unpack\neinpacken|wrap up\nstellen|put\nlegen|lay\nsetzen|set\nstecken|put in\nfüllen|fill\nleeren|empty\nzählen|count\nrechnen|calculate\nprüfen|check\nkontrollieren|check\ntesten|test\nausfüllen|fill in\nunterschreiben|sign\nankreuzen|tick\nanmelden|register\nabmelden|deregister\nbeantragen|apply for\nbewerben|apply\neinstellen|hire\nkündigen|give notice\nverdienen|earn\nsparen|save\nausgeben|spend\nschulden|owe\nbesitzen|own\nmieten|rent\nvermieten|rent out\nbauen|build\nreparieren|repair\nrenovieren|renovate\ninstallieren|install\nbenutzen|use\nnutzen|use\nverwenden|use\ngebrauchen|use\nfunktionieren|work (function)\nstarten|start\nbeenden|finish\nstoppen|stop\naufhören|stop\nerledigen|get done\norganisieren|organise\nplanen|plan\nvorbereiten|prepare\nentwickeln|develop\nverbessern|improve\nverändern|change\nerreichen|reach\nschaffen|manage\nversuchen|try\nprobieren|try\ntrainieren|train\nlehren|teach\nunterrichten|teach\nbeibringen|teach\nvorstellen|introduce\nkennenlernen|get to know\nverabreden|arrange to meet\nbegleiten|accompany\nunterstützen|support\nretten|rescue\nschützen|protect\nwarnen|warn\nberaten|advise\nbeschweren|complain\ndiskutieren|discuss\nbesprechen|discuss\nzustimmen|agree\nwidersprechen|contradict\nabhängen|depend\nbetreffen|concern\nhandeln|act\npassieren|happen\ngeschehen|happen\nsich ereignen|occur\nverletzen|injure\noperieren|operate\nimpfen|vaccinate\nbetäuben|anaesthetise\nbohren|drill\nreinigen|clean\nspülen|rinse\nbürsten|brush\ndesinfizieren|disinfect\nsterilisieren|sterilise\nröntgen|X-ray\neinnehmen|take (medicine)\nheilen|heal\nwirken|take effect\nschmerzen|hurt\nwehtun|hurt\njucken|itch\nentzünden|inflame\nerkälten|catch a cold\nfiebern|have a fever\nerbrechen|vomit\nschlucken|swallow\nkauen|chew\nspucken|spit\nnähen|sew\nkleben|stick\ntrocknen|dry\nbügeln|iron\naufräumen|tidy up\nabwaschen|wash up\ndecken|lay\nmischen|mix\nwürzen|season\nservieren|serve\nverpassen|miss\nübernachten|stay overnight\nbuchen|book\nreservieren|reserve\nstornieren|cancel\neinchecken|check in\nauschecken|check out\nlanden|land\nverreisen|go away\nverlaufen|get lost\nzeichnen|draw\nmalen|paint\nbasteln|craft\nsammeln|collect\nangeln|fish\nsegeln|sail\nklettern|climb\nradeln|cycle\nfehlen|be missing\nvermissen|miss\nerinnern|remind\nmerken|notice\nbuchstabieren|spell\nübersetzen|translate\nkorrigieren|correct\nunterstreichen|underline\nzusammenfassen|summarise\ninformieren|inform\nmitteilen|inform\nbenachrichtigen|notify\nbestätigen|confirm\nbedauern|regret\nbefürchten|fear\nbezweifeln|doubt\nvermuten|suppose\nannehmen|assume\nerwarten|expect\nerlauben|allow\nzulassen|allow\nablehnen|refuse\nakzeptieren|accept\nverlangen|demand\nfordern|demand\nstören|disturb\nbelästigen|bother\nbesichtigen|visit (sights)\nüberlegen|consider\nentdecken|discover\nerfinden|invent\ngründen|found\nleiten|lead\nführen|lead\nfolgen|follow\ndrehen|turn\ndrücken|press\nsenken|lower\nsteigern|increase\nerhöhen|raise\nreduzieren|reduce\nverringern|reduce",a:"gut|good|besser|best\nschlecht|bad\ngroß|big|¨\nklein|small\nlang|long|¨\nkurz|short|¨\nhoch|high|höher|höchst\nniedrig|low\nbreit|wide\nschmal|narrow\ndick|thick\ndünn|thin\nschwer|heavy / difficult\nleicht|light / easy\nalt|old|¨\nneu|new\njung|young|¨\nmodern|modern\nsauber|clean\nschmutzig|dirty\ndreckig|dirty\nschön|beautiful\nhässlich|ugly\nnett|nice\nfreundlich|friendly\nunfreundlich|unfriendly\nsympathisch|likeable\nhöflich|polite\nruhig|quiet\nlaut|loud\nleise|quiet\nstill|silent\nlustig|funny\ntraurig|sad\nglücklich|happy\nfröhlich|cheerful\nfroh|glad\nzufrieden|satisfied\nunzufrieden|dissatisfied\nmüde|tired\nmunter|awake\nwach|awake\ngesund|healthy|¨\nkrank|ill|¨\nfit|fit\nstark|strong|¨\nschwach|weak|¨\nschlank|slim\nhungrig|hungry\ndurstig|thirsty\nsatt|full\nnervös|nervous\nängstlich|anxious\nwütend|angry\nböse|angry\neifersüchtig|jealous\nstolz|proud\neinsam|lonely\nallein|alone\nfremd|foreign / strange\nbekannt|known\nberühmt|famous\nbeliebt|popular\nwichtig|important\nunwichtig|unimportant\nrichtig|right\nfalsch|wrong\nwahr|true\nmöglich|possible\nunmöglich|impossible\nnötig|necessary\nnotwendig|necessary\nnützlich|useful\nsinnvoll|sensible\neinfach|simple\nschwierig|difficult\nkompliziert|complicated\nklar|clear\ndeutlich|clear\nsicher|safe / sure\ngefährlich|dangerous\nvorsichtig|careful\nwirklich|real\necht|real\nnormal|normal\ntypisch|typical\nbesonders|special\nspeziell|special\nallgemein|general\nganz|whole\nhalb|half\nvoll|full\nleer|empty\noffen|open\ngeschlossen|closed\nfrei|free\nbesetzt|occupied\nbereit|ready\nfertig|finished\nnah|near|näher|nächst\nfern|far\nweit|far\nspät|late\nfrüh|early\nschnell|fast\nlangsam|slow\npünktlich|punctual\nregelmäßig|regular\ntäglich|daily\nwöchentlich|weekly\nmonatlich|monthly\njährlich|yearly\nständig|constant\nplötzlich|sudden\nlange|long (time)\nkalt|cold|¨\nwarm|warm|¨\nheiß|hot\nkühl|cool\nnass|wet\ntrocken|dry\nhell|bright\ndunkel|dark\nsonnig|sunny\nregnerisch|rainy\nwindig|windy\nbewölkt|cloudy\nrot|red\nblau|blue\ngrün|green\ngelb|yellow\nschwarz|black\nweiß|white\nbraun|brown\ngrau|grey\nrosa|pink\nlila|purple\norange|orange\nbunt|colourful\nteuer|expensive\nbillig|cheap\ngünstig|cheap / favourable\nkostenlos|free of charge\ngratis|free\nreich|rich\narm|poor|¨\nsüß|sweet\nsauer|sour\nbitter|bitter\nsalzig|salty\nscharf|spicy|¨\nfrisch|fresh\nlecker|delicious\nfett|fat\nroh|raw\ngekocht|cooked\nwarmes|warm\nheilig|holy\ndeutsch|German\nenglisch|English\ntürkisch|Turkish\narabisch|Arabic\npersisch|Persian\nafghanisch|Afghan\nsyrisch|Syrian\neuropäisch|European\ninternational|international\nnational|national\nregional|regional\nlokal|local\nöffentlich|public\nprivat|private\npersönlich|personal\nberuflich|professional\nmedizinisch|medical\nzahnärztlich|dental\närztlich|medical\nchronisch|chronic\nakut|acute\nschmerzhaft|painful\nschmerzlos|painless\nansteckend|contagious\nallergisch|allergic\nschwanger|pregnant\nnüchtern|sober / on an empty stomach\nverletzt|injured\nbewusstlos|unconscious\nsteril|sterile\nwirksam|effective\ngefährdet|at risk\nerfahren|experienced\nerfolgreich|successful\nfreiwillig|voluntary\nverpflichtet|obliged\nverantwortlich|responsible\nzuständig|responsible\nabhängig|dependent\nunabhängig|independent\nselbstständig|independent\nfleißig|hard-working\nfaul|lazy\nklug|clever\ndumm|stupid\nintelligent|intelligent\nbegabt|gifted\ngeduldig|patient\nungeduldig|impatient\nehrlich|honest\nmutig|brave\nstreng|strict\nlocker|relaxed\nneugierig|curious\ninteressant|interesting\nlangweilig|boring\nspannend|exciting\nanstrengend|tiring\nbequem|comfortable\npraktisch|practical\nideal|ideal\nperfekt|perfect\ngenau|exact\nungefähr|approximate\nverschieden|different\ngleich|same\nähnlich|similar\nandere|other\neinzig|only\nerste|first\nletzte|last\nnächste|next\nvorige|previous\nbisherig|previous\nkünftig|future\nheutig|today's\ndamalig|then\naktuell|current\njetzig|present\neigen|own\nganze|whole\nviele|many\nwenige|few\neinige|some\nmehrere|several\nbeide|both\nalle|all\njede|every\nmanche|some\nsolche|such\nwelche|which",f:"ich|I\ndu|you (informal)\ner|he\nsie|she / they\nes|it\nwir|we\nihr|you (plural) / her\nSie|you (formal)\nmich|me\ndich|you\nihn|him\nuns|us\neuch|you (plural)\nihnen|them\nmir|to me\ndir|to you\nihm|to him\nsich|oneself\nman|one / you\nmein|my\nmeine|my\nmeinen|my\nmeinem|my\nmeiner|my\nmeines|my\ndein|your\ndeine|your\ndeinen|your\ndeinem|your\ndeiner|your\ndeines|your\nsein|his / its\nseine|his / its\nseinen|his / its\nseinem|his / its\nseiner|his / its\nseines|his / its\nihre|her / their\nihren|her / their\nihrem|her / their\nihrer|her / their\nihres|her / their\nunser|our\nunsere|our\nunseren|our\nunserem|our\nunserer|our\nunseres|our\neuer|your (plural)\neure|your (plural)\neuren|your (plural)\neurem|your (plural)\neurer|your (plural)\nIhr|your (formal)\nIhre|your (formal)\nIhren|your (formal)\nIhrem|your (formal)\nIhrer|your (formal)\nder|the (m) / of the (f)\ndie|the (f, plural)\ndas|the (n) / that\nden|the (m, accusative)\ndem|the (dative)\ndes|of the\nein|a\neine|a\neinen|a\neinem|a\neiner|a\neines|a\nkein|no / not a\nkeine|no\nkeinen|no\nkeinem|no\nkeiner|no\nkeines|no\ndieser|this\ndiese|this\ndieses|this\ndiesen|this\ndiesem|this\njener|that\njene|that\njenes|that\nderselbe|the same\ndasselbe|the same\ndieselbe|the same\nwelcher|which\nwelches|which\nwelchen|which\nwelchem|which\njeder|every\njedes|every\njeden|every\njedem|every\njede|every\nalles|everything\nnichts|nothing\netwas|something\njemand|someone\nniemand|nobody\njemanden|someone\nniemanden|nobody\njemandem|someone\nniemandem|nobody\nwer|who\nwen|whom\nwem|to whom\nwessen|whose\nwas|what\nwie|how / like\nwo|where\nwohin|where to\nwoher|where from\nwann|when\nwarum|why\nwieso|why\nweshalb|why\nwozu|what for\nwomit|with what\nwofür|for what\nworüber|about what\nworan|what of\nworauf|on what\nwovon|of what\nwelche|which\nwieviel|how much\nund|and\noder|or\naber|but\ndenn|because\nsondern|but (rather)\ndoch|but / yet\nweil|because\ndass|that\nob|whether\nwenn|if / when\nals|when / than\ndamit|so that\nobwohl|although\nwährend|while\nnachdem|after\nbevor|before\nbis|until\nseit|since\nseitdem|since then\nsobald|as soon as\nfalls|in case\nsodass|so that\nindem|by\nohne|without\nstatt|instead of\nanstatt|instead of\nsowie|as well as\nsowohl|both\nweder|neither\nnoch|still / nor\nentweder|either\nzwar|admittedly\njedoch|however\ndennoch|nevertheless\ntrotzdem|nevertheless\ndeshalb|therefore\ndeswegen|therefore\ndarum|therefore\ndaher|therefore\nalso|so\ndann|then\ndanach|afterwards\ndavor|before that\nzuerst|first\nzunächst|first of all\nanschließend|then\nschließlich|finally\nendlich|finally\nzuletzt|last\naußerdem|besides\nebenfalls|also\nauch|also\nsogar|even\nnur|only\nbloß|only\nerst|only / first\nschon|already\nimmer|always\nnie|never\nniemals|never\noft|often\nhäufig|often\nmanchmal|sometimes\nselten|rarely\nmeistens|mostly\nnormalerweise|normally\ngewöhnlich|usually\nüblicherweise|usually\neigentlich|actually\nziemlich|quite\nsehr|very\nganz|quite\nzu|to / too\nbesonders|especially\nfast|almost\nkaum|hardly\netwa|about\nungefähr|approximately\ncirca|about\ngenug|enough\nviel|much\nwenig|little\nmehr|more\nweniger|less\nmeist|most\nmindestens|at least\nhöchstens|at most\nebenso|just as\ngenauso|just as\nso|so\nsonst|otherwise\nwieder|again\nnochmal|again\nbald|soon\ngleich|right away\nsofort|immediately\njetzt|now\nnun|now\nheute|today\ngestern|yesterday\nmorgen|tomorrow\nübermorgen|day after tomorrow\nvorgestern|day before yesterday\nfrüher|earlier\nspäter|later\nvorher|before\nnachher|afterwards\ninzwischen|meanwhile\nmittlerweile|by now\nbisher|so far\ndamals|back then\nneulich|recently\nkürzlich|recently\nvorhin|a moment ago\nabends|in the evening\nmorgens|in the morning\nmittags|at noon\nnachmittags|in the afternoon\nnachts|at night\nmontags|on Mondays\ndienstags|on Tuesdays\nmittwochs|on Wednesdays\ndonnerstags|on Thursdays\nfreitags|on Fridays\nsamstags|on Saturdays\nsonntags|on Sundays\ntäglich|daily\nhier|here\nda|there\ndort|there\ndrüben|over there\ndraußen|outside\ndrinnen|inside\noben|above\nunten|below\nlinks|left\nrechts|right\ngeradeaus|straight ahead\nvorne|in front\nhinten|behind\nüberall|everywhere\nirgendwo|somewhere\nnirgends|nowhere\nnirgendwo|nowhere\nzurück|back\nweg|away\nhin|there\nher|here\nherein|in\nhinein|into\nheraus|out\nhinaus|out\nhinauf|up\nhinunter|down\nherauf|up\nherunter|down\ndaheim|at home\nunterwegs|on the way\nvielleicht|perhaps\nwahrscheinlich|probably\nsicher|certainly\nbestimmt|certainly\nnatürlich|of course\nselbstverständlich|of course\nleider|unfortunately\nhoffentlich|hopefully\nglücklicherweise|fortunately\neben|just\nmal|once\nja|yes\nnein|no\nnicht|not\nüberhaupt|at all\ngern|gladly\ngerne|gladly\nlieber|rather\nbitte|please\ndanke|thanks\ndank|thanks to\nhallo|hello\ntschüss|bye\ntschau|bye\nservus|hello\nmoin|hello\nEntschuldigung|excuse me\nVerzeihung|pardon\nProst|cheers\ngut|well\nschlecht|badly\nbesser|better\nach|oh\noh|oh\nhm|hm\naha|aha\nokay|okay\nok|ok\ngenau|exactly\nstimmt|that's right\nklar|of course\nsuper|great\ntoll|great\nprima|great\nwunderbar|wonderful\nschade|pity\nleid|sorry\negal|doesn't matter\nnämlich|namely\nübrigens|by the way\nallerdings|however\nimmerhin|at least\njedenfalls|in any case\nwenigstens|at least\nbeziehungsweise|or rather\nbzw|or rather\nusw|etc\netc|etc\nca|approx\nDr|Dr\nProf|Prof\nNr|No\nStr|St\nIhnen|you (formal, dative)\nin|in\nan|at / on\nauf|on\nüber|over / about\nunter|under\nvor|in front of / before\nhinter|behind\nneben|next to\nzwischen|between\nmit|with\nvon|from / of\nbei|at / with\nnach|after / to\naus|out of\nfür|for\ngegen|against\num|around / at\ndurch|through\nab|from\naußer|except\ngegenüber|opposite\nentlang|along\nlaut|according to\nwegen|because of\ntrotz|despite\ninnerhalb|within\naußerhalb|outside\noberhalb|above\nunterhalb|below\nanhand|on the basis of\nbezüglich|regarding\ngemäß|according to\nzufolge|according to\nim|in the\nam|on the\nans|to the\naufs|onto the\nbeim|at the\nvom|from the\nzum|to the\nzur|to the\nins|into the\nums|around the\nfürs|for the\ndurchs|through the\nübers|over the\nuntern|under the\nhinterm|behind the\nvorm|in front of the\nüberm|over the\nnull|zero\neins|one\nzwei|two\ndrei|three\nvier|four\nfünf|five\nsechs|six\nsieben|seven\nacht|eight\nneun|nine\nzehn|ten\nelf|eleven\nzwölf|twelve\ndreizehn|thirteen\nvierzehn|fourteen\nfünfzehn|fifteen\nsechzehn|sixteen\nsiebzehn|seventeen\nachtzehn|eighteen\nneunzehn|nineteen\nzwanzig|twenty\ndreißig|thirty\nvierzig|forty\nfünfzig|fifty\nsechzig|sixty\nsiebzig|seventy\nachtzig|eighty\nneunzig|ninety\nhundert|hundred\ntausend|thousand\nMillion|million\neinmal|once\nzweimal|twice\ndreimal|three times\nerste|first\nersten|first\nerstes|first\nerster|first\nzweite|second\nzweiten|second\nzweites|second\nzweiter|second\ndritte|third\ndritten|third\ndrittes|third\ndritter|third\nvierte|fourth\nvierten|fourth\nfünfte|fifth\nfünften|fifth\nsechste|sixth\nsechsten|sixth\nsiebte|seventh\nsiebten|seventh\nachte|eighth\nachten|eighth\nneunte|ninth\nneunten|ninth\nzehnte|tenth\nzehnten|tenth\nelfte|eleventh\nelften|eleventh\nzwölfte|twelfth\nzwölften|twelfth\nzwanzigste|twentieth\nzwanzigsten|twentieth\ndreißigste|thirtieth\ndreißigsten|thirtieth\neinundzwanzig|twenty-one\nzweiundzwanzig|twenty-two\ndreiundzwanzig|twenty-three\nvierundzwanzig|twenty-four\nfünfundzwanzig|twenty-five\nsechsundzwanzig|twenty-six\nsiebenundzwanzig|twenty-seven\nachtundzwanzig|twenty-eight\nneunundzwanzig|twenty-nine\neinunddreißig|thirty-one\nfünfunddreißig|thirty-five\nvierzigste|fortieth\nhalb|half\nViertel|quarter\ndreiviertel|three quarters\ndoppelt|double\nbeide|both\nbeiden|both"};
+  /* =====================================================
+     DICTIONARY LAYER of the sentence checker
+     A word list is built into the app (nouns with article and plural, verbs, adjectives, small words).
+     It is used to find spelling mistakes, wrong capital letters, wrong articles and to show the meaning of every word.
+     ===================================================== */
+  var DX = null;
+  var DX_SEP = 'zusammen zurück vorbei entgegen weiter wieder heraus herunter herein hinaus hinein hinauf hinunter herauf hoch nieder fest statt teil weg her hin los frei fern dabei durch vor nach mit auf aus ein an ab um zu bei'.split(' ');
+  var DX_INSEP = 'be ge er ent ver zer miss emp über unter'.split(' ');
+  var DX_ALT = { see:'mf', leiter:'mf', kiefer:'mf', steuer:'fn', gehalt:'nm', teil:'mn', 'e-mail':'fn', joghurt:'mfn', virus:'nm', radio:'nm', schild:'mn', band:'mnf', tor:'mn', moment:'mn', mal:'n', euro:'m', abitur:'n', keks:'mn', deutsche:'mf', erwachsene:'mf', jugendliche:'mf', verwandte:'mf', reisende:'mf', deutsch:'n', alter:'n' };
+  var DX_STOP = 'ich du er sie es wir ihr man und oder aber denn weil dass ob wenn als wie wo was wer wann warum nicht kein keine auch noch schon sehr nur dann doch mit von zu in auf für an bei nach aus um über unter vor durch gegen ohne bis seit der die das den dem des ein eine einen einem einer mein meine meinen meinem dein deine sein seine unser unsere euer eure ihre ihren mich dich ihn uns euch mir dir ihm ihnen sich da hier ja nein bitte danke so zum zur im am vom beim ins aufs ans eines einer meiner deiner jeder alle viele'.split(' ');
+  var DX_PREP_DAT = 'aus bei mit nach seit von zu gegenüber ab außer';
+  var DX_PREP_ACC = 'durch für gegen ohne um bis entlang';
+  var DX_PREP_WECH = 'an auf hinter in neben über unter vor zwischen';
+  function dxUml(s) {   /* umlaut of the last a / o / u / au */
+    for (var i = s.length - 1; i >= 0; i--) {
+      var c = s.charAt(i);
+      if (c === 'u' && i > 0 && s.charAt(i - 1) === 'a') return s.slice(0, i - 1) + 'äu' + s.slice(i + 1);
+      if (c === 'a') return s.slice(0, i) + 'ä' + s.slice(i + 1);
+      if (c === 'o') return s.slice(0, i) + 'ö' + s.slice(i + 1);
+      if (c === 'u') return s.slice(0, i) + 'ü' + s.slice(i + 1);
+    }
+    return s;
+  }
+  function dxFold(w) { return w.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss'); }
+  function dxFold2(w) { return w.replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u').replace(/ß/g, 'ss'); }
+  /* article tables: group d = der-words, group e = ein-words ; g = m f n p (plural) ; c = n a d g */
+  var DX_ART = null;
+  function dxArtBuild() {
+    DX_ART = {};
+    function put(form, stem, grp, g, c) { (DX_ART[form] = DX_ART[form] || []).push({ stem:stem, grp:grp, g:g, c:c }); }
+    var d = { m:['der', 'den', 'dem', 'des'], f:['die', 'die', 'der', 'der'], n:['das', 'das', 'dem', 'des'], p:['die', 'die', 'den', 'der'] };
+    ['m', 'f', 'n', 'p'].forEach(function (g) { ['n', 'a', 'd', 'g'].forEach(function (c, i) { put(d[g][i], 'd', 'd', g, c); }); });
+    ['dies', 'jed', 'welch', 'manch'].forEach(function (st) {
+      var E = { m:['er', 'en', 'em', 'es'], f:['e', 'e', 'er', 'er'], n:['es', 'es', 'em', 'es'], p:['e', 'e', 'en', 'er'] };
+      ['m', 'f', 'n', 'p'].forEach(function (g) { ['n', 'a', 'd', 'g'].forEach(function (c, i) { if (st === 'jed' && g === 'p') return; put(st + E[g][i], st, 'd', g, c); }); });
+    });
+    ['ein', 'kein', 'mein', 'dein', 'sein', 'ihr', 'unser', 'euer', 'Ihr'].forEach(function (st) {
+      var E = { m:['', 'en', 'em', 'es'], f:['e', 'e', 'er', 'er'], n:['', '', 'em', 'es'], p:['e', 'e', 'en', 'er'] };
+      ['m', 'f', 'n', 'p'].forEach(function (g) { ['n', 'a', 'd', 'g'].forEach(function (c, i) {
+        if (st === 'ein' && g === 'p') return;
+        var f = st + E[g][i];
+        if (st === 'euer' && E[g][i]) f = 'eur' + E[g][i];
+        put(f.toLowerCase(), st.toLowerCase(), 'e', g, c);
+      }); });
+    });
+  }
+  var DX_FORMS = {
+    d:{ m:{ n:'der', a:'den', d:'dem' }, f:{ n:'die', a:'die', d:'der' }, n:{ n:'das', a:'das', d:'dem' } },
+    e:{ m:{ n:'', a:'en', d:'em' }, f:{ n:'e', a:'e', d:'er' }, n:{ n:'', a:'', d:'em' } }
+  };
+  function dxArtForm(opt, g, c) {   /* the right form of the same article word for gender g and case c */
+    if (opt.grp === 'd' && opt.stem === 'd') return DX_FORMS.d[g][c];
+    if (opt.grp === 'd') return opt.stem + { m:{ n:'er', a:'en', d:'em' }, f:{ n:'e', a:'e', d:'er' }, n:{ n:'es', a:'es', d:'em' } }[g][c];
+    var e = DX_FORMS.e[g][c];
+    if (opt.stem === 'euer' && e) return 'eur' + e;
+    return opt.stem + e;
+  }
+  function dxEndings(base, list) { return list.map(function (e) { return base + e; }); }
+
+  function dxBuild() {
+    if (DX) return DX;
+    fxBuild();
+    var D = DX = { f:{}, fold:{}, fold2:{}, seen:{}, verbs:{}, nouns:{}, keys:null, cache:{} };
+    function add(form, e) {
+      var k = form.toLowerCase();
+      var a = D.f[k] || (D.f[k] = []);
+      for (var i = 0; i < a.length; i++) if (a[i].p === e.p && a[i].l === e.l && a[i].k === e.k) return;
+      a.push(e);
+    }
+    function lines(s) { return String(s || '').split('\n').filter(function (x) { return x; }).map(function (x) { return x.split('|'); }); }
+    var LEX = DX_LEX;
+
+    /* ---- nouns ---- */
+    function addNoun(name, g, pl, en, extra) {
+      if (!name || D.nouns[name.toLowerCase()]) return;
+      var lemma = { name:name, g:g, pl:'', en:en || '' };
+      var plural = '';
+      if (pl === '=') plural = name; else if (pl === '¨') plural = dxUml(name); else if (pl === 'e') plural = name + 'e'; else if (pl === '¨e') plural = dxUml(name) + 'e';
+      else if (pl === 'n') plural = name + 'n'; else if (pl === 'en') plural = name + 'en'; else if (pl === '¨er') plural = dxUml(name) + 'er'; else if (pl === 'er') plural = name + 'er';
+      else if (pl === 's') plural = name + 's'; else if (pl === 'nen') plural = name + 'nen'; else if (pl === 'se') plural = name + 'se'; else if (pl && pl.charAt(0) === '!') plural = pl.slice(1);
+      if (g === 'p') { plural = name; }
+      lemma.pl = plural;
+      D.nouns[name.toLowerCase()] = lemma;
+      var alt = DX_ALT[name.toLowerCase()];
+      lemma.alt = alt || g;
+      if (g !== 'p') {
+        add(name, { p:'n', l:name, g:g, num:'s', k:'sg', e:lemma });
+        if (g === 'm' || g === 'n') {
+          if (/[sßxz]$/.test(name)) add(name + 'es', { p:'n', l:name, g:g, num:'s', k:'gen', e:lemma });
+          else { add(name + 's', { p:'n', l:name, g:g, num:'s', k:'gen', e:lemma }); add(name + 'es', { p:'n', l:name, g:g, num:'s', k:'gen', e:lemma }); }
+        }
+        if (g === 'm' && (pl === 'en' || pl === 'n') && !/(er|el)$/.test(name)) { add(name + (/e$/.test(name) ? 'n' : 'en'), { p:'n', l:name, g:g, num:'p', k:'weak', e:lemma }); }
+        if (g === 'n' && /e$/.test(name) === false && pl === 'n') { }
+      }
+      if (plural) {
+        add(plural, { p:'n', l:name, g:g, num:'p', k:'pl', e:lemma });
+        if (!/[ns]$/.test(plural)) add(plural + 'n', { p:'n', l:name, g:g, num:'p', k:'dat-pl', e:lemma });
+      }
+      if (g === 'm' && /e$/.test(name) && pl === 'n') { }
+    }
+    lines(LEX.n).forEach(function (a) { addNoun(a[0], a[1], a[2], a[3]); });
+    /* nouns from the lessons of this account (when loaded) */
+    try { Object.keys(FX_NOUNS).forEach(function (k) { var n = FX_NOUNS[k]; if (!n || n.g === '?' || D.nouns[k]) return; addNoun(n.cap, n.g, '', ''); D.nouns[k].open = true; }); } catch (e) {}
+    FX_PROPER.forEach(function (p) { if (!D.f[p.toLowerCase()]) add(p, { p:'x', l:p, k:'name' }); });
+
+    /* ---- verbs ---- */
+    var VB = {};   /* lemma -> record */
+    lines(LEX.v).forEach(function (a) {
+      var r = { inf:a[0], en:a[1] || '', p3:a[2] || '', pa:a[3] || '', pp:a[4] || '', aux:a[5] || '', k2:a[6] || '' };
+      if (!r.p3) r.reg = true;
+      if (!VB[r.inf]) VB[r.inf] = r;
+    });
+    try { VERBS.forEach(function (v) {
+      var w = String(v.de || '').replace(/^sich\s+/, '').split(/[\s\/(,]/)[0].toLowerCase();
+      if (/^[a-zäöüß]+n$/.test(w) && !VB[w]) VB[w] = { inf:w, en:v.en || '', p3:'', pa:'', pp:'', aux:'', k2:'', reg:true, open:true };
+      if (v.ex) String(v.ex).toLowerCase().split(/[^a-zäöüß]+/).forEach(function (t) { if (t.length > 1) D.seen[t] = 1; });
+    }); } catch (e) {}
+    function regStem(inf) { if (/(eln|ern)$/.test(inf)) return inf.slice(0, -1); if (/en$/.test(inf)) return inf.slice(0, -2); return inf.slice(0, -1); }
+    function needE(stem) { return /(t|d|chn|ffn|gn|tm|dn|ckn|pn|bn|fn|kn)$/.test(stem) || /[bcdfgkpt]m$/.test(stem); }
+    function finiteForms(inf, p3, pa, k2, modal) {   /* returns { form : kind } for the finite forms of a plain verb (no prefix) */
+      var out = {}, stem = regStem(inf), e = needE(stem) ? 'e' : '';
+      function put(f, k) { if (f && !out[f]) out[f] = k; }
+      var reg3 = stem + e + 't', regpa = stem + e + 'te';
+      p3 = p3 || reg3; pa = pa || regpa;
+      put(inf, 'inf');
+      if (modal) {
+        put(p3, 'ich/er'); put(p3.replace(/(ss|ß)$/, '') + (/[sßxz]$/.test(p3) ? 't' : 'st'), 'du'); put(p3 + (/[sßxz]$/.test(p3) ? 't' : 'st'), 'du');
+        put(p3 + 'st', 'du'); put(inf, 'wir/sie'); put(stem + 't', 'ihr');
+      } else {
+        put(/el$/.test(stem) ? stem.slice(0, -2) + 'le' : stem + 'e', 'ich'); put(stem + 'e', 'ich');
+        put(stem + 'st', 'du'); put(stem + 'est', 'du');
+        if (p3 !== reg3) {
+          put(p3.replace(/t$/, '') + 'st', 'du'); put(p3.replace(/t$/, '') + 'est', 'du');
+          if (/(st|ß|s|x|z)$/.test(p3)) put(p3, 'du'); if (/[sßxz]$/.test(p3)) put(p3 + 't', 'du');
+          if (/[ßsxz]t$/.test(p3)) put(p3, 'du');
+        }
+        put(p3, 'er'); put(reg3, 'er'); put(stem + 't', 'er/ihr'); put(stem + 'et', 'ihr');
+        put(inf, 'wir/sie');
+        if (p3 !== reg3) { var imp = p3.replace(/t$/, ''); put(imp, 'imp'); }
+        put(stem, 'imp'); put(stem + 'e', 'imp');
+      }
+      /* past */
+      if (/e$/.test(pa)) { put(pa, 'past'); put(pa + 'st', 'past'); put(pa + 'n', 'past'); put(pa + 't', 'past'); }
+      else { put(pa, 'past'); put(pa + 'st', 'past'); put(pa + 'est', 'past'); put(pa + 'en', 'past'); put(pa + 't', 'past'); put(pa + 'et', 'past'); }
+      /* subjunctive II */
+      var kk = k2 || (/e$/.test(pa) ? pa : dxUml(pa) + 'e');
+      put(kk, 'k2'); put(kk + 'st', 'k2'); put(kk + 'n', 'k2'); put(kk + 't', 'k2'); put(kk + 'en', 'k2');
+      if (k2 === 'wäre') { put('wärest', 'k2'); put('wäret', 'k2'); }
+      return out;
+    }
+    var sepList = DX_SEP.slice().sort(function (a, b) { return b.length - a.length; });
+    var insepList = DX_INSEP.slice().sort(function (a, b) { return b.length - a.length; });
+    function ppOf(r, stem, e) {
+      if (r.pp) return r.pp;
+      if (/(ieren)$/.test(r.inf) || /^(be|ge|er|ent|ver|zer|miss|emp)/.test(r.inf)) return stem + e + 't';
+      return 'ge' + stem + e + 't';
+    }
+    function addVerb(r) {
+      var inf = r.inf, base = inf, part = '', pre = '', baseRec = r;
+      if (r.p3 && / /.test(r.p3)) {   /* explicit separable verb: "gibt ab" */
+        var pp3 = r.p3.split(' '), ppa = r.pa.split(' ');
+        part = pp3[1]; base = inf.slice(part.length);
+        baseRec = { inf:base, p3:pp3[0], pa:ppa[0], pp:r.pp, k2:r.k2, aux:r.aux, en:r.en };
+      } else if (r.reg || !r.p3) {
+        /* is it a separable or inseparable verb of a known base? */
+        var found = false;
+        for (var i = 0; i < sepList.length && !found; i++) {
+          var p = sepList[i];
+          if (inf.length > p.length + 3 && inf.slice(0, p.length) === p) {
+            var rest = inf.slice(p.length);
+            if (VB[rest] && rest !== inf) { part = p; base = rest; baseRec = VB[rest]; found = true; }
+            else if (!/^(be|ge|er|ent|ver|zer|miss|emp)/.test(inf) && /^[bcdfghjklmnpqrstvwxz]/.test(rest) && p.length >= 2 && rest.length >= 4 && ['an', 'um', 'zu', 'ein', 'ab', 'aus', 'auf', 'vor', 'mit', 'nach', 'weg', 'her', 'hin'].indexOf(p) >= 0) { part = p; base = rest; baseRec = { inf:rest, p3:'', pa:'', pp:'', k2:'', aux:'' }; found = true; }
+          }
+        }
+        for (var j = 0; j < insepList.length && !found; j++) {
+          var q = insepList[j];
+          if (inf.length > q.length + 3 && inf.slice(0, q.length) === q) {
+            var rest2 = inf.slice(q.length);
+            if (VB[rest2] && rest2 !== inf && VB[rest2].p3) { pre = q; base = rest2; baseRec = VB[rest2]; found = true; }
+          }
+        }
+        if (!found) { base = inf; baseRec = r; }
+      }
+      var stem = regStem(base), e = needE(stem) ? 'e' : '';
+      var modal = /^(können|müssen|wollen|sollen|dürfen|mögen|wissen)$/.test(base) && !pre;
+      var fin = finiteForms(base, baseRec.p3, baseRec.pa, baseRec.k2 || r.k2, modal);
+      var pp;
+      if (r.pp && !pre) pp = r.pp;
+      else if (baseRec.pp) pp = pre ? pre + baseRec.pp.replace(/^ge/, '') : (part ? part + baseRec.pp : baseRec.pp);
+      else pp = (pre ? pre : (part ? part : '')) + ((pre || /ieren$/.test(base) || /^(be|ge|er|ent|ver|zer|miss|emp)/.test(base)) ? '' : 'ge') + stem + e + 't';
+      var aux = r.aux || baseRec.aux || 'h';
+      var rec = { inf:inf, en:r.en, p3:(pre ? pre : '') + (baseRec.p3 || (stem + e + 't')), pa:(pre ? pre : '') + (baseRec.pa || (stem + e + 'te')), pp:pp, aux:aux, part:part, base:base, open:r.open };
+      D.verbs[inf] = rec;
+      var vE = { p:'v', l:inf, rec:rec };
+      add(inf, { p:'v', l:inf, k:'inf', rec:rec });
+      Object.keys(fin).forEach(function (f) {
+        if (f === base && !pre && !part) return;
+        var full = pre ? pre + f : f;
+        add(full, { p:'v', l:inf, k:fin[f] === 'inf' ? 'inf' : 'fin', rec:rec });
+      });
+      if (pre) { /* inseparable: infinitive handled above through finite list */ add(inf, { p:'v', l:inf, k:'inf', rec:rec }); }
+      if (part) { add(part + 'zu' + base, { p:'v', l:inf, k:'zuinf', rec:rec }); }
+      add(pp, { p:'v', l:inf, k:'pp', rec:rec });
+      dxEndings(pp, ['e', 'en', 'em', 'er', 'es']).forEach(function (f) { add(f, { p:'a', l:pp, k:'pp-adj', rec:rec }); });
+      dxEndings(inf + 'd', ['', 'e', 'en', 'em', 'er', 'es']).forEach(function (f) { add(f, { p:'a', l:inf + 'd', k:'pres-part', rec:rec }); });
+      if (part && !pre) { add(part + 'zu' + base, { p:'v', l:inf, k:'zuinf', rec:rec }); }
+    }
+    /* irregular verbs by hand: sein, haben, werden */
+    var HAND = {
+      sein:['bin bist ist sind seid', 'war warst waren wart', 'wäre wärst wären wärt wäret', 'gewesen', 'sei seien seiest'],
+      haben:['habe hast hat haben habt', 'hatte hattest hatten hattet', 'hätte hättest hätten hättet', 'gehabt', 'habest'],
+      werden:['werde wirst wird werden werdet', 'wurde wurdest wurden wurdet', 'würde würdest würden würdet', 'geworden worden', '']
+    };
+    Object.keys(HAND).forEach(function (v) {
+      var rec = { inf:v, en:VB[v] ? VB[v].en : '', p3:VB[v] ? VB[v].p3 : '', pa:VB[v] ? VB[v].pa : '', pp:VB[v] ? VB[v].pp : '', aux:v === 'sein' || v === 'werden' ? 's' : 'h' };
+      D.verbs[v] = rec;
+      add(v, { p:'v', l:v, k:'inf', rec:rec });
+      HAND[v].forEach(function (g, i) { g.split(' ').forEach(function (f) { if (f) add(f, { p:'v', l:v, k:i === 3 ? 'pp' : 'fin', rec:rec }); }); });
+    });
+    var order = Object.keys(VB);
+    order.sort(function (a, b) { return (VB[a].p3 ? 0 : 1) - (VB[b].p3 ? 0 : 1) || a.length - b.length; });
+    order.forEach(function (v) { if (!HAND[v]) { try { addVerb(VB[v]); } catch (e) {} } });
+
+    /* ---- adjectives ---- */
+    var AE = ['', 'e', 'en', 'em', 'er', 'es'];
+    lines(LEX.a).forEach(function (a) {
+      var b = a[0], en = a[1] || '', x = a[2] || '', y = a[3] || '';
+      var comp, sup;
+      if (y) { comp = x; sup = y; }
+      else { comp = (x === '¨' ? dxUml(b) : b) + (/e$/.test(b) ? 'r' : 'er'); sup = (x === '¨' ? dxUml(b) : b); }
+      var rec = { b:b, en:en, comp:comp, sup:y ? sup : (sup + (/(d|t|s|ß|z|x|sch)$/.test(sup) ? 'est' : 'st')) };
+      D.adj = D.adj || {}; D.adj[b] = rec;
+      var vs = [b];
+      if (/e$/.test(b)) { dxEndings(b, ['n', 'm', 'r', 's']).forEach(function (f) { add(f, { p:'a', l:b, k:'base', rec:rec }); }); }
+      else if (/(el|er|en)$/.test(b) && !/^(sauber|teuer)$/.test(b) || /^(sauber|teuer)$/.test(b)) {
+        var sh = b.slice(0, -2) + b.slice(-1);
+        dxEndings(sh, ['e', 'en', 'em', 'er', 'es']).forEach(function (f) { add(f, { p:'a', l:b, k:'base', rec:rec }); });
+      }
+      dxEndings(b, AE).forEach(function (f) { add(f, { p:'a', l:b, k:'base', rec:rec }); });
+      dxEndings(comp, AE).forEach(function (f) { add(f, { p:'a', l:b, k:'comp', rec:rec }); });
+      add(comp.replace(/e(r)$/, '$1') , { p:'a', l:b, k:'comp', rec:rec });
+      dxEndings(rec.sup, ['', 'e', 'en', 'em', 'er', 'es']).forEach(function (f) { add(f, { p:'a', l:b, k:'sup', rec:rec }); });
+      if (b === 'hoch') dxEndings('hoh', ['e', 'en', 'em', 'er', 'es']).forEach(function (f) { add(f, { p:'a', l:b, k:'base', rec:rec }); });
+      if (!y) { add(sup + 'sten', { p:'a', l:b, k:'sup', rec:rec }); add(sup + 'esten', { p:'a', l:b, k:'sup', rec:rec }); }
+      if (b.length > 3) add(b + 'keit', { p:'n', l:b + 'keit', g:'f', num:'s', k:'sg', e:{ name:b.charAt(0).toUpperCase() + b.slice(1) + 'keit', g:'f', pl:'', en:'', alt:'f' }, derived:1 });
+    });
+
+    /* ---- small words ---- */
+    lines(LEX.f).forEach(function (a) {
+      if (/ /.test(a[0])) return;
+      add(a[0], { p:'f', l:a[0], en:a[1] || '', k:'word', cap:/^[A-ZÄÖÜ]/.test(a[0]) });
+    });
+    /* ---- helper maps ---- */
+    D.keys = Object.keys(D.f);
+    D.keys.forEach(function (k) {
+      var f1 = dxFold(k), f2 = dxFold2(k);
+      if (f1 !== k) (D.fold[f1] = D.fold[f1] || []).push(k);
+      if (f2 !== k) (D.fold2[f2] = D.fold2[f2] || []).push(k);
+      D.fold[k] = D.fold[k] || [];
+    });
+    /* ---- words that appear in the exam texts of the app (German only) ---- */
+    D.seenL = {}; D.seenC = {};
+    var seenAdd = function (t) {
+      var str = String(t || ''), re3 = /[A-Za-z\u00C0-\u00FF]+/g, mm;
+      while ((mm = re3.exec(str))) {
+        var w = mm[0]; if (w.length < 2) continue;
+        var lw2 = w.toLowerCase(); D.seen[lw2] = 1;
+        var before = str.slice(0, mm.index);
+        var init = !before.replace(/\s+$/, '') || /[.!?:\n]["„“”']?\s*$/.test(before) || /["„“”']\s*$/.test(before);
+        if (init) continue;
+        if (/^[A-ZÄÖÜ]/.test(w)) D.seenC[lw2] = 1; else D.seenL[lw2] = 1;
+      }
+    };
+    try {
+      ['A1', 'A2', 'B1', 'B2'].forEach(function (l) {
+        var ex = (typeof EXAM === 'object' && EXAM[l]) || {}, xt = (typeof EXTRA === 'object' && EXTRA[l]) || {};
+        (ex.schreiben || []).concat(xt.schreiben || []).forEach(function (t) { seenAdd(t.model); });
+        (ex.sprechen || []).forEach(function (t) { (t.steps || []).forEach(function (s) { seenAdd(s.model); }); });
+        (xt.sprechen || []).forEach(function (pool) { (pool || []).forEach(function (s) { seenAdd(s.model); }); });
+        var parts = function (arr) { (arr || []).forEach(function (p) { if (Array.isArray(p)) parts(p); else if (p) { seenAdd(p.text); (p.lines || []).forEach(function (x) { seenAdd(x[1]); }); } }); };
+        (ex.hoeren || []).forEach(function (t) { parts(t.parts); }); (ex.lesen || []).forEach(function (t) { parts(t.parts); });
+        parts(xt.hoeren); parts(xt.lesen);
+        (xt.cloze || []).forEach(function (c) { seenAdd(String(c.text || '').replace(/\{([^}|]*)[^}]*\}/g, '$1')); });
+      });
+    } catch (e) {}
+    return D;
+  }
+
+  function DX_ART_OK(w) { if (!DX_ART) dxArtBuild(); return !!DX_ART[w]; }
+  function dxEntries(lw) { var D = dxBuild(); return D.f[lw] || null; }
+  function dxIsNum(lw) {
+    if (/^(ein|zwei|drei|vier|fünf|sechs|sieben|acht|neun)und(zwanzig|dreißig|vierzig|fünfzig|sechzig|siebzig|achtzig|neunzig)$/.test(lw)) return true;
+    if (/^((ein|zwei|drei|vier|fünf|sechs|sieben|acht|neun)(hundert|tausend))+((ein|zwei|drei|vier|fünf|sechs|sieben|acht|neun)und(zwanzig|dreißig|vierzig|fünfzig|sechzig|siebzig|achtzig|neunzig)|zwanzig|dreißig|vierzig|fünfzig|sechzig|siebzig|achtzig|neunzig|zehn|elf|zwölf|eins|zwei|drei|vier|fünf|sechs|sieben|acht|neun)?$/.test(lw)) return true;
+    if (/^(hundert|tausend)(ein|zwei|drei|vier|fünf|sechs|sieben|acht|neun)?$/.test(lw)) return true;
+    return false;
+  }
+  /* compound nouns: Zahn + Arzt, Kopf + Schmerzen */
+  function dxCompound(lw) {
+    var D = dxBuild();
+    if (D.cache['c:' + lw] !== undefined) return D.cache['c:' + lw];
+    var res = null;
+    if (lw.length >= 7) {
+      var links = ['', 's', 'n', 'en', 'es', 'e', 'er', 'ens'];
+      for (var i = 3; i <= lw.length - 3 && !res; i++) {
+        var head = lw.slice(0, i), tail = lw.slice(i);
+        for (var k = 0; k < links.length && !res; k++) {
+          var L2 = links[k];
+          if (L2 && head.length > L2.length + 2 && head.slice(-L2.length) === L2) { }
+          var hs = L2 && head.slice(-L2.length) === L2 ? head.slice(0, -L2.length) : (L2 ? null : head);
+          if (hs === null || hs.length < 3) continue;
+          var te = D.f[tail], he = D.f[head] || D.f[hs] || D.f[hs + 'e'] || D.f[hs + 'en'];
+          var tn = te && te.filter(function (x) { return x.p === 'n'; })[0];
+          if (!tn) continue;
+          var hn = (D.f[head] || []).concat(D.f[hs] || [], D.f[hs + 'e'] || [], D.f[hs + 'en'] || [], D.f[hs + 'n'] || []).filter(function (x) { return x.p === 'n' || x.p === 'v' || x.p === 'a'; })[0];
+          if (!hn) continue;
+          res = { head:hn, tail:tn, headStr:head, tailStr:tail };
+        }
+      }
+    }
+    D.cache['c:' + lw] = res;
+    return res;
+  }
+  /* edit distance (Damerau, with a limit) */
+  function dxDist(a, b, max) {
+    var la = a.length, lb = b.length;
+    if (Math.abs(la - lb) > max) return max + 1;
+    var prev2 = null, prev = [], cur, i, j;
+    for (j = 0; j <= lb; j++) prev[j] = j;
+    for (i = 1; i <= la; i++) {
+      cur = [i]; var rowMin = i;
+      for (j = 1; j <= lb; j++) {
+        var cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+        var v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+        if (i > 1 && j > 1 && a.charAt(i - 1) === b.charAt(j - 2) && a.charAt(i - 2) === b.charAt(j - 1)) v = Math.min(v, prev2[j - 2] + 1);
+        cur[j] = v; if (v < rowMin) rowMin = v;
+      }
+      if (rowMin > max) return max + 1;
+      prev2 = prev; prev = cur;
+    }
+    return prev[lb];
+  }
+  function dxCandForm(k) {   /* a dictionary key shown the right way (capital letter for nouns) */
+    var D = dxBuild(), e = D.f[k];
+    if (e && e[0].p === 'n') { var nm = e[0].e && e[0].e.name; if (e[0].k === 'sg' || !nm) return e[0].l; var nn = k.charAt(0).toUpperCase() + k.slice(1); return nn; }
+    if (e && (e[0].p === 'x' || (e[0].p === 'f' && e[0].cap))) return e[0].l;
+    return k;
+  }
+  function dxSuggest(lw, wantCap) {
+    var D = dxBuild();
+    var f1 = dxFold(lw), f2 = dxFold2(lw), out = [];
+    var direct = (D.fold[f1] || []).concat(D.fold2[f2] || []);
+    var seenK = {};
+    direct.forEach(function (k) { if (k !== lw && !seenK[k]) { seenK[k] = 1; out.push({ k:k, d:0 }); } });
+    if (f1 !== lw || f2 !== lw) { if (D.f[f1] && !seenK[f1]) { } }
+    if (out.length) return out;
+    var max = lw.length <= 4 ? 1 : (lw.length <= 8 ? 1 : 2), best = [];
+    var keys = D.keys;
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i]; if (Math.abs(k.length - lw.length) > max) continue;
+      var d = dxDist(lw, k, max); if (d > max) continue;
+      var ent = D.f[k], isBase = false;
+      for (var x = 0; x < ent.length; x++) if (ent[x].k === 'sg' || ent[x].k === 'inf' || ent[x].k === 'base' || ent[x].k === 'word') isBase = true;
+      var isNoun = ent[0].p === 'n';
+      var score = d * 10 + (k.charAt(0) === lw.charAt(0) ? 0 : 6) + (isBase ? 0 : 2) + (wantCap === isNoun ? 0 : 3);
+      best.push({ k:k, d:d, s:score });
+    }
+    best.sort(function (a, b) { return a.s - b.s || a.k.length - b.k.length; });
+    return best.slice(0, 5);
+  }
+  var DX_TYPO_STR = 'dannach:danach deshalp:deshalb deßhalb:deshalb dewegen:deswegen deswegn:deswegen trozdem:trotzdem trotsdem:trotzdem trotzdeem:trotzdem obwol:obwohl wärend:während wehrend:während wiel:weil weill:weil daß:dass muß:muss mußte:musste läßt:lässt wußte:wusste eigendlich:eigentlich eigentlig:eigentlich ersteinmal:erst\u00A0einmal irgentwie:irgendwie irgentwo:irgendwo irgentwann:irgendwann irgentein:irgendein irgendwie:irgendwie ausversehen:aus\u00A0Versehen sowiso:sowieso vorallem:vor\u00A0allem Artzt:Arzt Artz:Arzt Zahnartz:Zahnarzt Zahnartzt:Zahnarzt Zahnarztpraxiss:Zahnarztpraxis Krankhaus:Krankenhaus Krankenhauss:Krankenhaus Krankenkase:Krankenkasse Medikamnet:Medikament Resept:Rezept Appotheke:Apotheke Apoteke:Apotheke Schmertzen:Schmerzen Schmärzen:Schmerzen Wonung:Wohnung Wohnug:Wohnung Wohnuung:Wohnung Freunt:Freund Famile:Familie Familly:Familie Geburtstak:Geburtstag Geburstag:Geburtstag Gebuhrtstag:Geburtstag Wochenede:Wochenende Gesundheid:Gesundheit Banhof:Bahnhof Bahnhoff:Bahnhof Arbait:Arbeit Arbeid:Arbeit Zeid:Zeit Schuhle:Schule Prüfunk:Prüfung Prüfug:Prüfung natürlig:natürlich natuerlich:natürlich wirglich:wirklich wirklig:wirklich besondes:besonders interesant:interessant intressant:interessant interessannt:interessant freundlig:freundlich Tschus:Tschüss Deutch:Deutsch Deutsh:Deutsch Feler:Fehler Antwor:Antwort Antwordt:Antwort brauchn:brauchen könen:können könnnen:können müsen:müssen wolen:wollen gestren:gestern heude:heute imer:immer immmer:immer spätter:später zusamen:zusammen zusammmen:zusammen Berruf:Beruf verheirated:verheiratet verheiratett:verheiratet Muter:Mutter Vatter:Vater Bruter:Bruder Numer:Nummer Nummmer:Nummer Postleizahl:Postleitzahl Ausbildund:Ausbildung Bewerbund:Bewerbung Kolege:Kollege Kolegin:Kollegin Unterschid:Unterschied wichtich:wichtig wichtik:wichtig möglig:möglich richtik:richtig richtich:richtig ruhich:ruhig fertich:fertig günstich:günstig billich:billig Termien:Termin Teremin:Termin Terminn:Termin Patiente:Patient Patint:Patient Patientn:Patienten Rechnug:Rechnung Rechnun:Rechnung Behandlug:Behandlung Behandlund:Behandlung Untersuchug:Untersuchung Untersuchund:Untersuchung Operaton:Operation Operazion:Operation Röntgn:Röntgen Rontgen:Röntgen Betäubug:Betäubung Betaubung:Betäubung Zahnschmertzen:Zahnschmerzen Kopfschmertzen:Kopfschmerzen Fieber:Fieber Hustn:Husten Erkältug:Erkältung Erkaltung:Erkältung Entzündug:Entzündung Entzundung:Entzündung Versicherug:Versicherung Überweisug:Überweisung Uberweisung:Überweisung Verschreibug:Verschreibung Tablete:Tablette Tabletten:Tabletten Spritzte:Spritze Impfug:Impfung Allergi:Allergie Allergy:Allergie Krankeit:Krankheit Krankhait:Krankheit Gesundhait:Gesundheit Hilfee:Hilfe Wasserr:Wasser Frühstük:Frühstück Fruhstuck:Frühstück Mitagessen:Mittagessen Mittagesen:Mittagessen Abendesen:Abendessen Restaurent:Restaurant Resturant:Restaurant Kafee:Kaffee Kaffe:Kaffee Schockolade:Schokolade Schokolad:Schokolade Gemüse:Gemüse Kartofel:Kartoffel Tomatte:Tomate Bannane:Banane Zitrone:Zitrone Käse:Käse Brod:Brot Wurscht:Wurst Fisc:Fisch Fleich:Fleisch Hotell:Hotel Zimer:Zimmer Zimmmer:Zimmer Küche:Küche Badezimer:Badezimmer Schlafzimer:Schlafzimmer Wohnzimer:Wohnzimmer Fernseer:Fernseher Computter:Computer Kompjuter:Computer Handi:Handy Telefohn:Telefon Telefonn:Telefon Internett:Internet Emial:E-Mail Briff:Brief Nachricht:Nachricht Nachrict:Nachricht Zeitug:Zeitung Zeitun:Zeitung Buch:Buch Büro:Büro Buero:Büro Firmma:Firma Kunde:Kunde Chef:Chef Gehalt:Gehalt Vertrag:Vertrag Kündigug:Kündigung Kundigung:Kündigung Erfarung:Erfahrung Erfahrug:Erfahrung Erfahrun:Erfahrung Kentnisse:Kenntnisse Kenntisse:Kenntnisse Kentnis:Kenntnis Möglichkeit:Möglichkeit Möglichkeid:Möglichkeit Moglichkeit:Möglichkeit Problm:Problem Probleme:Probleme Lösug:Lösung Losung:Lösung Frage:Frage Fraage:Frage Meinug:Meinung Meinun:Meinung Vorteil:Vorteil Vorteill:Vorteil Nachteil:Nachteil Nachteill:Nachteil Entscheidug:Entscheidung Entscheidun:Entscheidung Verantwortug:Verantwortung Gesellshaft:Gesellschaft Gesellschaf:Gesellschaft Regirung:Regierung Regierug:Regierung Umwelt:Umwelt Umwelth:Umwelt Wetter:Wetter Wettter:Wetter Sommer:Sommer Somer:Sommer Winter:Winter Wintter:Winter Frühlig:Frühling Fruhling:Frühling Herbts:Herbst Jahrzeit:Jahreszeit Jahreszeid:Jahreszeit';
+  var DX_TYPO_M = null;
+  function DX_TYPO_MAP() {
+    if (DX_TYPO_M) return DX_TYPO_M;
+    DX_TYPO_M = {};
+    DX_TYPO_STR.split(' ').forEach(function (p) { var a = p.split(':'); if (a.length === 2 && a[0].toLowerCase() !== a[1].toLowerCase() && a[1].indexOf('\u00A0') < 0) DX_TYPO_M[a[0].toLowerCase()] = a[1]; });
+    return DX_TYPO_M;
+  }
+  function dxCapWord(k) { var D = dxBuild(), e = D.f[k]; if (e && e[0].p === 'n') return k.charAt(0).toUpperCase() + k.slice(1); if (e && (e[0].p === 'x' || (e[0].p === 'f' && e[0].cap))) return e[0].l; return k; }
+
+  /* lemma line for the dictionary panel */
+  function dxInfo(word, lw, ents) {
+    var D = dxBuild(), n = null, v = null, a = null, f = null;
+    ents.forEach(function (e) { if (e.p === 'n' && !n) n = e; else if (e.p === 'v' && !v) v = e; else if (e.p === 'a' && !a) a = e; else if (e.p === 'f' && !f) f = e; });
+    var art = { m:'der', f:'die', n:'das', p:'die' };
+    if (n && n.e) {
+      var nm = n.e, plural = nm.g === 'p' ? '' : (nm.pl ? ' (' + (nm.pl === nm.name && nm.g !== 'p' ? 'die ' + nm.pl : 'die ' + nm.pl) + ')' : '');
+      return { w:word, line:(nm.g === 'p' ? 'die ' : art[nm.g] + ' ') + nm.name + plural, en:nm.en };
+    }
+    if (v && v.rec) {
+      var r = v.rec, parts = [];
+      if (r.p3) parts.push('er ' + (r.part ? r.p3.replace(r.base ? '' : '', '') : r.p3));
+      var line = r.inf;
+      var bits = [];
+      if (r.p3) bits.push(r.part ? r.p3.slice(r.part.length) + ' ' + r.part : r.p3);
+      if (r.pa) bits.push(r.part ? r.pa.slice(r.part.length) + ' ' + r.part : r.pa);
+      if (r.pp) bits.push((r.aux === 's' ? 'ist ' : 'hat ') + r.pp);
+      return { w:word, line:line + (bits.length ? ' — ' + bits.join(', ') : ''), en:r.en };
+    }
+    if (a && a.rec) {
+      var ar = a.rec;
+      if (a.k === 'pp-adj' || a.k === 'pres-part') return null;
+      return { w:word, line:ar.b + ' — ' + ar.comp + ', am ' + ar.sup + 'en', en:ar.en };
+    }
+    if (f) return { w:word, line:f.l, en:f.en };
+    return null;
+  }
+
+  /* Checks one finished sentence against the dictionary. Returns { text, issues, notes } */
+  function dxPass(sentence) {
+    var D = dxBuild(), issues = [], notes = [];
+    var re = /([A-Za-z\u00C0-\u00FF]+(?:[-'][A-Za-z\u00C0-\u00FF]+)*)/g;
+    var toks = [], m, last = 0;
+    while ((m = re.exec(sentence))) {
+      var pre = sentence.slice(last, m.index);
+      toks.push({ pre:pre, w:m[1], start:m.index, end:m.index + m[1].length });
+      last = m.index + m[1].length;
+    }
+    var tail = sentence.slice(last);
+    if (!toks.length) return { text:sentence, issues:issues, notes:notes };
+    var lw = function (i) { return i >= 0 && i < toks.length ? toks[i].w.toLowerCase() : ''; };
+    function skipTok(i) {
+      var t = toks[i], b = sentence.slice(Math.max(0, t.start - 1), t.start), a = sentence.charAt(t.end);
+      if (b === '@' || a === '@' || /[\/:]/.test(b) || a === '/' || (a === '.' && /[a-z]/i.test(sentence.charAt(t.end + 1)))) return true;
+      if (/^[A-ZÄÖÜ]{2,6}$/.test(t.w)) return true;          /* EKG, MRT, DTP */
+      if (t.w.length < 2) return true;
+      if (sentence.charAt(t.end) === '-' && /\s/.test(sentence.charAt(t.end + 1) || ' ')) return true;   /* Vor- und Nachteile */
+      return false;
+    }
+    var sentStart = function (i) {
+      if (i === 0) return true;
+      var p = toks[i].pre;
+      return /[.!?:]\s*["„“”']?$/.test(p) || /\n/.test(p);
+    };
+    var repl = {};
+    var fixes = [];
+    for (var i = 0; i < toks.length; i++) {
+      if (skipTok(i)) continue;
+      var w = toks[i].w, k = w.toLowerCase(), ents = D.f[k];
+      var isCap = /^[A-ZÄÖÜ]/.test(w), start = sentStart(i);
+      if (/-/.test(w) && !ents) {
+        var pieces = w.split('-'), okAll = true;
+        pieces.forEach(function (pc) { if (pc.length > 1 && !D.f[pc.toLowerCase()] && !D.seen[pc.toLowerCase()] && !dxCompound(pc.toLowerCase()) && !dxIsNum(pc.toLowerCase())) okAll = false; });
+        if (!okAll) notes.push({ w:w, why:L('Not found in the dictionary. It may still be correct (a name or a special word). Please check the spelling.') });
+        continue;
+      }
+      if (/'/.test(w)) continue;
+      if (ents) {
+        var onlyNoun = ents.every(function (e) { return e.p === 'n'; });
+        var isCapKind = ents.every(function (e) { return e.k === 'sg' || e.k === 'pl'; });
+        var pk = lw(i - 1), prevDet = !!(pk && (DX_ART_OK(pk) || /^(im|am|zum|zur|vom|beim|ins|ans|aufs|ums|fürs|durchs|vorm|hinterm|übers|überm|unterm|\u0061ns)$/.test(pk) || (D.f[pk] && D.f[pk].some(function (e) { return e.p === 'a' && (e.k === 'base' || e.k === 'comp'); }))));
+        var prevPrep = !!(pk && D.f[pk] && D.f[pk].some(function (e) { return e.p === 'f' && /^(in|an|auf|über|unter|vor|hinter|neben|zwischen|mit|von|zu|bei|nach|aus|für|durch|gegen|ohne|um|bis|seit|wegen|trotz|während|statt)$/.test(e.l); }));
+        var singular = ents.every(function (e) { return e.k === 'sg'; });
+        var nextCap = i + 1 < toks.length && /^[A-ZÄÖÜ]/.test(toks[i + 1].w) && /^\s+$/.test(toks[i + 1].pre);
+        if (!isCap && onlyNoun && isCapKind && !start && !D.seenL[k] && FX_AMBIG.indexOf(k) < 0 && !(i > 0 && /^[-–]$/.test(toks[i - 1].w)) && !nextCap && (prevDet || prevPrep || (singular && !/en$/.test(k)))) {
+          var capd = k.charAt(0).toUpperCase() + k.slice(1);
+          fixes.push({ i:i, to:capd, a:w, why:L('Nouns always start with a capital letter') + ': ' + capd + '.' });
+        }
+        continue;
+      }
+      if (D.seen[k] || dxIsNum(k)) continue;
+      /* compound nouns */
+      var comp = dxCompound(k);
+      if (comp) {
+        var pk2 = lw(i - 1), nextCap2 = i + 1 < toks.length && /^[A-ZÄÖÜ]/.test(toks[i + 1].w);
+        var ev2 = !!(pk2 && (DX_ART_OK(pk2) || /^(im|am|zum|zur|vom|beim|ins|ans|aufs)$/.test(pk2) || (D.f[pk2] && D.f[pk2].some(function (e) { return e.p === 'f' && /^(in|an|auf|über|unter|vor|hinter|neben|zwischen|mit|von|zu|bei|nach|aus|für|durch|gegen|ohne|um|bis|seit)$/.test(e.l); }))));
+        if (!isCap && !start && ev2 && !nextCap2 && comp.tail.k === 'sg' && !D.seenL[k]) fixes.push({ i:i, to:k.charAt(0).toUpperCase() + k.slice(1), a:w, why:L('Nouns always start with a capital letter') + ': ' + k.charAt(0).toUpperCase() + k.slice(1) + '.' });
+        continue;
+      }
+      /* prefix + verb form: aufgemacht, aufzumachen */
+      var pv = false;
+      DX_SEP.forEach(function (p) {
+        if (pv || k.length <= p.length + 3 || k.slice(0, p.length) !== p) return;
+        var rest = k.slice(p.length), re2 = D.f[rest];
+        if (re2 && re2.some(function (e) { return e.p === 'v' && (e.k === 'inf' || e.k === 'pp'); })) pv = true;
+        else if (rest.slice(0, 2) === 'zu' && D.f[rest.slice(2)] && D.f[rest.slice(2)].some(function (e) { return e.p === 'v' && e.k === 'inf'; })) pv = true;
+      });
+      if (pv) continue;
+      /* 1. typical misspellings (a fixed list of mistakes learners make) */
+      var ty = DX_TYPO_MAP()[k];
+      if (ty) {
+        var tyw = ty; if (start) tyw = tyw.charAt(0).toUpperCase() + tyw.slice(1);
+        var tinfo = D.f[ty.toLowerCase()] && dxInfo(ty, ty.toLowerCase(), D.f[ty.toLowerCase()]);
+        fixes.push({ i:i, to:tyw, a:w, why:L('Spelling') + ': ' + L('write') + ' "' + tyw + '"' + (tinfo && tinfo.en ? ' (' + L(tinfo.en) + ')' : '') + ', ' + L('not') + ' "' + w + '".' });
+        continue;
+      }
+      /* 2. ae / oe / ue written for ä / ö / ü */
+      if (/(ae|oe|ue)/.test(k) && D.fold[k] && D.fold[k].length === 1 && D.fold[k][0] !== k) {
+        var um = dxCapWord(D.fold[k][0]); if (start) um = um.charAt(0).toUpperCase() + um.slice(1);
+        fixes.push({ i:i, to:um, a:w, why:L('In German write ä, ö, ü and ß — not ae, oe, ue, ss.') + ' ' + L('Correct:') + ' ' + um + '.' });
+        continue;
+      }
+      /* 3. everything else: only a hint, because the word list is not complete */
+      if (k.length < 5 || (isCap && !start && k.length < 6)) continue;
+      var sugg = dxSuggest(k, isCap && !start);
+      var good = sugg.filter(function (s) {
+        if (!(s.d <= 1 && (s.d === 0 || s.k.charAt(0) === k.charAt(0)))) return false;
+        var ee = D.f[s.k], base = ee.some(function (e) { return e.k === 'sg' || e.k === 'inf' || e.k === 'base' || e.k === 'word'; });
+        return base && k.length >= 6 && !/(e|en|er|em|es|n|s|t|st|te|ten)$/.test(k.slice(-3)) || (base && k.length >= 7 && s.d === 0);
+      });
+      if (isCap && !start) good = good.filter(function (s) { var ee = D.f[s.k]; return ee && ee[0].p === 'n'; });
+      if (good.length) notes.push({ w:w, why:L('Not in the word list. Maybe you mean:') + ' ' + good.slice(0, 3).map(function (s) { var cw = dxCapWord(s.k), ee = D.f[s.k], ii = ee && dxInfo(cw, s.k, ee); return cw + (ii && ii.en ? ' (' + L(ii.en) + ')' : ''); }).join(', ') + '? ' + L('If your word is correct, ignore this.'), hint:1 });
+    }
+    /* apply the word fixes */
+    var out = '';
+    var fixAt = {}; fixes.forEach(function (f) { fixAt[f.i] = f; });
+    for (var t = 0; t < toks.length; t++) {
+      out += toks[t].pre;
+      var fx = fixAt[t];
+      if (fx) { out += fx.to; issues.push({ a:fx.a, b:fx.to, why:fx.why }); toks[t].w = fx.to; } else out += toks[t].w;
+    }
+    out += tail;
+    /* articles: does the article fit the gender of the noun? */
+    if (!DX_ART) dxArtBuild();
+    var hits = [];
+    for (var n2 = 1; n2 < toks.length; n2++) {
+      var nw = toks[n2].w, nk = nw.toLowerCase(), ne = D.f[nk];
+      if (!ne || !/^[A-ZÄÖÜ]/.test(nw)) continue;
+      var nouns = ne.filter(function (e) { return e.p === 'n'; });
+      if (!nouns.length) continue;
+      if (nouns.some(function (e) { return e.num === 'p' || e.g === 'p'; })) continue;   /* plural or the same word in the plural */
+      var nn = nouns[0]; if (!nn.e) continue;
+      var allowed = DX_ALT[nn.l.toLowerCase()] || nn.g;
+      /* look back: article (+ one adjective) */
+      var ai = n2 - 1, between = '';
+      if (!/^\s*$/.test(toks[n2].pre) && !/^\s+$/.test(toks[n2].pre)) continue;
+      var ae = DX_ART[toks[ai].w.toLowerCase()];
+      if (!ae) {
+        var ad = D.f[toks[ai].w.toLowerCase()];
+        if (ad && ad.some(function (e) { return e.p === 'a'; }) && ai - 1 >= 0 && /^\s+$/.test(toks[ai].pre) && DX_ART[toks[ai - 1].w.toLowerCase()]) { ai = ai - 1; ae = DX_ART[toks[ai].w.toLowerCase()]; }
+        else continue;
+      }
+      if (ai === n2 - 1 || true) { }
+      var aw = toks[ai].w, ak = aw.toLowerCase();
+      if (/^(ihr|sein)$/.test(ak) && ai > 0 && false) continue;
+      if (ak === 'sein' || ak === 'ihr') { }
+      /* ein-words with an adjective: the adjective ending must fit too; here only the gender of the article is checked */
+      var okG = ae.some(function (o) { return o.g !== 'p' && allowed.indexOf(o.g) >= 0; });
+      if (okG) continue;
+      /* an article of a plural noun ("die") before an unknown plural? skip when the noun could be a plural of another word */
+      var prevTok = ai > 0 ? toks[ai - 1].w.toLowerCase() : '';
+      var cs = {};
+      ae.forEach(function (o) { if (o.g !== 'p' || true) cs[o.c] = 1; });
+      var cases = Object.keys(cs), c = '';
+      var between2 = ai > 0 ? sentence.slice(toks[ai - 1].end, toks[ai].start) : '';
+      var prepOk = ai > 0 && /^\s+$/.test(between2);
+      if (prepOk && (' ' + DX_PREP_DAT + ' ').indexOf(' ' + prevTok + ' ') >= 0) c = 'd';
+      else if (prepOk && (' ' + DX_PREP_ACC + ' ').indexOf(' ' + prevTok + ' ') >= 0) c = 'a';
+      else if (prepOk && (' ' + DX_PREP_WECH + ' ').indexOf(' ' + prevTok + ' ') >= 0) c = cs.d && !cs.a ? 'd' : (cs.a && !cs.d ? 'a' : (ak === 'der' || ak === 'den' || ak === 'dem' ? 'd' : 'a'));
+      else if (cases.length === 1) c = cases[0];
+      else if (cs.d && !cs.n && !cs.a) c = 'd';
+      else if (cs.a && !cs.n) c = 'a';
+      else if (ak === 'der' || ak === 'die' || ak === 'das' || cs.n) c = 'n';
+      var opt = null;
+      ae.forEach(function (o) { if (!opt || (o.c === c && opt.c !== c)) opt = o; });
+      var gOut = allowed.charAt(0);
+      if (c === 'g') continue;
+      if (!c) continue;
+      if (ak === 'der' && ai > 0 && toks[ai - 1] && /^(ist|sind|war|waren)$/.test(toks[ai - 1].w.toLowerCase())) { }
+      /* the right article */
+      var right = dxArtForm(opt, gOut, c);
+      if (/^[A-ZÄÖÜ]/.test(aw) && right) right = right.charAt(0).toUpperCase() + right.slice(1);
+      if (!right || right.toLowerCase() === ak) continue;
+      var certain = (c === 'd' || c === 'n' || (c === 'a' && (cs.a && !cs.n))) ;
+      /* nominative vs accusative of a masculine noun cannot be told apart from the article alone */
+      if (gOut === 'm' && ((ak === 'die' || ak === 'das' || ak === 'eine' || ak === 'ein') && c !== 'd')) {
+        var nomOk = ai === 0 || /[,;:]\s*$/.test(toks[ai].pre) || /^(und|aber|oder|weil|dass|wenn|ob|denn)$/.test(prevTok) || ai === 0;
+        if (!nomOk) { hits.push({ ai:ai, n:n2, to:null, a:aw + ' ' + nw, art:right, g:gOut, noun:nn.e }); continue; }
+      }
+      hits.push({ ai:ai, n:n2, to:right, a:aw + ' ' + nw, art:right, g:gOut, noun:nn.e, c:c });
+    }
+    if (hits.length) {
+      var o2 = '', cursor = 0;
+      /* rebuild with the fixed articles */
+      var map2 = {};
+      hits.forEach(function (h) { if (h.to) map2[h.ai] = h; });
+      var rebuilt = '';
+      for (var u = 0; u < toks.length; u++) {
+        rebuilt += toks[u].pre;
+        rebuilt += map2[u] ? map2[u].to : toks[u].w;
+      }
+      rebuilt += tail;
+      out = rebuilt;
+      var gname = { m:'der', f:'die', n:'das' };
+      hits.forEach(function (h) {
+        var nm = h.noun, ge = { m:L('masculine'), f:L('feminine'), n:L('neuter') }[h.g];
+        var why = '"' + nm.name + '" ' + L('is') + ' ' + ge + ' (' + gname[h.g] + ' ' + nm.name + ').';
+        if (h.to) { issues.push({ a:h.a, b:h.to + ' ' + h.a.split(' ').slice(1).join(' '), why:why + ' ' + L('So the article is:') + ' ' + h.to + '.' }); }
+        else notes.push({ w:h.a, why:why + ' ' + L('Check the article. With this noun use:') + ' ' + gname[h.g] + ' ' + nm.name + ' / ' + L('accusative') + ' ' + (h.g === 'm' ? 'den' : gname[h.g]) + ' ' + nm.name + '.' });
+      });
+    }
+    return { text:out, issues:issues, notes:notes };
+  }
+
+  /* the dictionary panel: the important words of the (corrected) text */
+  function dxWords(text) {
+    var D = dxBuild(), seen = {}, out = [];
+    String(text).replace(/[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)*/g, function (w) {
+      var k = w.toLowerCase();
+      if (w.length < 3 || DX_STOP.indexOf(k) >= 0) return w;
+      var ents = D.f[k]; if (!ents) {
+        var comp = dxCompound(k);
+        if (comp && comp.tail.e) {
+          var nm = comp.tail.e, key = 'c:' + k;
+          if (!seen[key]) { seen[key] = 1; out.push({ w:w, line:{ m:'der', f:'die', n:'das' }[nm.g] + ' ' + (w.charAt(0).toUpperCase() + w.slice(1)), en:'', extra:comp.headStr + ' + ' + comp.tailStr }); }
+        }
+        return w;
+      }
+      var lemma = ents[0].l; if (seen[lemma]) return w;
+      var info = dxInfo(w.charAt(0).toUpperCase() + w.slice(1) === w && ents[0].p === 'n' ? w : w, k, ents);
+      if (!info) return w;
+      seen[lemma] = 1; out.push(info);
+      return w;
+    });
+    return out.slice(0, 40);
+  }
+
+  var FX_NOTES = [];
   function fxCheck(text) {
     var t = String(text || '').replace(/\r/g, '').trim();
-    if (!t) return { text:'', issues:[] };
+    FX_NOTES = [];
+    if (!t) return { text:'', issues:[], notes:[], words:[] };
     /* keep full stops of numbers like "am 3. Mai" and of short forms like "Dr." inside the sentence */
     t = t.replace(/(\S)\.(?=[A-Za-z0-9])/g, '$1\u0001').replace(/(\d)\.(?=\s+(?:[a-zäöü]|Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember))/g, '$1\u0001').replace(/\b(Dr|Prof|Nr|ca|bzw|usw|etc|Str|Hr|Fr)\.(?=\s)/g, '$1\u0001').replace(/\bz\. ?B\./g, 'z\u0001B\u0001').replace(/\bd\.h\./g, 'd\u0001h\u0001');
     var multi = /\n/.test(t), segs = t.match(/[^.!?\n]+[.!?]*["”“')]*|\n/g) || [t], out = [], all = [], lastEnd = '';
@@ -3754,16 +4354,22 @@ return D;
       var nextBreak = si + 1 >= segs.length || segs[si + 1] === '\n';
       var words = x.trim().split(/\s+/).length, closing = /^(mit freundlichen|viele|liebe|beste|herzliche|freundliche|dein|deine|ihr|euer|eure|hochachtungsvoll|bis bald|bis dann|tsch|lg|vg|hallo|guten|sehr geehrte)/i.test(x.trim());
       var r = fxSentence(x.replace(/\u0001/g, '.'), { lowerOk:/[,:;]$/.test(lastEnd), punct:!(multi && nextBreak && (words < 4 || closing)) });
-      if (r.text) { out.push(r.text); lastEnd = r.text.replace(/\s+$/, ''); }
-      all = all.concat(r.issues);
+      var issues = r.issues, txt = r.text;
+      if (txt) {
+        try { var dr = dxPass(txt); txt = dr.text; issues = issues.concat(dr.issues); FX_NOTES = FX_NOTES.concat(dr.notes); } catch (e) {}
+        out.push(txt); lastEnd = txt.replace(/\s+$/, '');
+      }
+      all = all.concat(issues);
     });
-    return { text:out.join(' ').replace(/ ?\n ?/g, '\n'), issues:all };
+    var final = out.join(' ').replace(/ ?\n ?/g, '\n'), words = [];
+    try { words = dxWords(final); } catch (e) {}
+    return { text:final, issues:all, notes:FX_NOTES.slice(0, 12), words:words };
   }
 
   /* ----- Check tab (next to Exam): write or speak a sentence, see the corrected version ----- */
   var FXS = { text:'', res:null, rec:false, ai:null, aiBusy:false, aiErr:'' };
   var FXREC = null;
-  var FX_EX = ['heute ich gehe zur arbeit', 'Ich habe gestern ins Kino gegangen.', 'Weil ich habe keine Zeit, komme ich nicht.', 'Ich fahre mit die Bus zur Arbeit.', 'Kann du mir helfen'];
+  var FX_EX = ['heute ich gehe zur arbeit', 'Ich habe gestern ins Kino gegangen.', 'Weil ich habe keine Zeit, komme ich nicht.', 'Ich fahre mit die Bus zur Arbeit.', 'Kann du mir helfen', 'Ich habe ein Termien beim Zahnartz'];
   function fxRun() { FXS.res = fxCheck(FXS.text); FXS.ai = null; FXS.aiErr = ''; }
   function fxAiOn() { return CFG.AI_CORRECT === true && SB_OK && !!account.premium; }
   function fxIssueHtml(i) {
@@ -3783,6 +4389,8 @@ return D;
       h += '<section class="card" style="margin-top:14px"><h2>' + esc(L('Corrected')) + '</h2><div class="extext">' + esc(r.text) + '</div><div class="say-row">' + sayBtn(r.text, r.text) + (r.issues.length ? '<button class="btn small ghost" data-act="fxuse">' + esc(L('Use this text')) + '</button>' : '') + '</div>';
       if (r.issues.length) h += '<ul class="exlist" style="margin-top:12px">' + r.issues.map(fxIssueHtml).join('') + '</ul>';
       else h += '<ul class="exlist" style="margin-top:10px"><li class="ok">✓ ' + esc(L('No typical mistake found.')) + '</li></ul><p class="say-note">' + esc(L('This does not prove that the sentence is perfect. The checker only knows typical mistakes.')) + '</p>';
+      if (r.notes && r.notes.length) h += '<p class="say-note" style="margin-top:12px"><b>' + esc(L('Please check:')) + '</b></p><ul class="exlist">' + r.notes.map(function (n) { return '<li>? <b>' + esc(n.w) + '</b><div class="say-note">' + esc(n.why) + '</div></li>'; }).join('') + '</ul>';
+      if (r.words && r.words.length) h += '<details class="fxdict" style="margin-top:14px"' + (r.words.length <= 8 ? ' open' : '') + '><summary><b>📖 ' + esc(L('Dictionary')) + '</b> · ' + r.words.length + '</summary><ul class="exlist">' + r.words.map(function (x) { return '<li><b>' + esc(x.line) + '</b>' + (x.en ? ' — ' + esc(L(x.en)) : '') + (x.extra ? '<div class="say-note">' + esc(x.extra) + '</div>' : '') + '</li>'; }).join('') + '</ul></details>';
       h += '</section>';
       if (fxAiOn()) h += '<button class="btn" data-act="fxai" style="margin-top:12px"' + (FXS.aiBusy ? ' disabled' : '') + '>' + esc(FXS.aiBusy ? L('Checking ...') : L('Check with AI (Premium)')) + '</button>';
       if (FXS.aiErr) h += '<div class="notice" style="margin-top:10px">' + esc(FXS.aiErr) + '</div>';
@@ -3792,7 +4400,7 @@ return D;
         h += '</section>';
       }
     }
-    h += '<p class="say-note" style="margin-top:16px">' + esc(L('The checker finds typical learner mistakes: capital letters, verb position, verb endings, haben or sein, articles after prepositions and common spelling mistakes. It does not understand every sentence, so it can miss mistakes. For important texts ask a teacher.')) + '</p>';
+    h += '<p class="say-note" style="margin-top:16px">' + esc(L('The checker uses a built-in German word list (about 2,000 words) and typical grammar rules: capital letters, spelling, der/die/das of the noun, verb position, verb endings, haben or sein and articles after prepositions. A word that is not in the list is not marked as wrong. It does not understand every sentence, so it can miss mistakes. For important texts ask a teacher.')) + '</p>';
     return h;
   }
   function fxRecStop() { var r = FXREC; FXREC = null; FXS.rec = false; if (r) { try { r.stop(); } catch (e) {} } }
