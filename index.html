@@ -4477,10 +4477,56 @@ return D;
   }
 
   /* ----- Check tab (next to Exam): write or speak a sentence, see the corrected version ----- */
-  var FXS = { text:'', res:null, rec:false, ai:null, aiBusy:false, aiErr:'', busy:false, src:'offline', ltErr:'', reqId:0 };
+  var FXS = { text:'', res:null, rec:false, ai:null, aiBusy:false, aiErr:'', busy:false, src:'offline', ltErr:'', reqId:0, work:'', eng:null, mic:'de-DE' };
   var FXREC = null;
   var FX_EX = ['heute ich gehe zur arbeit', 'Ich habe gestern ins Kino gegangen.', 'Weil ich habe keine Zeit, komme ich nicht.', 'Ich fahre mit die Bus zur Arbeit.', 'Kann du mir helfen', 'Ich habe ein Termien beim Zahnartz'];
-  function fxRun() { FXS.res = fxCheck(FXS.text); FXS.ai = null; FXS.aiErr = ''; FXS.src = 'offline'; FXS.ltErr = ''; FXS.reqId++; FXS.busy = false; fxLt(FXS.text.trim(), FXS.reqId); }
+  var FX_EN = ('the i you he she it we they me him her us them my your his its our their is are were be been do does did have has would can could shall should may might must and or but not no yes to of on at for with from by about into over after before between under this that these those what when where why how who which there here now today tomorrow yesterday please thanks thank hello hi goodbye good very much many some any every one go going goes went come came get got make take took give gave know think want need like love work eat drink sleep buy sell pay call speak talk say said tell ask help feel try use find look wait meet visit read write learn study open close leave stay bring send put let appointment doctor dentist tooth teeth pain medicine hospital house home job friend family mother father brother sister child children people time day week month year morning evening night water food money car train city country language question answer problem thing number big small new old happy sad tired sick hungry cold hot important easy difficult beautiful because if then than also just only too again always never often sometimes already still yet more most less first last next other another same different right wrong tonight lunch dinner breakfast bread coffee tea milk school student teacher office company meeting email phone message letter afternoon').split(' ');
+  var FX_EN_SET = null;
+  function fxIsEnglish(text) {
+    if (!FX_EN_SET) { FX_EN_SET = {}; FX_EN.forEach(function (w) { FX_EN_SET[w] = 1; }); }
+    var ws = String(text || '').toLowerCase().match(/[a-zäöüß']+/g) || [];
+    if (!ws.length) return false;
+    var D = dxBuild(), en = 0, de = 0;
+    ws.forEach(function (w) { if (FX_EN_SET[w]) en++; else if (D.f[w] || D.seen[w]) de++; });
+    if (en >= 2) return en > de;
+    return ws.length <= 2 && en === 1 && de === 0;
+  }
+  function fxMtOn() { return CFG.MT_ON !== false && !(typeof navigator !== 'undefined' && navigator.onLine === false) && typeof fetch === 'function'; }
+  function fxChunks(t) {
+    var parts = t.replace(/\s+/g, ' ').match(/[^.!?]+[.!?]*/g) || [t], out = [], cur = '';
+    parts.forEach(function (p) { p = p.trim(); if (!p) return; if (cur && (cur + ' ' + p).length > 400) { out.push(cur); cur = p; } else cur = cur ? cur + ' ' + p : p; });
+    if (cur) out.push(cur);
+    return out.map(function (x) { return x.slice(0, 450); });
+  }
+  function fxUnesc(s) { return String(s).replace(/&#(\d+);/g, function (m, n) { return String.fromCharCode(Number(n)); }).replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'); }
+  /* English text -> German with the free MyMemory translation service */
+  function fxTranslate(t, id) {
+    var base = String(CFG.MT_URL || 'https://api.mymemory.translated.net/get');
+    var jobs = fxChunks(t).slice(0, 6).map(function (c) {
+      return fetch(base + '?langpair=' + encodeURIComponent('en|de') + '&q=' + encodeURIComponent(c)).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); }).then(function (j) {
+        var tx = j && j.responseData && j.responseData.translatedText;
+        if (!tx || (j.responseStatus && Number(j.responseStatus) !== 200) || /MYMEMORY WARNING|INVALID/i.test(tx)) throw new Error('mt');
+        return fxUnesc(tx);
+      });
+    });
+    var timeout = new Promise(function (res, rej) { setTimeout(function () { rej(new Error('timeout')); }, 12000); });
+    Promise.race([Promise.all(jobs), timeout]).then(function (arr) {
+      if (id !== FXS.reqId) return;
+      var de = arr.join(' ').replace(/\s+/g, ' ').trim();
+      FXS.work = de; FXS.eng = { en:t, state:'done' }; FXS.res = fxCheck(de); FXS.src = 'offline'; render(); fxLt(de, id);
+    }).catch(function () { if (id !== FXS.reqId) return; FXS.eng = { en:t, state:'fail' }; render(); });
+  }
+  function fxRun() {
+    FXS.ai = null; FXS.aiErr = ''; FXS.src = 'offline'; FXS.ltErr = ''; FXS.reqId++; FXS.busy = false; FXS.eng = null;
+    var t = FXS.text.trim(), id = FXS.reqId; FXS.work = t;
+    if (t && fxIsEnglish(t)) {
+      FXS.res = { text:'', issues:[], notes:[], words:[] };
+      FXS.eng = { en:t, state:fxMtOn() ? 'busy' : 'offline' };
+      if (fxMtOn()) fxTranslate(t, id);
+      return;
+    }
+    FXS.res = fxCheck(FXS.text); fxLt(t, id);
+  }
   /* Online check with LanguageTool (free public service). Used when the phone is online; otherwise the result of the app stays. */
   var FX_LT_LABEL = { TYPOS:'Spelling', GRAMMAR:'Grammar', CASING:'Capital letters', PUNCTUATION:'Punctuation', COMPOUNDING:'Compound word', CONFUSED_WORDS:'Confused words', MISC:'Check', AGREEMENT:'Grammar' };
   function fxLtOn() { return CFG.LT_ON !== false && !(typeof navigator !== 'undefined' && navigator.onLine === false) && typeof fetch === 'function'; }
@@ -4496,7 +4542,7 @@ return D;
       .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
       .then(function (j) {
         if (done) return; done = true; clearTimeout(tm);
-        if (id !== FXS.reqId || FXS.text.trim() !== t) return;
+        if (id !== FXS.reqId || FXS.work !== t) return;
         var ms = ((j && j.matches) || []).slice().sort(function (a, b) { return a.offset - b.offset; });
         var out = '', pos = 0, issues = [], notes = [];
         ms.forEach(function (m) {
@@ -4528,11 +4574,13 @@ return D;
     h += '<div class="btns" style="margin-top:10px">';
     if (can) h += '<button class="btn' + (FXS.rec ? '' : ' ghost') + '" data-act="fxmic">' + (FXS.rec ? '■ ' + esc(L('Stop')) : '🎤 ' + esc(L('Speak'))) + '</button>';
     h += '<button class="btn" data-act="fxcheck">' + esc(L('Check')) + '</button><button class="btn ghost" data-act="fxclear">' + esc(L('Clear')) + '</button></div>';
+    if (can) h += '<div class="chips" style="margin-top:8px"><span class="say-note" style="align-self:center">' + esc(L('Speak in:')) + '</span><button data-act="fxlang" data-v="de-DE" aria-pressed="' + (FXS.mic !== 'en-US') + '">Deutsch</button><button data-act="fxlang" data-v="en-US" aria-pressed="' + (FXS.mic === 'en-US') + '">English</button></div>';
     if (FXS.rec) h += '<p class="say-note">' + esc(L('Listening ... speak in German, then tap Stop.')) + '</p>';
     if (!can) h += '<p class="say-note">' + esc(L('This device cannot record speech in the app. On iPhone you can tap the microphone key on the keyboard to dictate instead.')) + '</p>';
     h += '<p class="say-note" style="margin-top:12px">' + esc(L('Try an example:')) + '</p><div class="chips">' + FX_EX.map(function (x, i) { return '<button data-act="fxex" data-v="' + i + '">' + esc(x.length > 26 ? x.slice(0, 24) + '…' : x) + '</button>'; }).join('') + '</div>';
+    if (FXS.eng) h += '<section class="card" style="margin-top:14px"><h2>' + esc(L('This looks like English')) + '</h2><div class="extext">' + esc(FXS.eng.en) + '</div><p class="say-note">' + esc(FXS.eng.state === 'busy' ? '⏳ ' + L('Translating into German ...') : (FXS.eng.state === 'offline' ? L('Translation needs an internet connection. Connect and tap Check again.') : (FXS.eng.state === 'fail' ? L('The translation service did not answer. Try again in a moment.') : L('The German version is below. Automatic translation can be wrong, so check it.')))) + '</p></section>';
     if (r && r.text) {
-      h += '<section class="card" style="margin-top:14px"><h2>' + esc(L('Corrected')) + '</h2><div class="extext">' + esc(r.text) + '</div><div class="say-row">' + sayBtn(r.text, r.text) + (r.issues.length ? '<button class="btn small ghost" data-act="fxuse">' + esc(L('Use this text')) + '</button>' : '') + '</div>';
+      h += '<section class="card" style="margin-top:14px"><h2>' + esc(FXS.eng && FXS.eng.state === 'done' ? L('German') : L('Corrected')) + '</h2><div class="extext">' + esc(r.text) + '</div><div class="say-row">' + sayBtn(r.text, r.text) + (r.issues.length ? '<button class="btn small ghost" data-act="fxuse">' + esc(L('Use this text')) + '</button>' : '') + '</div>';
       if (r.issues.length) h += '<ul class="exlist" style="margin-top:12px">' + r.issues.map(fxIssueHtml).join('') + '</ul>';
       else h += '<ul class="exlist" style="margin-top:10px"><li class="ok">✓ ' + esc(L('No typical mistake found.')) + '</li></ul><p class="say-note">' + esc(L('This does not prove that the sentence is perfect. The checker only knows typical mistakes.')) + '</p>';
       if (r.notes && r.notes.length) h += '<p class="say-note" style="margin-top:12px"><b>' + esc(L('Please check:')) + '</b></p><ul class="exlist">' + r.notes.map(function (n) { return '<li>? <b>' + esc(n.w) + '</b><div class="say-note">' + esc(n.why) + '</div></li>'; }).join('') + '</ul>';
@@ -4558,7 +4606,7 @@ return D;
     var rec; try { rec = new Ctor(); } catch (e) { return; }
     FXREC = rec; FXS.rec = true;
     var base = FXS.text;
-    rec.lang = 'de-DE'; rec.interimResults = true; rec.continuous = true; rec.maxAlternatives = 1;
+    rec.lang = FXS.mic === 'en-US' ? 'en-US' : 'de-DE'; rec.interimResults = true; rec.continuous = true; rec.maxAlternatives = 1;
     rec.onresult = function (ev) {
       var fin = '', tmp = '';
       for (var k = 0; k < ev.results.length; k++) { var tx = ev.results[k][0].transcript; if (ev.results[k].isFinal) fin += tx + ' '; else tmp += tx; }
@@ -4664,6 +4712,7 @@ return D;
       case 'vlevel': if (VLEVELS.indexOf(v) >= 0) { vlevel = v; render(true); } break;
       case 'wlevel': if (GEN_LEVELS.indexOf(v) >= 0) { wlevel = v; render(true); } break;
       case 'wsub': if (v === 'pic' || v === 'lvl') { wsub = v; F = { id:'', mode:'', c:null, z:null, d:null }; render(true); } break;
+      case 'fxlang': if (!FXS.rec) { FXS.mic = v === 'en-US' ? 'en-US' : 'de-DE'; render(); } break;
       case 'fxcheck': { var fta = $('#fxin'); if (fta) FXS.text = fta.value; fxRecStop(); fxRun(); render(); break; }
       case 'fxclear': fxRecStop(); FXS.text = ''; FXS.res = null; FXS.ai = null; FXS.aiErr = ''; render(); break;
       case 'fxmic': if (FXS.rec) { fxRecStop(); if (FXS.text.trim()) fxRun(); render(); } else { var fta2 = $('#fxin'); if (fta2) FXS.text = fta2.value; fxRecStart(); } break;

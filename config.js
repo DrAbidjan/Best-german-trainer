@@ -11,6 +11,8 @@ window.VT_CONFIG = {
   PREMIUM_WORD_COUNT: 132,
   /* Sentence check: online check with the free LanguageTool service. Set to false to switch it off. */
   LT_ON: true,
+  /* English text in the sentence check is translated into German with the free MyMemory service (about 5,000 characters per day per phone network). Set to false to switch it off. */
+  MT_ON: true,
   /* AI sentence check (Premium). Keep false until the AI function is set up. Then change it to true. */
   AI_CORRECT: false
 };
