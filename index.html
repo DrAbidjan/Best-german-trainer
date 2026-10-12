@@ -318,6 +318,14 @@ details.all[open] summary::after{content:"Hide"}
 .icard .inm b{font-size:15.5px;line-height:1.2;overflow-wrap:anywhere}
 .icard .ien{font-size:14px;color:var(--muted)}
 .icard .iuse{font-size:13px;color:var(--muted);line-height:1.35}
+ #cfx{position:fixed;inset:0;z-index:9999;overflow:hidden;background:rgba(0,0,0,.35);animation:cffade .3s}
+#cfx i{position:absolute;top:-24px;border-radius:2px;opacity:.95;animation-name:cffall;animation-timing-function:linear;animation-fill-mode:forwards}
+#cfx .cfmsg{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);text-align:center;background:var(--surface);border:2px solid var(--accent,#ffd400);border-radius:22px;padding:22px 30px;box-shadow:0 12px 40px rgba(0,0,0,.4);animation:cfpop .5s cubic-bezier(.2,1.4,.4,1)}
+#cfx .cfbig{font-size:56px;line-height:1}
+#cfx .cft{font-size:24px;font-weight:800;margin-top:8px}
+@keyframes cffall{to{transform:translateY(110vh) rotate(720deg);opacity:1}}
+@keyframes cfpop{from{transform:translate(-50%,-50%) scale(.3);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+@keyframes cffade{from{opacity:0}to{opacity:1}}
 .extimer{position:sticky;top:0;z-index:5;margin:10px 0;padding:8px 14px;border-radius:12px;background:var(--surface);border:1.5px solid var(--line);font-weight:700;font-variant-numeric:tabular-nums;text-align:center}
 .extimer.low{border-color:#d33;color:#d33}
 .excl{font:inherit;font-size:16px;padding:4px 6px;margin:0 2px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);max-width:46vw}
@@ -674,6 +682,61 @@ details.all[open] summary::after{content:"Hide"}
   }
 
   /* Records one answer. Returns the points earned. */
+  /* =====================================================
+     SOUNDS and CONFETTI  (sound style can be changed in Account; plays only after a tap)
+     ===================================================== */
+  var SFX_STYLES = [['chime', 'Chime'], ['bell', 'Bell'], ['game', 'Game'], ['pop', 'Soft pop'], ['off', 'Off']];
+  var SFX_AC = null;
+  function sfxStyle() { try { var v = localStorage.getItem('vt-sfx'); if (v && SFX_STYLES.some(function (x) { return x[0] === v; })) return v; } catch (e) {} return 'chime'; }
+  function sfxSet(v) { try { localStorage.setItem('vt-sfx', v); } catch (e) {} }
+  function sfxCtx() {
+    try {
+      if (!SFX_AC) { var C = window.AudioContext || window.webkitAudioContext; if (!C) return null; SFX_AC = new C(); }
+      if (SFX_AC.state === 'suspended' && SFX_AC.resume) SFX_AC.resume();
+      return SFX_AC;
+    } catch (e) { return null; }
+  }
+  function sfxTone(ac, f, t0, dur, type, vol) {
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t0);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + dur + 0.05);
+  }
+  var SFX_DEF = {
+    chime:{ ok:[[784, 0, 0.16, 'sine'], [1175, 0.11, 0.3, 'sine']], bad:[[220, 0, 0.18, 'triangle'], [165, 0.14, 0.32, 'triangle']], win:[[523, 0, 0.18, 'sine'], [659, 0.14, 0.18, 'sine'], [784, 0.28, 0.18, 'sine'], [1047, 0.42, 0.5, 'sine']] },
+    bell:{ ok:[[1319, 0, 0.5, 'sine'], [1976, 0, 0.35, 'sine']], bad:[[196, 0, 0.35, 'sine'], [185, 0.05, 0.4, 'sine']], win:[[1047, 0, 0.5, 'sine'], [1319, 0.18, 0.5, 'sine'], [1568, 0.36, 0.5, 'sine'], [2093, 0.54, 0.7, 'sine']] },
+    game:{ ok:[[659, 0, 0.09, 'square'], [988, 0.09, 0.18, 'square']], bad:[[196, 0, 0.12, 'sawtooth'], [147, 0.12, 0.22, 'sawtooth']], win:[[523, 0, 0.1, 'square'], [659, 0.1, 0.1, 'square'], [784, 0.2, 0.1, 'square'], [1047, 0.3, 0.1, 'square'], [784, 0.42, 0.1, 'square'], [1047, 0.52, 0.4, 'square']] },
+    pop:{ ok:[[600, 0, 0.1, 'sine'], [900, 0.06, 0.12, 'sine']], bad:[[260, 0, 0.14, 'sine'], [200, 0.1, 0.18, 'sine']], win:[[600, 0, 0.1, 'sine'], [750, 0.1, 0.1, 'sine'], [900, 0.2, 0.1, 'sine'], [1200, 0.3, 0.3, 'sine']] }
+  };
+  function sfx(kind) {   /* kind: true / 'ok', false / 'bad', 'win' */
+    var st = sfxStyle(); if (st === 'off') return;
+    var k = kind === true ? 'ok' : (kind === false ? 'bad' : kind), def = (SFX_DEF[st] || SFX_DEF.chime)[k]; if (!def) return;
+    var ac = sfxCtx(); if (!ac) return;
+    var t = ac.currentTime + 0.01;
+    def.forEach(function (n) { sfxTone(ac, n[0], t + n[1], n[2], n[3], k === 'bad' ? 0.18 : 0.15); });
+    if (k === 'bad') { try { if (navigator.vibrate) navigator.vibrate(80); } catch (e) {} }
+  }
+  var CF_TIMER = 0;
+  function celebrate(label) {
+    try {
+      var old = document.getElementById('cfx'); if (old) old.remove();
+      clearTimeout(CF_TIMER);
+      var wrap = document.createElement('div'); wrap.id = 'cfx'; wrap.setAttribute('aria-hidden', 'true');
+      var calm = false; try { calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+      var cols = ['#ffd400', '#ff5a5f', '#2dd4bf', '#60a5fa', '#a78bfa', '#34d399', '#fb923c'], h = '';
+      if (!calm) for (var i = 0; i < 70; i++) {
+        h += '<i style="left:' + Math.round(Math.random() * 100) + '%;background:' + cols[i % cols.length] + ';animation-delay:' + (Math.random() * 0.8).toFixed(2) + 's;animation-duration:' + (2.2 + Math.random() * 1.6).toFixed(2) + 's;transform:rotate(' + Math.round(Math.random() * 360) + 'deg);width:' + (7 + Math.round(Math.random() * 6)) + 'px;height:' + (10 + Math.round(Math.random() * 8)) + 'px"></i>';
+      }
+      h += '<div class="cfmsg"><div class="cfbig">🎉</div><div class="cft">' + esc(label || L('Perfect!')) + '</div></div>';
+      wrap.innerHTML = h;
+      wrap.addEventListener('click', function () { wrap.remove(); });
+      document.body.appendChild(wrap);
+      sfx('win');
+      CF_TIMER = setTimeout(function () { if (wrap.parentNode) wrap.remove(); }, 4200);
+    } catch (e) {}
+  }
+  function perfect(score, total) { if (total >= 5 && score === total) setTimeout(function () { celebrate(score + '/' + total + ' · ' + L('Perfect!')); }, 350); }
+
   function record(id, ok) {
     var s = state.stats, v = vwrite(id), pts = 0;
     touchDay();
@@ -1303,7 +1366,10 @@ details.all[open] summary::after{content:"Hide"}
       '<p class="muted small">Meanings of verbs, picture words and medical words are shown in your language. Some translations may still contain mistakes. Please tell us if you find one.</p>' +
       '<label class="selwrap"><span class="lbl">App language</span><select class="select" id="uiSel" data-sel="uiSel"><option value="en"' + (uiLang() === 'en' ? ' selected' : '') + '>English</option>' +
       LANGS.map(function (l) { return '<option value="' + l[0] + '"' + (uiLang() === l[0] ? ' selected' : '') + '>' + esc(l[1]) + ' (' + l[2] + ')</option>'; }).join('') + '</select></label>' +
-      '<p class="muted small">Language of the buttons and menus. Lessons and example sentences stay in English.</p></div>';
+      '<p class="muted small">Language of the buttons and menus. Lessons and example sentences stay in English.</p>' +
+      '<label class="selwrap"><span class="lbl">' + esc(L('Answer sounds')) + '</span><select class="select" id="sfxSel" data-sel="sfxSel">' + SFX_STYLES.map(function (x) { return '<option value="' + x[0] + '"' + (sfxStyle() === x[0] ? ' selected' : '') + '>' + esc(L(x[1])) + '</option>'; }).join('') + '</select></label>' +
+      '<div class="btns"><button class="btn ghost small" data-act="sfxtest" data-v="ok">▶ ' + esc(L('Right')) + '</button><button class="btn ghost small" data-act="sfxtest" data-v="bad">▶ ' + esc(L('Wrong')) + '</button><button class="btn ghost small" data-act="sfxtest" data-v="win">🎉 ' + esc(L('Perfect!')) + '</button></div>' +
+      '<p class="muted small">' + esc(L('A sound plays when you answer. On iPhone the silent switch and the volume also apply.')) + '</p></div>';
   }
   function viewAccountMain() {
     var h = '<h1 class="page-title">Account</h1>';
@@ -1393,7 +1459,7 @@ details.all[open] summary::after{content:"Hide"}
     if (S.i < S.qs.length - 1) { S.i++; render(true); } else { finishSession(); render(true); }
   }
   function finishSession() {
-    S.finished = true;
+    S.finished = true; perfect(S.correct, S.total);
     state.stats.sessions++;
     save();
   }
@@ -1403,7 +1469,7 @@ details.all[open] summary::after{content:"Hide"}
     else { S.run = 0; if (S.missed.indexOf(id) < 0) S.missed.push(id); }
   }
   function answerQuestion(q, ok) {
-    q.done = true; q.correct = ok;
+    q.done = true; q.correct = ok; sfx(ok);
     q.pts = record(q.id, ok);
     noteResult(q.id, ok, q.pts);
     if (!ok && S.mode === 'review' && !q.retried) {
@@ -1752,8 +1818,8 @@ details.all[open] summary::after{content:"Hide"}
     P.total++;
     if (ok) P.correct++; else if (P.missed.indexOf(id) < 0) P.missed.push(id);
   }
-  function pAnswer(q, ok) { q.done = true; q.correct = ok; precord(q.id, ok); pNoteResult(q.id, ok); }
-  function pFinish() { P.finished = true; state.stats.sessions++; save(); }
+  function pAnswer(q, ok) { q.done = true; q.correct = ok; sfx(ok); precord(q.id, ok); pNoteResult(q.id, ok); }
+  function pFinish() { P.finished = true; perfect(P.correct, P.total); state.stats.sessions++; save(); }
   function checkWord(w, input) {
     var u = ascii(norm(input)), full = ascii(norm(wfull(w))), bare = ascii(norm(w.de));
     if (u === full) return { ok:true, note:'' };
@@ -1848,12 +1914,13 @@ details.all[open] summary::after{content:"Hide"}
     var q = t.q[z.i]; if (!q || k < 0 || k >= q[1].length) return;
     z.picked = k; z.done = true;
     if (k === q[2]) z.score++;
+    sfx(k === q[2]);
     render(); scrollToFeedback();
   }
   function gramNext() {
     var t = gramTopic(G.topic), z = G.quiz; if (!t || !z || !z.done) return;
     if (z.i + 1 >= t.q.length) {
-      z.finished = true;
+      z.finished = true; perfect(z.score, t.q.length);
       if (!(t.id in state.gram) || z.score > state.gram[t.id]) { state.gram[t.id] = z.score; save(); }
     } else { z.i++; z.picked = -1; z.done = false; }
     render(true);
@@ -1969,12 +2036,13 @@ details.all[open] summary::after{content:"Hide"}
     var t = fspSet(F.id), z = F.z; if (!t || !z || z.done) return;
     var q = z.qs[z.i]; if (!q || q.opts.indexOf(k) < 0) return;
     z.picked = k; z.done = true; if (k === q.k) z.score++;
+    sfx(k === q.k);
     render(); scrollToFeedback();
   }
   function fspNext() {
     var t = fspSet(F.id), z = F.z; if (!t || !z || !z.done) return;
     if (z.i + 1 >= z.qs.length) {
-      z.finished = true;
+      z.finished = true; perfect(z.score, z.qs.length);
       var pct = Math.round(100 * z.score / z.qs.length);
       if (!(t.id in state.fsp) || pct > state.fsp[t.id]) { state.fsp[t.id] = pct; save(); }
     } else { z.i++; z.picked = -1; z.done = false; }
@@ -4566,10 +4634,11 @@ return D;
       case 'fxai': fxAsk(); break;
       case 'fxfrom': { var fr = X.run; if (fr && fr.txt && fr.txt.w) { exStop(); exRecStop(); exTimerStop(); FXS.text = fr.txt.w; X.run = null; tab = 'fix'; fxRun(); render(true); } break; }
       case 'icat': IN.cat = v; render(); break;
+      case 'sfxtest': if (v === 'win') celebrate(L('Perfect!')); else sfx(v === 'ok'); break;
       case 'iquiz': instrQuizStart(); render(true); break;
       case 'iexit': IN.quiz = null; render(true); break;
-      case 'ians': { var iq = IN.quiz && IN.quiz.qs[IN.quiz.i]; if (iq && iq.pick < 0) { iq.pick = Number(v); if (iq.pick === iq.ans) IN.quiz.score++; render(); } break; }
-      case 'inext': if (IN.quiz) { if (IN.quiz.i + 1 >= IN.quiz.qs.length) IN.quiz.done = true; else IN.quiz.i++; render(true); } break;
+      case 'ians': { var iq = IN.quiz && IN.quiz.qs[IN.quiz.i]; if (iq && iq.pick < 0) { iq.pick = Number(v); if (iq.pick === iq.ans) IN.quiz.score++; sfx(iq.pick === iq.ans); render(); } break; }
+      case 'inext': if (IN.quiz) { if (IN.quiz.i + 1 >= IN.quiz.qs.length) { IN.quiz.done = true; perfect(IN.quiz.score, IN.quiz.qs.length); } else IN.quiz.i++; render(true); } break;
       case 'xmode': fspMode(v); break;
       case 'xflip': if (F.c) { F.c.flipped = !F.c.flipped; render(); } break;
       case 'xgot': fspCard(true); break;
@@ -4700,6 +4769,7 @@ return D;
     if (!t || !t.getAttribute) return;
     var which = t.getAttribute('data-sel');
     if (which === 'scopeSel') { state.scope = parseScope(t.value); save(); render(); }
+    else if (which === 'sfxSel') { sfxSet(t.value); sfx(true); }
     else if (which === 'langSel') { if (t.value === 'en' || LANGS.some(function (l) { return l[0] === t.value; })) { state.lang = t.value; save(); render(); } }
     else if (which === 'uiSel') { if (t.value === 'en' || LANGS.some(function (l) { return l[0] === t.value; })) { state.ui = t.value; save(); uiSet(); render(); } }
     else if (which === 'wordsSel') { wscope = (t.value === 'all') ? 'all' : Number(t.value); render(); }
