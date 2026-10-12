@@ -422,9 +422,31 @@ li>.row{margin-top:10px}
 .prog i{background:linear-gradient(90deg,#FFB800,#FFE45C)}
 .install{background:var(--surface);border-style:solid;box-shadow:var(--card-sh)}
 @media (prefers-reduced-motion:reduce){.hero .bar i{animation:none}}
+
+/* ---- welcome splash ---- */
+#splash{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;color:#fff;background:radial-gradient(700px 420px at 50% 28%,rgba(255,212,0,.22),transparent 70%),linear-gradient(160deg,#1B2540,#0A0E1A 75%);transition:opacity .55s ease,transform .55s ease}
+#splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
+#splash .sp-stripe{position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,#000 0 33.3%,#DD0000 33.3% 66.6%,#FFCE00 66.6%)}
+#splash .sp-logo{width:92px;height:92px;border-radius:26px;background:linear-gradient(180deg,#FFE04A,#FFD000);color:#12161C;display:flex;align-items:center;justify-content:center;font:700 40px/1 var(--serif);box-shadow:0 18px 44px -12px rgba(255,200,0,.6);animation:spin .9s cubic-bezier(.2,.8,.2,1) both}
+#splash .sp-w{margin-top:0;font-size:18px;color:rgba(255,255,255,.75);animation:spup .8s .25s both}
+#splash h1{margin:6px 0 0;font:700 42px/1.08 var(--serif);letter-spacing:-.02em;animation:spup .8s .4s both}
+#splash .sp-s{margin-top:14px;font-size:16px;color:rgba(255,255,255,.7);animation:spup .8s .6s both}
+#splash .sp-t{position:absolute;bottom:calc(36px + env(safe-area-inset-bottom,0px));font-size:14px;color:rgba(255,255,255,.55);animation:spup .8s 1s both}
+@keyframes spin{from{opacity:0;transform:scale(.6) rotate(-8deg)}}
+@keyframes spup{from{opacity:0;transform:translateY(14px)}}
+#splash .sp-btn{margin-top:44px;min-height:56px;padding:0 44px;border-radius:18px;background:linear-gradient(180deg,#FFE04A,#FFD000);color:#12161C;font-weight:700;font-size:18px;box-shadow:0 10px 26px -8px rgba(255,190,0,.8);animation:spup .8s .9s both}
+#splash .sp-btn:active{transform:scale(.97)}
+#splash{background:radial-gradient(700px 420px at 50% 30%,rgba(60,200,190,.28),transparent 70%),linear-gradient(160deg,#0F2F3F,#07131F 78%)}
+#splash .sp-bg{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:#7FE3D8;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round;opacity:.16}
+#splash .sp-bg .big{stroke-width:1.2;opacity:2.2;stroke:#BFF5EE}
+#splash>:not(.sp-bg){position:relative;z-index:1}
+#splash .sp-stripe{position:absolute}
+#splash .sp-s{font:700 24px/1.2 var(--serif);color:#FFD400;margin-top:12px;letter-spacing:.01em}
 </style>
 </head>
 <body>
+<div id="splash" role="dialog" aria-label="Welcome"><div class="sp-stripe"></div><svg class="sp-bg" aria-hidden="true" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"><defs><symbol id="spt" viewBox="0 0 100 120"><path d="M30 8C18 8 8 18 10 36C12 52 18 62 20 82C21 96 26 112 33 112C40 112 40 92 50 92C60 92 60 112 67 112C74 112 79 96 80 82C82 62 88 52 90 36C92 18 82 8 70 8C62 8 56 14 50 14C44 14 38 8 30 8Z"/><path d="M30 30C34 24 42 24 46 28" /></symbol><pattern id="spp" width="96" height="96" patternUnits="userSpaceOnUse" patternTransform="rotate(-14)"><use href="#spt" x="10" y="8" width="30" height="36"/><use href="#spt" x="58" y="54" width="22" height="26" opacity=".6"/></pattern></defs><rect width="390" height="844" fill="url(#spp)"/><use href="#spt" x="95" y="70" width="200" height="240" class="big"/></svg><p class="sp-w">Welcome to</p><h1>Dr Abid Academy</h1><p class="sp-s">Best German Trainer App</p><button type="button" class="sp-btn" onclick="var e=document.getElementById('splash');e.classList.add('out');setTimeout(function(){if(e.parentNode)e.remove()},600)">Start learning</button></div>
+<script>(function(){var e=document.getElementById('splash');if(e&&navigator.webdriver)e.remove()})();</script>
 <main id="app" aria-live="polite"></main>
 <nav id="nav" aria-label="Main"></nav>
 <noscript><p style="padding:24px">This app needs JavaScript turned on.</p></noscript>
