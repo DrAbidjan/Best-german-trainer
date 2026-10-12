@@ -3916,7 +3916,9 @@ return D;
       else if (baseRec.pp) pp = pre ? pre + baseRec.pp.replace(/^ge/, '') : (part ? part + baseRec.pp : baseRec.pp);
       else pp = (pre ? pre : (part ? part : '')) + ((pre || /ieren$/.test(base) || /^(be|ge|er|ent|ver|zer|miss|emp)/.test(base)) ? '' : 'ge') + stem + e + 't';
       var aux = r.aux || baseRec.aux || 'h';
-      var rec = { inf:inf, en:r.en, p3:(pre ? pre : '') + (baseRec.p3 || (stem + e + 't')), pa:(pre ? pre : '') + (baseRec.pa || (stem + e + 'te')), pp:pp, aux:aux, part:part, base:base, open:r.open };
+      var reg3x = stem + e + 't', p3x = (pre ? '' : (baseRec.p3 || reg3x)), prs = { ich:(modal ? p3x : (/el$/.test(stem) ? stem.slice(0, -2) + 'le' : stem + 'e')), du:(modal ? p3x + (/[sßxz]$/.test(p3x) ? 't' : 'st') : (p3x !== reg3x && !/ /.test(p3x) ? (/(st|ß|s|x|z)$/.test(p3x) ? p3x : p3x.replace(/t$/, '') + 'st') : stem + (e ? 'est' : (/[sßxz]$/.test(stem) ? 't' : 'st')))), er:p3x, wir:base, ihr:(stem + (e ? 'et' : 't')) };
+      if (pre) { Object.keys(prs).forEach(function (kk) { prs[kk] = pre + prs[kk]; }); }
+      var rec = { pr:prs, inf:inf, en:r.en, p3:(pre ? pre : '') + (baseRec.p3 || (stem + e + 't')), pa:(pre ? pre : '') + (baseRec.pa || (stem + e + 'te')), pp:pp, aux:aux, part:part, base:base, open:r.open };
       D.verbs[inf] = rec;
       var vE = { p:'v', l:inf, rec:rec };
       add(inf, { p:'v', l:inf, k:'inf', rec:rec });
@@ -4160,8 +4162,48 @@ return D;
     };
     var repl = {};
     var fixes = [];
+    var handled = {};
+    var AUXP = { habe:['ich', 'bin'], hast:['du', 'bist'], hat:['er', 'ist'], haben:['wir', 'sind'], habt:['ihr', 'seid'] };
+    for (var ai0 = 0; ai0 < toks.length; ai0++) {
+      var auxK = lw(ai0), ap = AUXP[auxK];
+      if (!ap || skipTok(ai0)) continue;
+      var jj = ai0 + 1, hop = 0;
+      while (jj < toks.length && hop < 3 && D.f[lw(jj)] && D.f[lw(jj)].every(function (e) { return e.p === 'f' || e.p === 'a'; }) && !/[.,;!?]/.test(toks[jj].pre)) { jj++; hop++; }
+      if (jj >= toks.length || /[.,;:!?]/.test(toks[jj].pre) || skipTok(jj)) continue;
+      var wj = toks[jj].w, kj = wj.toLowerCase(), ej = D.f[kj];
+      if (/^[A-ZÄÖÜ]/.test(wj) || kj.length < 4) continue;
+      var lastWord = jj === toks.length - 1 || /^\s*[.,;!?]/.test(sentence.slice(toks[jj].end, toks[jj].end + 3));
+      if (!lastWord) continue;
+      var vrec = null;
+      if (ej) {
+        if (!ej.every(function (e) { return e.p === 'v' && (e.k === 'inf' || e.k === 'fin'); })) continue;
+        vrec = ej[0].rec;
+      } else if (!D.seen[kj] && !dxCompound(kj)) {
+        var bestV = null;
+        for (var kk2 = 0; kk2 < D.keys.length; kk2++) {
+          var kx = D.keys[kk2]; if (Math.abs(kx.length - kj.length) > 2) continue;
+          var ex2 = D.f[kx], isInf = ex2.some(function (e) { return e.p === 'v' && e.k === 'inf'; });
+          if (!isInf) continue;
+          var dd = dxDist(kj, kx, kj.length >= 6 ? 2 : 1); if (dd > (kj.length >= 6 ? 2 : 1)) continue;
+          if (!bestV || dd < bestV.d || (dd === bestV.d && kx.charAt(0) === kj.charAt(0) && bestV.k.charAt(0) !== kj.charAt(0))) bestV = { k:kx, d:dd, rec:ex2[0].rec };
+        }
+        if (!bestV) continue;
+        vrec = bestV.rec;
+      } else continue;
+      if (!vrec || !vrec.pp) continue;
+      var useSein = vrec.aux === 's';
+      var newAux = useSein ? ap[1] : auxK;
+      var subj = ai0 > 0 ? lw(ai0 - 1) : '';
+      var presTxt = '';
+      var pmap = { ich:'ich', du:'du', er:'er', sie:'er', es:'er', man:'er', wir:'wir', ihr:'ihr' };
+      if (pmap[subj] && vrec.pr) presTxt = ' ' + L('Present tense:') + ' ' + toks[ai0 - 1].w + ' ' + vrec.pr[pmap[subj]] + '.';
+      var why = '"' + wj + '" ' + (ej ? L('is not a participle.') : L('is not a German word.')) + ' ' + L('After haben/sein the participle is needed:') + ' ' + newAux + ' ' + vrec.pp + '.' + presTxt;
+      fixes.push({ i:ai0, to:newAux, a:'', skipIssue:true });
+      fixes.push({ i:jj, to:vrec.pp, a:toks[ai0].w + ' ' + wj, b:newAux + ' ' + vrec.pp, why:why });
+      handled[ai0] = 1; handled[jj] = 1;
+    }
     for (var i = 0; i < toks.length; i++) {
-      if (skipTok(i)) continue;
+      if (skipTok(i) || handled[i]) continue;
       var w = toks[i].w, k = w.toLowerCase(), ents = D.f[k];
       var isCap = /^[A-ZÄÖÜ]/.test(w), start = sentStart(i);
       if (/-/.test(w) && !ents) {
@@ -4233,7 +4275,7 @@ return D;
     for (var t = 0; t < toks.length; t++) {
       out += toks[t].pre;
       var fx = fixAt[t];
-      if (fx) { out += fx.to; issues.push({ a:fx.a, b:fx.to, why:fx.why }); toks[t].w = fx.to; } else out += toks[t].w;
+      if (fx) { out += fx.to; if (!fx.skipIssue) issues.push({ a:fx.a, b:fx.b || fx.to, why:fx.why }); toks[t].w = fx.to; } else out += toks[t].w;
     }
     out += tail;
     /* articles: does the article fit the gender of the noun? */
